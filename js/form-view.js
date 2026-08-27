@@ -1298,7 +1298,7 @@ class FormViewer {
 
     let branchAction = 'next';
 
-    // Check questions in current step for choice / dropdown logic jumps
+    // 1. Priority 1: Option-Level Branching (Specific choice/dropdown selection)
     for (const q of stepQuestions) {
       if ((q.type === 'choice' || q.type === 'dropdown') && q.options && q.options.length > 0) {
         const ansVal = this.answers[q.id];
@@ -1308,12 +1308,30 @@ class FormViewer {
             return text === ansVal;
           });
 
-          if (matchedOpt && typeof matchedOpt === 'object' && matchedOpt.nextSectionId && matchedOpt.nextSectionId !== 'next') {
+          if (matchedOpt && typeof matchedOpt === 'object' && matchedOpt.nextSectionId && matchedOpt.nextSectionId !== 'next' && matchedOpt.nextSectionId !== 'inherit') {
             branchAction = matchedOpt.nextSectionId;
             break;
           }
         }
       }
+    }
+
+    // 2. Priority 2: Question-Level Global Branching (q.nextSectionId)
+    if (branchAction === 'next') {
+      for (const q of stepQuestions) {
+        if (q.nextSectionId && q.nextSectionId !== 'inherit' && q.nextSectionId !== 'next') {
+          // If question was answered or required
+          if (this.answers[q.id] !== undefined && this.answers[q.id] !== '') {
+            branchAction = q.nextSectionId;
+            break;
+          }
+        }
+      }
+    }
+
+    // 3. Priority 3: Section-Level Global Navigation (currentSec.nextSectionId)
+    if (branchAction === 'next' && currentSec && currentSec.nextSectionId && currentSec.nextSectionId !== 'next') {
+      branchAction = currentSec.nextSectionId;
     }
 
     if (branchAction === 'submit') {

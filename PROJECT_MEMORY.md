@@ -103,3 +103,9 @@ formGenerator-IskakFatoni/
 1. **No External Heavy Frameworks**: Mempertahankan Vanilla JS & CSS murni untuk performa maksimal, waktu muat instan, dan kemudahan hosting di GitHub Pages.
 2. **Null Safety & Resilience**: Selalu menggunakan pengecekan elemen DOM (`if (!el) return`) dan fallback data untuk mencegah error unhandled exception.
 3. **Responsive Mobile First**: Semua komponen (tanda tangan, kamera, tabel, kartu) dirancang fleksibel untuk desktop maupun perangkat mobile.
+
+4. **🛑 ATURAN PENTING GIT PUSH (STRICT RULE)**:
+   - **JANGAN PERNAH menjalankan `git push` otomatis** pada setiap perubahan/perbaikan kode.
+   - Semua perubahan dikerjakan, diuji sintaksnya, dan disimpan secara lokal.
+   - Cukup ingatkan kepada pengguna bahwa perubahan lokal sudah selesai dan siap di-push.
+   - **Hanya jalankan `git push` ketika pengguna memerintahkannya secara eksplisit** (contoh: *"Push ke GitHub"*, *"Deploy"*, dll.).
