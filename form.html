@@ -105,92 +105,61 @@
 
         <!-- 1. DASHBOARD VIEW -->
     <section id="view-dashboard" class="view-section active">
-      <!-- Modern 2-Column Balanced Hero Container -->
-      <div class="dashboard-hero-section">
-        <!-- Main Left Card -->
-        <div class="dashboard-hero-main glass-card">
-          <div class="hero-brand-tag">
-            <i data-lucide="sparkles"></i>
-            <span>Form Generator & Realtime Analytics</span>
+      
+      <!-- Clean, Focused & Executive Dashboard Header -->
+      <div class="dashboard-header-clean glass-card">
+        <div class="dash-clean-left">
+          <div class="dash-clean-title-group">
+            <div class="dash-icon-badge">
+              <i data-lucide="folder"></i>
+            </div>
+            <div>
+              <h1 class="dash-clean-title">Formulir Saya</h1>
+              <div class="dash-stats-pills">
+                <span class="stat-pill"><i data-lucide="folder"></i> <strong id="stat-total-forms">0</strong> Formulir</span>
+                <span class="stat-pill"><i data-lucide="bar-chart-3"></i> <strong id="stat-total-responses">0</strong> Respon Masuk</span>
+              </div>
+            </div>
           </div>
-          <h1 class="hero-title">Kelola & Buat Formulir <span class="gradient-text">Dengan Mudah</span></h1>
-          <p class="hero-desc">
-            Rancang formulir interaktif, kuis otomatis dengan koreksi nilai, survei percabangan bertingkat, perekaman lokasi GPS, tanda tangan digital, dan download rekap Excel (.xlsx) realtime.
-          </p>
-          <div class="hero-primary-actions">
-            <button class="btn btn-primary btn-hero-main" onclick="if (window.app) window.app.createNewForm(); else window.location.hash = '#/builder';">
-              <i data-lucide="plus-circle"></i>
+        </div>
+
+        <div class="dash-clean-right">
+          <!-- Search Box -->
+          <div class="search-wrap">
+            <i data-lucide="search" class="search-icon"></i>
+            <input type="text" id="dashboard-search" placeholder="Cari nama formulir..." class="input-search">
+          </div>
+
+          <!-- Quick Actions -->
+          <div class="dash-actions-group">
+            <button class="btn btn-primary" onclick="if (window.app) window.app.createNewForm(); else window.location.hash = '#/builder';">
+              <i data-lucide="plus"></i>
               <span>Buat Formulir Baru</span>
             </button>
-          </div>
-        </div>
-
-        <!-- Right Column: Stats & Template Quick Starters -->
-        <div class="dashboard-hero-sidebar">
-          <!-- 2 Stats Cards -->
-          <div class="dashboard-stats-grid">
-            <div class="dash-stat-widget glass-card">
-              <div class="stat-widget-icon indigo">
-                <i data-lucide="folder"></i>
-              </div>
-              <div class="stat-widget-info">
-                <div class="stat-widget-number" id="stat-total-forms">0</div>
-                <div class="stat-widget-label">Total Formulir</div>
-              </div>
-            </div>
-            <div class="dash-stat-widget glass-card">
-              <div class="stat-widget-icon emerald">
-                <i data-lucide="bar-chart-3"></i>
-              </div>
-              <div class="stat-widget-info">
-                <div class="stat-widget-number" id="stat-total-responses">0</div>
-                <div class="stat-widget-label">Total Respon Masuk</div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Quick Starter Templates Box -->
-          <div class="quick-templates-box glass-card">
-            <div class="quick-templates-header">
-              <i data-lucide="layout-template"></i>
-              <span>Pilihan Template Siap Pakai</span>
-            </div>
-            <div class="quick-template-items">
-              <div class="template-item-btn" onclick="if (window.app) window.app.createWhatsAppSurveyTemplate();">
-                <div class="template-icon green"><i data-lucide="phone-call"></i></div>
-                <div class="template-text">
-                  <strong>Pendataan No WhatsApp</strong>
-                  <span>120 Siswa • 8 Bagian Percabangan</span>
+            <div class="dropdown-templates-wrap">
+              <button type="button" class="btn btn-secondary" id="btn-open-templates-menu" title="Pilih Template Formulir">
+                <i data-lucide="layout-template"></i>
+                <span>Template</span>
+                <i data-lucide="chevron-down" style="width: 13px; height: 13px; margin-left: 2px;"></i>
+              </button>
+              <div class="dropdown-templates-menu hidden" id="dropdown-templates-menu">
+                <div class="dropdown-template-item" onclick="if (window.app) window.app.createWhatsAppSurveyTemplate();">
+                  <i data-lucide="phone-call" style="color:#10b981;"></i>
+                  <div>
+                    <strong>Pendataan No WhatsApp</strong>
+                    <small>120 Siswa • 8 Bagian Percabangan</small>
+                  </div>
                 </div>
-                <i data-lucide="arrow-right" class="template-arrow"></i>
-              </div>
-              <div class="template-item-btn" onclick="if (window.app) window.app.createStudentBioTemplate();">
-                <div class="template-icon cyan"><i data-lucide="map-pin"></i></div>
-                <div class="template-text">
-                  <strong>Biodata & Titik Rumah GPS</strong>
-                  <span>Titik Koordinat Peta & TTD Digital</span>
+                <div class="dropdown-template-item" onclick="if (window.app) window.app.createStudentBioTemplate();">
+                  <i data-lucide="map-pin" style="color:#06b6d4;"></i>
+                  <div>
+                    <strong>Biodata & Titik Rumah (GPS)</strong>
+                    <small>Titik Koordinat Peta & TTD Digital</small>
+                  </div>
                 </div>
-                <i data-lucide="arrow-right" class="template-arrow"></i>
               </div>
             </div>
           </div>
-        </div>
-      </div>
-
-      <!-- Section Title & Search Bar -->
-      <div class="section-header">
-        <div class="section-title-wrap">
-          <div class="section-title-badge">
-            <i data-lucide="folder"></i>
-          </div>
-          <div>
-            <h2>Daftar Formulir Anda</h2>
-            <p class="section-subtitle" id="dashboard-forms-count-label">Memuat daftar formulir...</p>
-          </div>
-        </div>
-        <div class="search-wrap">
-          <i data-lucide="search" class="search-icon"></i>
-          <input type="text" id="dashboard-search" placeholder="Cari nama formulir..." class="input-search">
         </div>
       </div>
 
