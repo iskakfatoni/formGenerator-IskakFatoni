@@ -103,48 +103,90 @@
   <!-- Main App Viewport Container -->
   <main id="app-viewport" class="container">
 
-    <!-- 1. DASHBOARD VIEW -->
+        <!-- 1. DASHBOARD VIEW -->
     <section id="view-dashboard" class="view-section active">
-      <div class="dashboard-hero-container">
-        <!-- Left Hero Content Info -->
-        <div class="dashboard-hero glass-card">
-          <div class="hero-content">
-            <h1 class="hero-title">Kelola & Buat Formulir <span class="gradient-text">Dengan Mudah</span></h1>
-            <p class="hero-desc">
-              Buat formulir kustom interaktif, bagikan tautan kepada responden, simpan data ke Firebase Cloud Firestore secara realtime, dan unduh data jawaban langsung dalam format Excel (.xlsx).
-            </p>
-            <div class="hero-cta-group">
-              <button class="btn btn-primary" onclick="if (window.app) window.app.createNewForm(); else window.location.hash = '#/builder';">
-                <i data-lucide="plus"></i>
-                <span>Buat Formulir Baru</span>
-              </button>
-              <button class="btn btn-secondary" id="btn-template-wa" onclick="if (window.app) window.app.createWhatsAppSurveyTemplate();">
-                <i data-lucide="phone-call"></i>
-                <span>+ Template Pendataan No WhatsApp</span>
-              </button>
-              <button class="btn btn-ghost" id="btn-template-biodata" onclick="if (window.app) window.app.createStudentBioTemplate();">
-                <i data-lucide="graduation-cap"></i>
-                <span>+ Template Biodata Siswa</span>
-              </button>
+      <!-- Modern 2-Column Balanced Hero Container -->
+      <div class="dashboard-hero-section">
+        <!-- Main Left Card -->
+        <div class="dashboard-hero-main glass-card">
+          <div class="hero-brand-tag">
+            <i data-lucide="sparkles"></i>
+            <span>Form Generator & Realtime Analytics</span>
+          </div>
+          <h1 class="hero-title">Kelola & Buat Formulir <span class="gradient-text">Dengan Mudah</span></h1>
+          <p class="hero-desc">
+            Rancang formulir interaktif, kuis otomatis dengan koreksi nilai, survei percabangan bertingkat, perekaman lokasi GPS, tanda tangan digital, dan download rekap Excel (.xlsx) realtime.
+          </p>
+          <div class="hero-primary-actions">
+            <button class="btn btn-primary btn-hero-main" onclick="if (window.app) window.app.createNewForm(); else window.location.hash = '#/builder';">
+              <i data-lucide="plus-circle"></i>
+              <span>Buat Formulir Baru</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Right Column: Stats & Template Quick Starters -->
+        <div class="dashboard-hero-sidebar">
+          <!-- 2 Stats Cards -->
+          <div class="dashboard-stats-grid">
+            <div class="dash-stat-widget glass-card">
+              <div class="stat-widget-icon indigo">
+                <i data-lucide="folder"></i>
+              </div>
+              <div class="stat-widget-info">
+                <div class="stat-widget-number" id="stat-total-forms">0</div>
+                <div class="stat-widget-label">Total Formulir</div>
+              </div>
+            </div>
+            <div class="dash-stat-widget glass-card">
+              <div class="stat-widget-icon emerald">
+                <i data-lucide="bar-chart-3"></i>
+              </div>
+              <div class="stat-widget-info">
+                <div class="stat-widget-number" id="stat-total-responses">0</div>
+                <div class="stat-widget-label">Total Respon Masuk</div>
+              </div>
             </div>
           </div>
-          <div class="hero-stats">
-            <div class="stat-box glass">
-              <div class="stat-number" id="stat-total-forms">0</div>
-              <div class="stat-label">Total Formulir</div>
+
+          <!-- Quick Starter Templates Box -->
+          <div class="quick-templates-box glass-card">
+            <div class="quick-templates-header">
+              <i data-lucide="layout-template"></i>
+              <span>Pilihan Template Siap Pakai</span>
             </div>
-            <div class="stat-box glass">
-              <div class="stat-number" id="stat-total-responses">0</div>
-              <div class="stat-label">Total Respon</div>
+            <div class="quick-template-items">
+              <div class="template-item-btn" onclick="if (window.app) window.app.createWhatsAppSurveyTemplate();">
+                <div class="template-icon green"><i data-lucide="phone-call"></i></div>
+                <div class="template-text">
+                  <strong>Pendataan No WhatsApp</strong>
+                  <span>120 Siswa • 8 Bagian Percabangan</span>
+                </div>
+                <i data-lucide="arrow-right" class="template-arrow"></i>
+              </div>
+              <div class="template-item-btn" onclick="if (window.app) window.app.createStudentBioTemplate();">
+                <div class="template-icon cyan"><i data-lucide="map-pin"></i></div>
+                <div class="template-text">
+                  <strong>Biodata & Titik Rumah GPS</strong>
+                  <span>Titik Koordinat Peta & TTD Digital</span>
+                </div>
+                <i data-lucide="arrow-right" class="template-arrow"></i>
+              </div>
             </div>
           </div>
         </div>
       </div>
 
+      <!-- Section Title & Search Bar -->
       <div class="section-header">
         <div class="section-title-wrap">
-          <i data-lucide="folder" class="section-icon"></i>
-          <h2>Daftar Formulir Anda</h2>
+          <div class="section-title-badge">
+            <i data-lucide="folder"></i>
+          </div>
+          <div>
+            <h2>Daftar Formulir Anda</h2>
+            <p class="section-subtitle" id="dashboard-forms-count-label">Memuat daftar formulir...</p>
+          </div>
         </div>
         <div class="search-wrap">
           <i data-lucide="search" class="search-icon"></i>
@@ -164,7 +206,7 @@
         </div>
         <h3>Belum Ada Formulir</h3>
         <p>Mulai buat formulir pertama Anda untuk mengumpulkan data dan mengekspor hasilnya ke Excel.</p>
-        <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+        <div class="empty-actions-row">
           <button class="btn btn-primary" onclick="if (window.app) window.app.createNewForm(); else window.location.hash = '#/builder';">
             <i data-lucide="plus"></i>
             <span>Buat Form Kosong</span>

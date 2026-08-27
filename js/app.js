@@ -203,8 +203,13 @@ class App {
   renderDashboardForms(forms) {
     const grid = document.getElementById('forms-grid');
     const emptyState = document.getElementById('forms-empty-state');
+    const countLabel = document.getElementById('dashboard-forms-count-label');
 
     if (!grid || !emptyState) return;
+
+    if (countLabel) {
+      countLabel.textContent = forms.length > 0 ? (forms.length + ' Formulir Tersimpan') : 'Belum ada formulir';
+    }
 
     if (forms.length === 0) {
       grid.innerHTML = '';
@@ -226,32 +231,44 @@ class App {
         year: 'numeric'
       }) : 'Baru saja';
 
+      const isQuiz = form.isQuizMode === true;
+      const hasDeadline = !!form.deadline;
+      const isActive = form.isActive !== false;
+
       card.innerHTML = `
         <div class="form-card-top-accent" style="background: ${color};"></div>
-        <div class="form-item-header">
-          <div>
-            <h3 class="form-item-title">${this.escapeHtml(form.title || 'Formulir Tanpa Judul')}</h3>
-            <p class="form-item-desc">${this.escapeHtml(form.description || 'Tidak ada deskripsi.')}</p>
+        
+        <div>
+          <div class="form-card-badge-row">
+            ${isQuiz ? '<span class="card-feature-pill quiz"><i data-lucide="award" style="width:12px;height:12px;"></i> Mode Kuis</span>' : ''}
+            ${hasDeadline ? '<span class="card-feature-pill deadline"><i data-lucide="clock" style="width:12px;height:12px;"></i> Batas Waktu</span>' : ''}
+            <div class="card-status-tag" style="color: ${isActive ? '#10b981' : '#94a3b8'};">
+              <span class="status-dot ${isActive ? 'active' : 'inactive'}"></span>
+              <span>${isActive ? 'Aktif' : 'Nonaktif'}</span>
+            </div>
           </div>
+
+          <h3 class="form-item-title">${this.escapeHtml(form.title || 'Formulir Tanpa Judul')}</h3>
+          <p class="form-item-desc">${this.escapeHtml(form.description || 'Tidak ada deskripsi formulir.')}</p>
         </div>
 
         <div class="form-item-meta">
-          <div class="meta-responses" title="Jumlah Tanggapan">
-            <i data-lucide="users" style="width: 16px; height: 16px; color: var(--primary);"></i>
+          <div class="meta-responses-badge" title="Jumlah Tanggapan Responden">
+            <i data-lucide="users" style="width: 14px; height: 14px;"></i>
             <span>${form.responseCount || 0} Respon</span>
           </div>
           <div class="meta-date">
-            Diperbarui: ${dateStr}
+            ${dateStr}
           </div>
         </div>
 
         <div class="form-item-actions">
           <div class="form-item-main-btns">
-            <button class="btn btn-secondary btn-sm btn-action-view" title="Buka Formulir">
+            <button class="btn btn-secondary btn-sm btn-action-view" title="Isi Formulir">
               <i data-lucide="eye"></i>
               <span>Isi Form</span>
             </button>
-            <button class="btn btn-secondary btn-sm btn-action-resp" title="Lihat Respon & Export Excel">
+            <button class="btn btn-secondary btn-sm btn-action-resp" title="Lihat Data Respon & Excel">
               <i data-lucide="bar-chart-2"></i>
               <span>Respon</span>
             </button>
@@ -273,17 +290,17 @@ class App {
       // Card event listeners
       card.querySelector('.btn-action-view').addEventListener('click', (e) => {
         e.stopPropagation();
-        window.location.hash = `#/view/${form.id}`;
+        window.location.hash = '#/view/' + form.id;
       });
 
       card.querySelector('.btn-action-resp').addEventListener('click', (e) => {
         e.stopPropagation();
-        window.location.hash = `#/responses/${form.id}`;
+        window.location.hash = '#/responses/' + form.id;
       });
 
       card.querySelector('.btn-action-edit').addEventListener('click', (e) => {
         e.stopPropagation();
-        window.location.hash = `#/builder/${form.id}`;
+        window.location.hash = '#/builder/' + form.id;
       });
 
       card.querySelector('.btn-action-share').addEventListener('click', (e) => {
@@ -293,16 +310,16 @@ class App {
 
       card.querySelector('.btn-action-del').addEventListener('click', async (e) => {
         e.stopPropagation();
-        if (confirm(`Apakah Anda yakin ingin menghapus formulir "${form.title}" beserta seluruh responnya?`)) {
+        if (confirm('Apakah Anda yakin ingin menghapus formulir "' + form.title + '" beserta seluruh responnya?')) {
           await window.formStorage.deleteForm(form.id);
           this.showToast('Formulir berhasil dihapus', 'info');
           this.loadDashboard();
         }
       });
 
-      // Clicking the card directly opens responses or builder
+      // Clicking the card body opens builder
       card.addEventListener('click', () => {
-        window.location.hash = `#/builder/${form.id}`;
+        window.location.hash = '#/builder/' + form.id;
       });
 
       grid.appendChild(card);
