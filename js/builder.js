@@ -7,157 +7,273 @@
 class FormBuilder {
 
   renderFlowchartDiagram() {
-    const container = document.getElementById('flowchart-tree-container');
-    if (!container) return;
+    const nodesLayer = document.getElementById('flowchart-nodes-layer');
+    const svgLayer = document.getElementById('flowchart-svg-layer');
+    const canvas = document.getElementById('flowchart-graph-canvas');
+    if (!nodesLayer || !svgLayer || !canvas) return;
 
-    container.innerHTML = '';
-    const totalSections = this.sections.length;
+    nodesLayer.innerHTML = '';
+    
+    // Clear dynamic wires but keep defs
+    const defs = svgLayer.querySelector('defs');
+    svgLayer.innerHTML = '';
+    if (defs) svgLayer.appendChild(defs);
 
-    // 1. Start Node
-    const startNode = document.createElement('div');
-    startNode.className = 'flow-terminal-node start';
-    startNode.innerHTML = '<i data-lucide="play-circle"></i> <span>Responden Buka & Mulai Isi Formulir</span>';
-    container.appendChild(startNode);
+    if (!this.graphZoom) this.graphZoom = 1;
 
-    // Arrow down
-    const startArrow = document.createElement('div');
-    startArrow.className = 'flow-arrow-down';
-    startArrow.innerHTML = '<div class="flow-arrow-line"></div><i data-lucide="chevron-down"></i>';
-    container.appendChild(startArrow);
+    // Build Graph Tiers / Columns:
+    // Column 0: Start Node
+    // Column 1: Root Section (Bagian 1)
+    // Column 2: Branch Level 1
+    // Column 3: Branch Level 2
+    // Column 4: Converged Target / Section 8
+    // Column 5: Submit Terminal
 
-    // 2. Render each section as an interactive flowchart card
-    this.sections.forEach((sec, secIdx) => {
-      const sectionQuestions = this.questions.filter(q => q.sectionId === sec.id);
-      const card = document.createElement('div');
-      card.className = 'flow-section-card glass-card';
+    const tiers = [[], [], [], [], []];
 
-      // Find outbound branches for this section
-      const branches = [];
-
-      // A. Option-level branching
-      sectionQuestions.forEach(q => {
-        if ((q.type === 'choice' || q.type === 'dropdown') && q.options && q.options.length > 0) {
-          q.options.forEach(opt => {
-            const optText = typeof opt === 'object' ? opt.text : opt;
-            const optTarget = typeof opt === 'object' ? opt.nextSectionId : 'next';
-            if (optTarget && optTarget !== 'next' && optTarget !== 'inherit') {
-              let targetTitle = 'Kirim Formulir';
-              if (optTarget !== 'submit') {
-                const targetSec = this.sections.find(s => s.id === optTarget);
-                targetTitle = targetSec ? ('Bagian: ' + (targetSec.title || 'Tanpa Judul')) : optTarget;
-              }
-              branches.push({
-                type: 'option',
-                condition: 'Pilih "' + optText + '" (' + q.title + ')',
-                targetTitle,
-                isSubmit: optTarget === 'submit'
-              });
-            }
-          });
-        }
-      });
-
-      // B. Section Global Flow
-      if (sec.nextSectionId && sec.nextSectionId !== 'next' && sec.nextSectionId !== 'inherit') {
-        let secTargetTitle = 'Kirim Formulir (Submit)';
-        if (sec.nextSectionId !== 'submit') {
-          const targetSec = this.sections.find(s => s.id === sec.nextSectionId);
-          secTargetTitle = targetSec ? ('Bagian: ' + (targetSec.title || 'Tanpa Judul')) : sec.nextSectionId;
-        }
-        branches.push({
-          type: 'global_sec',
-          condition: '⚡ Alur Bagian Global (Default Opsi)',
-          targetTitle: secTargetTitle,
-          isSubmit: sec.nextSectionId === 'submit'
-        });
-      } else if (secIdx < totalSections - 1 && branches.length === 0) {
-        // Normal sequential flow
-        const nextSec = this.sections[secIdx + 1];
-        branches.push({
-          type: 'sequential',
-          condition: 'Lanjut ke bagian berikutnya',
-          targetTitle: 'Bagian ' + (secIdx + 2) + ': ' + (nextSec ? nextSec.title : ''),
-          isSubmit: false
-        });
-      } else if (secIdx === totalSections - 1 && branches.length === 0) {
-        branches.push({
-          type: 'finish',
-          condition: 'Bagian Terakhir Formulir',
-          targetTitle: 'Kirim Formulir (Selesai)',
-          isSubmit: true
-        });
+    // Calculate level for each section
+    this.sections.forEach((sec, idx) => {
+      let tierIdx = 1;
+      if (idx === 0) {
+        tierIdx = 0; // First Section
+      } else if (idx === 1 || idx === 2) {
+        tierIdx = 1; // Level 1 (e.g. Kelas)
+      } else if (idx >= 3 && idx <= 6) {
+        tierIdx = 2; // Level 2 (e.g. Siswa List)
+      } else {
+        tierIdx = 3; // Level 3 (e.g. Biodata / Final)
       }
+      if (!tiers[tierIdx]) tiers[tierIdx] = [];
+      tiers[tierIdx].push({ sec, secIdx: idx });
+    });
 
-      card.innerHTML = `
-        <div class="flow-sec-top">
-          <div style="display:flex; align-items:center; gap:8px;">
-            <span class="flow-sec-badge"><i data-lucide="layers"></i> Bagian ${secIdx + 1} dari ${totalSections}</span>
-            <h3 class="flow-sec-title">${this.escapeHtml(sec.title || 'Bagian Tanpa Judul')}</h3>
-          </div>
-          <button type="button" class="btn-jump-to-edit" data-sec-id="${sec.id}">
-            <i data-lucide="edit-3"></i>
-            <span>Edit</span>
-          </button>
+    // 1. Column 0: Start Terminal & Root Section
+    const col0 = document.createElement('div');
+    col0.className = 'graph-tier-col';
+    col0.innerHTML = '<div class="graph-tier-header"><i data-lucide="play-circle"></i> Titik Masuk Responden</div>';
+    
+    // Start Node Card
+    const startNode = document.createElement('div');
+    startNode.className = 'graph-node-card start-node';
+    startNode.id = 'gnode-start';
+    startNode.innerHTML = `
+      <div class="graph-node-top">
+        <span class="graph-node-badge" style="background:rgba(16,185,129,0.2); color:#34d399;">Mulai</span>
+        <h4 class="graph-node-title">Responden Buka Link</h4>
+      </div>
+      <div class="graph-node-body">
+        <div class="graph-branch-port-row" id="gport-start-out">
+          <span>➔ Masuk ke Bagian 1</span>
+          <span class="graph-port-dot-out green"></span>
         </div>
+      </div>
+    `;
+    col0.appendChild(startNode);
 
-        <div class="flow-sec-questions-list">
-          ${sectionQuestions.length > 0 ? sectionQuestions.map((q, qIdx) => `
-            <div class="flow-sec-q-row">
-              <i data-lucide="help-circle"></i>
-              <span>${qIdx + 1}. ${this.escapeHtml(q.title || 'Pertanyaan')} (${this.getTypeMeta(q.type).name})</span>
-            </div>
-          `).join('') : '<div style="color:var(--text-muted);">Tidak ada pertanyaan pada bagian ini</div>'}
-        </div>
+    // If Section 1 exists, add to Col 0 or Col 1
+    if (tiers[0] && tiers[0][0]) {
+      const sData = tiers[0][0];
+      const secNode = this.createGraphSectionNode(sData.sec, sData.secIdx);
+      col0.appendChild(secNode);
+    }
+    nodesLayer.appendChild(col0);
 
-        <div class="flow-branches-container">
-          ${branches.map(b => `
-            <div class="flow-branch-row">
-              <div class="flow-branch-condition">
-                <i data-lucide="corner-down-right"></i>
-                <span>${this.escapeHtml(b.condition)}</span>
-              </div>
-              <div class="flow-target-badge ${b.isSubmit ? 'submit-target' : ''}">
-                <i data-lucide="${b.isSubmit ? 'check-circle' : 'arrow-right'}"></i>
-                <span>➔ ${this.escapeHtml(b.targetTitle)}</span>
-              </div>
-            </div>
-          `).join('')}
-        </div>
-      `;
-
-      // Jump to edit section click
-      card.querySelector('.btn-jump-to-edit').addEventListener('click', () => {
-        this.switchTab('questions');
-        const targetEl = document.querySelector(`[data-section-id="${sec.id}"]`);
-        if (targetEl) {
-          targetEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }
+    // 2. Column 1: Branch Level 1 (e.g. Bagian 2 & 3)
+    if (tiers[1] && tiers[1].length > 0) {
+      const col1 = document.createElement('div');
+      col1.className = 'graph-tier-col';
+      col1.innerHTML = '<div class="graph-tier-header"><i data-lucide="git-branch"></i> Percabangan Level 1</div>';
+      tiers[1].forEach(sData => {
+        col1.appendChild(this.createGraphSectionNode(sData.sec, sData.secIdx));
       });
+      nodesLayer.appendChild(col1);
+    }
 
-      container.appendChild(card);
+    // 3. Column 2: Branch Level 2 (e.g. Bagian 4, 5, 6, 7)
+    if (tiers[2] && tiers[2].length > 0) {
+      const col2 = document.createElement('div');
+      col2.className = 'graph-tier-col';
+      col2.innerHTML = '<div class="graph-tier-header"><i data-lucide="layers"></i> Percabangan Level 2</div>';
+      tiers[2].forEach(sData => {
+        col2.appendChild(this.createGraphSectionNode(sData.sec, sData.secIdx));
+      });
+      nodesLayer.appendChild(col2);
+    }
 
-      // Arrow down to next element unless last
-      if (secIdx < totalSections - 1) {
-        const arrow = document.createElement('div');
-        arrow.className = 'flow-arrow-down';
-        arrow.innerHTML = '<div class="flow-arrow-line"></div><i data-lucide="chevron-down"></i>';
-        container.appendChild(arrow);
+    // 4. Column 3: Converged Target / Final Form Sections
+    const col3 = document.createElement('div');
+    col3.className = 'graph-tier-col';
+    col3.innerHTML = '<div class="graph-tier-header"><i data-lucide="check-circle-2"></i> Bagian Penutup / Biodata</div>';
+    
+    if (tiers[3] && tiers[3].length > 0) {
+      tiers[3].forEach(sData => {
+        col3.appendChild(this.createGraphSectionNode(sData.sec, sData.secIdx));
+      });
+    }
+
+    // Submit Terminal Card
+    const endNode = document.createElement('div');
+    endNode.className = 'graph-node-card end-node';
+    endNode.id = 'gnode-end';
+    endNode.innerHTML = `
+      <span class="graph-node-port-in"></span>
+      <div class="graph-node-top">
+        <span class="graph-node-badge" style="background:rgba(139,92,246,0.2); color:#a855f7;">🏁 Selesai</span>
+        <h4 class="graph-node-title">Kirim Tanggapan</h4>
+      </div>
+      <div class="graph-node-body">
+        <div style="font-size:0.78rem; color:#c7d2fe;">
+          ✓ Data tersimpan ke Firestore<br>
+          ✓ Rekap siap ekspor ke Excel
+        </div>
+      </div>
+    `;
+    col3.appendChild(endNode);
+    nodesLayer.appendChild(col3);
+
+    if (window.lucide) window.lucide.createIcons();
+
+    // After DOM rendered, draw connecting curved Bezier wires!
+    setTimeout(() => {
+      this.drawGraphWires();
+    }, 150);
+  }
+
+  createGraphSectionNode(sec, secIdx) {
+    const card = document.createElement('div');
+    card.className = 'graph-node-card';
+    card.id = 'gnode-sec-' + sec.id;
+
+    const sectionQuestions = this.questions.filter(q => q.sectionId === sec.id);
+
+    // Collect branches
+    const branchPorts = [];
+
+    // Choice / Dropdown branches
+    sectionQuestions.forEach(q => {
+      if ((q.type === 'choice' || q.type === 'dropdown') && q.options && q.options.length > 0) {
+        q.options.forEach((opt, optIdx) => {
+          const optText = typeof opt === 'object' ? opt.text : opt;
+          const optTarget = typeof opt === 'object' ? opt.nextSectionId : 'next';
+          if (optTarget && optTarget !== 'next' && optTarget !== 'inherit') {
+            branchPorts.push({
+              id: 'gport-opt-' + sec.id + '-' + q.id + '-' + optIdx,
+              label: 'Pilih: ' + optText,
+              targetId: optTarget,
+              type: 'cyan'
+            });
+          }
+        });
       }
     });
 
-    // Arrow down to end terminal
-    const endArrow = document.createElement('div');
-    endArrow.className = 'flow-arrow-down';
-    endArrow.innerHTML = '<div class="flow-arrow-line"></div><i data-lucide="chevron-down"></i>';
-    container.appendChild(endArrow);
+    // Section Global Flow
+    if (sec.nextSectionId && sec.nextSectionId !== 'next' && sec.nextSectionId !== 'inherit') {
+      branchPorts.push({
+        id: 'gport-sec-global-' + sec.id,
+        label: '⚡ Alur Bagian Global',
+        targetId: sec.nextSectionId,
+        type: 'purple'
+      });
+    } else if (secIdx < this.sections.length - 1 && branchPorts.length === 0) {
+      // Normal sequential
+      branchPorts.push({
+        id: 'gport-sec-seq-' + sec.id,
+        label: '➔ Bagian Berikutnya',
+        targetId: this.sections[secIdx + 1].id,
+        type: 'cyan'
+      });
+    } else if (secIdx === this.sections.length - 1 && branchPorts.length === 0) {
+      // Finish
+      branchPorts.push({
+        id: 'gport-sec-submit-' + sec.id,
+        label: '➔ Kirim Formulir',
+        targetId: 'submit',
+        type: 'green'
+      });
+    }
 
-    // 3. End Terminal Node
-    const endNode = document.createElement('div');
-    endNode.className = 'flow-terminal-node end';
-    endNode.innerHTML = '<i data-lucide="check-circle-2"></i> <span>Tanggapan Tersimpan & Rekap Masuk ke Excel</span>';
-    container.appendChild(endNode);
+    card.innerHTML = `
+      ${secIdx > 0 ? '<span class="graph-node-port-in"></span>' : ''}
+      <div class="graph-node-top">
+        <span class="graph-node-badge">Bagian ${secIdx + 1}</span>
+        <h4 class="graph-node-title" title="${this.escapeHtml(sec.title || '')}">${this.escapeHtml(sec.title || 'Bagian ' + (secIdx + 1))}</h4>
+      </div>
+      <div class="graph-node-body">
+        <div class="graph-node-q-count">
+          <i data-lucide="help-circle" style="width:13px;height:13px;"></i>
+          <span>${sectionQuestions.length} Pertanyaan</span>
+        </div>
+        ${branchPorts.map(b => `
+          <div class="graph-branch-port-row" id="${b.id}" data-target="${b.targetId}" title="Alur menuju: ${b.targetId}">
+            <span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:200px;">${this.escapeHtml(b.label)}</span>
+            <span class="graph-port-dot-out ${b.type}"></span>
+          </div>
+        `).join('')}
+      </div>
+    `;
 
-    if (window.lucide) window.lucide.createIcons();
+    return card;
+  }
+
+  drawGraphWires() {
+    const svgLayer = document.getElementById('flowchart-svg-layer');
+    const canvas = document.getElementById('flowchart-graph-canvas');
+    if (!svgLayer || !canvas) return;
+
+    // Clear dynamic paths
+    svgLayer.querySelectorAll('path.flowchart-svg-wire').forEach(p => p.remove());
+
+    const canvasRect = canvas.getBoundingClientRect();
+    const zoom = this.graphZoom || 1;
+
+    // 1. Draw Wire from Start Node to Section 1
+    const startPort = document.getElementById('gport-start-out');
+    const firstSecNode = this.sections.length > 0 ? document.getElementById('gnode-sec-' + this.sections[0].id) : null;
+    if (startPort && firstSecNode) {
+      this.connectNodesWithBezier(svgLayer, startPort, firstSecNode, 'green', canvasRect, zoom);
+    }
+
+    // 2. Draw Wire for all Branch Ports
+    document.querySelectorAll('.graph-branch-port-row[data-target]').forEach(portEl => {
+      const targetId = portEl.dataset.target;
+      let targetNode = null;
+
+      if (targetId === 'submit') {
+        targetNode = document.getElementById('gnode-end');
+      } else {
+        targetNode = document.getElementById('gnode-sec-' + targetId);
+      }
+
+      if (targetNode) {
+        const dot = portEl.querySelector('.graph-port-dot-out');
+        const color = dot && dot.classList.contains('purple') ? 'purple' : (dot && dot.classList.contains('green') ? 'green' : 'cyan');
+        this.connectNodesWithBezier(svgLayer, portEl, targetNode, color, canvasRect, zoom);
+      }
+    });
+  }
+
+  connectNodesWithBezier(svgLayer, fromEl, toEl, colorType, canvasRect, zoom) {
+    const fromRect = fromEl.getBoundingClientRect();
+    const toRect = toEl.getBoundingClientRect();
+
+    // Calculate relative coordinates inside canvas
+    const x1 = (fromRect.right - canvasRect.left) / zoom;
+    const y1 = (fromRect.top + fromRect.height / 2 - canvasRect.top) / zoom;
+
+    const x2 = (toRect.left - canvasRect.left) / zoom;
+    const y2 = (toRect.top + toRect.height / 2 - canvasRect.top) / zoom;
+
+    const dx = Math.max(40, (x2 - x1) * 0.45);
+    const pathD = `M ${x1} ${y1} C ${x1 + dx} ${y1}, ${x2 - dx} ${y2}, ${x2} ${y2}`;
+
+    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    path.setAttribute('d', pathD);
+    path.setAttribute('class', 'flowchart-svg-wire');
+    path.setAttribute('stroke', `url(#grad-${colorType})`);
+    path.setAttribute('marker-end', `url(#arrow-${colorType})`);
+
+    svgLayer.appendChild(path);
   }
 
 
@@ -381,6 +497,33 @@ class FormBuilder {
   }
 
   bindEvents() {
+
+    
+    // Graph Zoom & Pan Controls
+    const graphViewport = document.getElementById('flowchart-graph-viewport');
+    const graphCanvas = document.getElementById('flowchart-graph-canvas');
+    const zoomLevelText = document.getElementById('graph-zoom-level');
+
+    this.graphZoom = 1;
+    const updateZoom = (newZoom) => {
+      this.graphZoom = Math.min(2.0, Math.max(0.4, newZoom));
+      if (graphCanvas) {
+        graphCanvas.style.transform = `scale(${this.graphZoom})`;
+      }
+      if (zoomLevelText) {
+        zoomLevelText.textContent = Math.round(this.graphZoom * 100) + '%';
+      }
+      this.drawGraphWires();
+    };
+
+    const btnZoomIn = document.getElementById('btn-graph-zoom-in');
+    if (btnZoomIn) btnZoomIn.addEventListener('click', () => updateZoom(this.graphZoom + 0.15));
+
+    const btnZoomOut = document.getElementById('btn-graph-zoom-out');
+    if (btnZoomOut) btnZoomOut.addEventListener('click', () => updateZoom(this.graphZoom - 0.15));
+
+    const btnZoomReset = document.getElementById('btn-graph-zoom-reset');
+    if (btnZoomReset) btnZoomReset.addEventListener('click', () => updateZoom(1.0));
 
     // Flowchart Tab & Refresh Click
     const tabFlowchart = document.getElementById('tab-btn-flowchart');

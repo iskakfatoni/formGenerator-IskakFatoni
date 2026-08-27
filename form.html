@@ -543,29 +543,64 @@
         </div>
       </div>
     
-        <!-- Panel 3: Visual Flowchart / Diagram -->
+        <!-- Panel 3: Interactive Visual Graph / Node Network -->
         <div id="builder-panel-flowchart" class="builder-panel">
           <div class="flowchart-header-card glass-card">
             <div class="flowchart-header-left">
               <div class="flowchart-icon-badge">
-                <i data-lucide="git-merge"></i>
+                <i data-lucide="network"></i>
               </div>
               <div>
-                <h2 class="flowchart-title">Diagram Peta Alur Formulir (*Form Flowchart*)</h2>
-                <p class="flowchart-subtitle">Visualisasi interaktif jalur percabangan dan navigasi antar bagian formulir Anda.</p>
+                <h2 class="flowchart-title">Grafis Peta Alur Formulir (*Interactive Flow Graph*)</h2>
+                <p class="flowchart-subtitle">Diagram grafis 2D jaringan percabangan dengan kabel konektor melengkung antar bagian.</p>
               </div>
             </div>
             <div class="flowchart-header-actions">
+              <div class="graph-zoom-controls">
+                <button type="button" class="btn btn-ghost btn-xs" id="btn-graph-zoom-out" title="Perkecil (-)"><i data-lucide="minus"></i></button>
+                <span id="graph-zoom-level" style="font-size: 0.78rem; font-weight: 600; min-width: 48px; text-align: center; color: var(--text-primary);">100%</span>
+                <button type="button" class="btn btn-ghost btn-xs" id="btn-graph-zoom-in" title="Perbesar (+)"><i data-lucide="plus"></i></button>
+                <button type="button" class="btn btn-ghost btn-xs" id="btn-graph-zoom-reset" title="Reset Tampilan"><i data-lucide="maximize-2"></i></button>
+              </div>
               <button type="button" class="btn btn-secondary btn-sm" id="btn-refresh-flowchart">
                 <i data-lucide="refresh-cw"></i>
-                <span>Refresh Diagram</span>
+                <span>Refresh Grafis</span>
               </button>
             </div>
           </div>
 
-          <!-- Flowchart Canvas / Node Tree Container -->
-          <div id="flowchart-tree-container" class="flowchart-tree-container">
-            <!-- Rendered dynamically via JS -->
+          <!-- Interactive Visual Graph Viewport -->
+          <div id="flowchart-graph-viewport" class="flowchart-graph-viewport">
+            <div id="flowchart-graph-canvas" class="flowchart-graph-canvas">
+              <svg id="flowchart-svg-layer" class="flowchart-svg-layer">
+                <defs>
+                  <linearGradient id="grad-cyan" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" stop-color="#38bdf8" />
+                    <stop offset="100%" stop-color="#818cf8" />
+                  </linearGradient>
+                  <linearGradient id="grad-purple" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" stop-color="#a855f7" />
+                    <stop offset="100%" stop-color="#6366f1" />
+                  </linearGradient>
+                  <linearGradient id="grad-green" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" stop-color="#10b981" />
+                    <stop offset="100%" stop-color="#34d399" />
+                  </linearGradient>
+                  <marker id="arrow-cyan" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                    <path d="M 0 1 L 10 5 L 0 9 z" fill="#38bdf8" />
+                  </marker>
+                  <marker id="arrow-purple" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                    <path d="M 0 1 L 10 5 L 0 9 z" fill="#a855f7" />
+                  </marker>
+                  <marker id="arrow-green" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                    <path d="M 0 1 L 10 5 L 0 9 z" fill="#10b981" />
+                  </marker>
+                </defs>
+              </svg>
+              <div id="flowchart-nodes-layer" class="flowchart-nodes-layer">
+                <!-- Rendered 2D Node Cards via JS -->
+              </div>
+            </div>
           </div>
         </div>
 
