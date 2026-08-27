@@ -1436,26 +1436,35 @@ class FormBuilder {
       });
     }
 
-    // Delete Section
+    // Delete Section Handler
     const btnDelete = card.querySelector('.sec-delete');
     if (btnDelete) {
-      btnDelete.addEventListener('click', () => {
+      btnDelete.addEventListener('click', (e) => {
+        e.stopPropagation();
         if (this.sections.length <= 1) {
-          window.app.showToast('Formulir harus memiliki minimal satu bagian', 'error');
+          if (window.app && typeof window.app.showToast === 'function') {
+            window.app.showToast('Formulir harus memiliki minimal satu bagian', 'error');
+          }
           return;
         }
 
-        const targetSecId = secIdx > 0 ? this.sections[secIdx - 1].id : this.sections[1].id;
-        this.questions.forEach(q => {
-          if (q.sectionId === sec.id) {
-            q.sectionId = targetSecId;
+        const secIdxCurrent = this.sections.findIndex(s => s.id === sec.id);
+        if (secIdxCurrent === -1) return;
+
+        const targetSecId = secIdxCurrent > 0 ? this.sections[secIdxCurrent - 1].id : this.sections[1].id;
+        this.questions.forEach(qItem => {
+          if (qItem.sectionId === sec.id) {
+            qItem.sectionId = targetSecId;
           }
         });
 
-        this.sections.splice(secIdx, 1);
+        this.sections.splice(secIdxCurrent, 1);
         this.collapsedSections.delete(sec.id);
         this.renderQuestions();
-        window.app.showToast('Bagian berhasil dihapus', 'info');
+        this.triggerAutoSave(true);
+        if (window.app && typeof window.app.showToast === 'function') {
+          window.app.showToast('Bagian berhasil dihapus', 'info');
+        }
       });
     }
 
@@ -2130,23 +2139,40 @@ class FormBuilder {
       });
     }
 
-    // Card Actions (Duplicate, Delete, Move)
-    const btnDuplicate = card.querySelector('.btn-q-icon.duplicate');
-    btnDuplicate.addEventListener('click', () => {
-      const cloned = JSON.parse(JSON.stringify(q));
-      cloned.id = 'q_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4);
-      this.questions.splice(globalIndex + 1, 0, cloned);
-      this.renderQuestions();
+    // Card Actions (Duplicate & Delete bound on all buttons in collapsed & expanded views)
+    card.querySelectorAll('.btn-q-icon.duplicate').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        this.harvestDomValues();
+        const targetIdx = this.questions.findIndex(item => item.id === q.id);
+        if (targetIdx !== -1) {
+          const cloned = JSON.parse(JSON.stringify(this.questions[targetIdx]));
+          cloned.id = 'q_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4);
+          cloned.title = (cloned.title || 'Pertanyaan') + ' (Salinan)';
+          this.questions.splice(targetIdx + 1, 0, cloned);
+          this.renderQuestions();
+          this.triggerAutoSave(true);
+          if (window.app && typeof window.app.showToast === 'function') {
+            window.app.showToast('Pertanyaan berhasil diduplikasi', 'success');
+          }
+        }
+      });
     });
 
-    const btnDelete = card.querySelector('.btn-q-icon.delete');
-    btnDelete.addEventListener('click', () => {
-      if (this.questions.length <= 1) {
-        window.app.showToast('Formulir harus memiliki minimal satu pertanyaan', 'error');
-        return;
-      }
-      this.questions.splice(globalIndex, 1);
-      this.renderQuestions();
+    card.querySelectorAll('.btn-q-icon.delete').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const targetIdx = this.questions.findIndex(item => item.id === q.id);
+        if (targetIdx !== -1) {
+          this.questions.splice(targetIdx, 1);
+          this.collapsedQuestions.delete(q.id);
+          this.renderQuestions();
+          this.triggerAutoSave(true);
+          if (window.app && typeof window.app.showToast === 'function') {
+            window.app.showToast('Pertanyaan berhasil dihapus', 'info');
+          }
+        }
+      });
     });
 
     const btnMoveUp = card.querySelector('.btn-q-icon.move-up');
