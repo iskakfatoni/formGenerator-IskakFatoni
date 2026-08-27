@@ -9,44 +9,58 @@ class FormViewer {
   interpolateText(text) {
     if (!text || typeof text !== 'string') return text || '';
     
-    // Replace {{...}} or @{...} tags with previous answers
+    // Replace {{...}} tags with previous answers globally across all sections
     return text.replace(/\{\{\s*(.*?)\s*\}\}/g, (match, tag) => {
       const cleanTag = tag.trim().toLowerCase();
       
-      // 1. Match by question ID directly
+      // 1. Direct match by Question ID (e.g. {{q_12345}})
       if (this.answers && this.answers[tag] !== undefined && this.answers[tag] !== null && this.answers[tag] !== '') {
         const val = this.answers[tag];
         const valStr = Array.isArray(val) ? val.join(', ') : (typeof val === 'object' && val.name ? val.name : String(val));
         return '<span class="piped-val">' + this.escapeHtml(valStr) + '</span>';
       }
 
-      // 2. Match by question title
+      // 2. Global match by Question Title (Consolidated search across ALL sections)
+      // If multiple questions have the same name (e.g. "NAMA LENGKAP", "KELAS"), find whichever one was answered!
       if (this.currentForm && this.currentForm.questions) {
-        // Try exact match
-        let foundQ = this.currentForm.questions.find(q => q.title && q.title.trim().toLowerCase() === cleanTag);
-        
-        // Try partial match or index
-        if (!foundQ) {
-          foundQ = this.currentForm.questions.find(q => q.title && (
-            cleanTag.includes(q.title.trim().toLowerCase()) ||
-            q.title.trim().toLowerCase().includes(cleanTag)
-          ));
-        }
+        // A. Exact title matches
+        const exactMatches = this.currentForm.questions.filter(q => 
+          q.title && q.title.trim().toLowerCase() === cleanTag
+        );
 
-        if (!foundQ) {
-          const numMatch = cleanTag.match(/\d+/);
-          if (numMatch) {
-            const idx = parseInt(numMatch[0]) - 1;
-            if (idx >= 0 && idx < this.currentForm.questions.length) {
-              foundQ = this.currentForm.questions[idx];
-            }
+        for (const q of exactMatches) {
+          const ans = this.answers && this.answers[q.id];
+          if (ans !== undefined && ans !== null && ans !== '' && !(Array.isArray(ans) && ans.length === 0)) {
+            const valStr = Array.isArray(ans) ? ans.join(', ') : (typeof ans === 'object' && ans.name ? ans.name : String(ans));
+            return '<span class="piped-val">' + this.escapeHtml(valStr) + '</span>';
           }
         }
 
-        if (foundQ && this.answers && this.answers[foundQ.id] !== undefined && this.answers[foundQ.id] !== null && this.answers[foundQ.id] !== '') {
-          const val = this.answers[foundQ.id];
-          const valStr = Array.isArray(val) ? val.join(', ') : (typeof val === 'object' && val.name ? val.name : String(val));
-          return '<span class="piped-val">' + this.escapeHtml(valStr) + '</span>';
+        // B. Partial title matches
+        const partialMatches = this.currentForm.questions.filter(q => 
+          q.title && (cleanTag.includes(q.title.trim().toLowerCase()) || q.title.trim().toLowerCase().includes(cleanTag))
+        );
+
+        for (const q of partialMatches) {
+          const ans = this.answers && this.answers[q.id];
+          if (ans !== undefined && ans !== null && ans !== '' && !(Array.isArray(ans) && ans.length === 0)) {
+            const valStr = Array.isArray(ans) ? ans.join(', ') : (typeof ans === 'object' && ans.name ? ans.name : String(ans));
+            return '<span class="piped-val">' + this.escapeHtml(valStr) + '</span>';
+          }
+        }
+
+        // C. Match by question index like {{1}} or {{Pertanyaan 1}}
+        const numMatch = cleanTag.match(/\d+/);
+        if (numMatch) {
+          const idx = parseInt(numMatch[0], 10) - 1;
+          if (idx >= 0 && idx < this.currentForm.questions.length) {
+            const q = this.currentForm.questions[idx];
+            const ans = this.answers && this.answers[q.id];
+            if (ans !== undefined && ans !== null && ans !== '') {
+              const valStr = Array.isArray(ans) ? ans.join(', ') : (typeof ans === 'object' && ans.name ? ans.name : String(ans));
+              return '<span class="piped-val">' + this.escapeHtml(valStr) + '</span>';
+            }
+          }
         }
       }
 
@@ -55,7 +69,7 @@ class FormViewer {
         return '<span class="piped-val">' + this.escapeHtml(this.respondentEmail) + '</span>';
       }
 
-      // Fallback: return empty string or keep tag if no answer yet
+      // Fallback placeholder if not answered yet
       return '<span class="piped-val">...</span>';
     });
   }

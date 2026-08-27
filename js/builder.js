@@ -16,33 +16,43 @@ class FormBuilder {
     const modal = document.createElement('div');
     modal.className = 'piping-picker-modal';
 
-    // Collect preceding questions (or all questions in form)
-    const availableQuestions = this.questions.map((q, idx) => ({
-      index: idx + 1,
-      id: q.id,
-      title: q.title || ('Pertanyaan ' + (idx + 1)),
-      type: q.type
-    }));
+    // Consolidate unique field titles so that duplicate names (e.g. KELAS, NAMA LENGKAP) appear ONCE as a global tag
+    const seenTitles = new Map();
+    this.questions.forEach((q, idx) => {
+      const cleanTitle = (q.title || ('Pertanyaan ' + (idx + 1))).trim();
+      const lower = cleanTitle.toLowerCase();
+      if (!seenTitles.has(lower)) {
+        seenTitles.set(lower, {
+          title: cleanTitle,
+          type: q.type,
+          count: 1
+        });
+      } else {
+        seenTitles.get(lower).count++;
+      }
+    });
+
+    const uniquePipingFields = Array.from(seenTitles.values());
 
     modal.innerHTML = `
       <div class="piping-picker-header">
         <div class="piping-picker-title">
           <i data-lucide="sparkles"></i>
-          <span>Pilih Jawaban yang Ingin Disisipkan</span>
+          <span>Pilih Jawaban yang Ingin Disisipkan (Tag Global)</span>
         </div>
         <button type="button" class="btn-q-icon btn-close-piping" title="Tutup">
           <i data-lucide="x"></i>
         </button>
       </div>
       <p style="font-size: 0.8rem; color: var(--text-secondary); margin: 0;">
-        Pilih pertanyaan di bawah untuk menyisipkan variabel <code>{{Judul}}</code>. Saat responden mengisi formulir, variabel ini akan otomatis digantikan dengan jawaban responden.
+        Pilih field di bawah untuk menyisipkan variabel <code>{{Nama Field}}</code>. Tag ini bersifat <strong>global</strong> dan otomatis mengambil data dari pertanyaan manapun yang dijawab oleh responden.
       </p>
       <div class="piping-questions-list">
-        ${availableQuestions.length > 0 ? availableQuestions.map(q => `
-          <div class="piping-q-item" data-tag="{{${this.escapeHtml(q.title)}}}">
+        ${uniquePipingFields.length > 0 ? uniquePipingFields.map((field) => `
+          <div class="piping-q-item" data-tag="{{${this.escapeHtml(field.title)}}}">
             <div class="piping-q-item-info">
-              <span class="piping-q-item-title">${q.index}. ${this.escapeHtml(q.title)}</span>
-              <span class="piping-q-item-tag">{{${this.escapeHtml(q.title)}}}</span>
+              <span class="piping-q-item-title">${this.escapeHtml(field.title)} ${field.count > 1 ? '<span style="font-size:0.75rem; color:#818cf8; font-weight:500;">(Global • ' + field.count + ' Bagian)</span>' : ''}</span>
+              <span class="piping-q-item-tag">{{${this.escapeHtml(field.title)}}}</span>
             </div>
             <span class="piping-q-item-btn">+ Sisipkan</span>
           </div>
