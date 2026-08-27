@@ -1889,27 +1889,31 @@ class FormBuilder {
         {
           id: secNamaJetis1Id,
           title: 'Bagian 4: Data Siswa XI TEI 1 (SMKN 1 Jetis)',
-          description: 'Pilih nama lengkap Anda dari daftar siswa berikut.'
+          description: 'Pilih nama lengkap Anda dari daftar siswa berikut.',
+          nextSectionId: secKontakId
         },
         {
           id: secNamaJetis2Id,
           title: 'Bagian 5: Data Siswa XI TEI 2 (SMKN 1 Jetis)',
-          description: 'Pilih nama lengkap Anda dari daftar siswa berikut.'
+          description: 'Pilih nama lengkap Anda dari daftar siswa berikut.',
+          nextSectionId: secKontakId
         },
         {
           id: secNamaMutu1Id,
           title: 'Bagian 6: Data Siswa XI TEI 1 (SMK Mutu Kemlagi)',
-          description: 'Pilih nama lengkap Anda dari daftar siswa berikut.'
+          description: 'Pilih nama lengkap Anda dari daftar siswa berikut.',
+          nextSectionId: secKontakId
         },
         {
           id: secNamaMutu2Id,
           title: 'Bagian 7: Data Siswa XI TEI 2 (SMK Mutu Kemlagi)',
-          description: 'Pilih nama lengkap Anda dari daftar siswa berikut.'
+          description: 'Pilih nama lengkap Anda dari daftar siswa berikut.',
+          nextSectionId: secKontakId
         },
         {
           id: secKontakId,
-          title: 'Bagian 8: Nomor WhatsApp Aktif',
-          description: 'Isikan nomor WhatsApp aktif yang dapat dihubungi.'
+          title: 'Bagian 8: Biodata Siswa & Nomor WhatsApp',
+          description: 'Konfirmasi biodata untuk {{NAMA LENGKAP}} (Kelas: {{KELAS}}). Silakan isikan nomor WhatsApp aktif yang dapat dihubungi.'
         }
       ],
       questions: [

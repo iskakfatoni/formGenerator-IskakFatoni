@@ -1315,8 +1315,7 @@ class FormViewer {
 
     let branchAction = 'next';
 
-    // 1. Check if the user's SELECTED ANSWER has an explicit custom nextSectionId
-    // (Jika alur jawaban diatur secara khusus, prioritas adalah alur jawaban)
+    // 1. Check if the user's SELECTED ANSWER has an explicit custom nextSectionId that exists in sections
     for (const q of stepQuestions) {
       if ((q.type === 'choice' || q.type === 'dropdown') && q.options && q.options.length > 0) {
         const ansVal = this.answers[q.id];
@@ -1329,35 +1328,42 @@ class FormViewer {
           if (matchedOpt && typeof matchedOpt === 'object' && matchedOpt.nextSectionId) {
             const optTarget = String(matchedOpt.nextSectionId).trim();
             if (optTarget !== '' && optTarget !== 'next' && optTarget !== 'inherit') {
-              branchAction = optTarget;
-              break;
+              // Verify target exists in form sections or is 'submit'
+              if (optTarget === 'submit' || this.sections.some(s => s.id === optTarget)) {
+                branchAction = optTarget;
+                break;
+              }
             }
           }
         }
       }
     }
 
-    // 2. If the answer flow is default, check Question-Level Global Branching (q.nextSectionId)
+    // 2. If answer branch is default/empty, check Question-Level Global Branching (q.nextSectionId)
     if (branchAction === 'next') {
       for (const q of stepQuestions) {
         if (q.nextSectionId) {
           const qTarget = String(q.nextSectionId).trim();
           if (qTarget !== '' && qTarget !== 'next' && qTarget !== 'inherit') {
             if (this.answers[q.id] !== undefined && this.answers[q.id] !== null && this.answers[q.id] !== '') {
-              branchAction = qTarget;
-              break;
+              if (qTarget === 'submit' || this.sections.some(s => s.id === qTarget)) {
+                branchAction = qTarget;
+                break;
+              }
             }
           }
         }
       }
     }
 
-    // 3. If answer flow is still default, check Section-Level Global Flow (currentSec.nextSectionId)
-    // (Jika alur global sudah diatur dan alur jawaban masih default, maka prioritas adalah alur global)
+    // 3. If answer flow is still default, check Section-Level Global Navigation (currentSec.nextSectionId)
+    // (Jika alur global sudah diatur pada bagian ini, otomatis diarahkan ke section target tersebut)
     if (branchAction === 'next' && currentSec && currentSec.nextSectionId) {
       const secTarget = String(currentSec.nextSectionId).trim();
       if (secTarget !== '' && secTarget !== 'next' && secTarget !== 'inherit') {
-        branchAction = secTarget;
+        if (secTarget === 'submit' || this.sections.some(s => s.id === secTarget)) {
+          branchAction = secTarget;
+        }
       }
     }
 
