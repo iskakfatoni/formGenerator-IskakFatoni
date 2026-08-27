@@ -39,7 +39,7 @@ class ExcelExporter {
 
   static exportFormResponses(form, responses) {
     if (!window.XLSX) {
-      alert('Library SheetJS belum termuat. Periksa koneksi internet Anda.');
+      alert('Komponen generator Excel belum termuat. Periksa koneksi internet Anda.');
       return false;
     }
 

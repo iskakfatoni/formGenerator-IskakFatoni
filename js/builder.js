@@ -123,7 +123,7 @@ class FormBuilder {
       </div>
       <div class="graph-node-body">
         <div style="font-size:0.78rem; color:#c7d2fe;">
-          ✓ Data tersimpan ke Firestore<br>
+          ✓ Data tersimpan aman di Cloud Database<br>
           ✓ Rekap siap ekspor ke Excel
         </div>
       </div>

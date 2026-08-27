@@ -60,8 +60,8 @@ class FirebaseManager {
 
     if (isOnline) {
       badge.className = 'status-badge status-firebase';
-      text.textContent = 'Firebase Online';
-      badge.title = `Terkoneksi ke Firebase Cloud: ${this.config.projectId}`;
+      text.textContent = 'Cloud Terhubung';
+      badge.title = `Terkoneksi ke Cloud Database Aktif`;
     } else {
       badge.className = 'status-badge status-local';
       text.textContent = 'Offline';
