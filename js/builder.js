@@ -803,6 +803,7 @@ class FormBuilder {
 
   createQuestionCardElement(q, globalIndex, totalQuestionsInSec) {
     const isCollapsed = this.collapsedQuestions.has(q.id);
+    const isQuiz = this.currentForm && this.currentForm.isQuizMode === true;
     const typeMeta = this.getTypeMeta(q.type);
     const card = document.createElement('div');
     card.className = 'form-card question-card glass-card' + (isCollapsed ? ' is-collapsed' : '');
