@@ -1129,3 +1129,305 @@ body.responder-mode .container {
 
 
 
+
+
+/* ===================================================
+   SEARCHABLE SELECT / DROPDOWN & QUIZ RESULTS STYLES
+   =================================================== */
+
+/* Searchable Dropdown Widget */
+.searchable-select-wrap {
+  position: relative;
+  width: 100%;
+}
+
+.searchable-select-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 12px 16px;
+  background: rgba(15, 23, 42, 0.6);
+  border: 1.5px solid rgba(255, 255, 255, 0.12);
+  border-radius: 10px;
+  color: var(--text-primary);
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  user-select: none;
+}
+
+.searchable-select-trigger:hover,
+.searchable-select-wrap.is-open .searchable-select-trigger {
+  border-color: var(--primary);
+  background: rgba(15, 23, 42, 0.85);
+  box-shadow: 0 0 0 3px var(--primary-glow);
+}
+
+.searchable-select-trigger .trigger-text {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.searchable-select-trigger .trigger-text.is-placeholder {
+  color: var(--text-muted);
+}
+
+.searchable-select-trigger .trigger-icon {
+  width: 18px;
+  height: 18px;
+  color: var(--text-secondary);
+  transition: transform var(--transition-fast);
+}
+
+.searchable-select-wrap.is-open .searchable-select-trigger .trigger-icon {
+  transform: rotate(180deg);
+  color: var(--primary);
+}
+
+.searchable-dropdown-menu {
+  display: none;
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  width: 100%;
+  max-height: 280px;
+  background: #0f172a;
+  border: 1.5px solid rgba(99, 102, 241, 0.4);
+  border-radius: 12px;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.6);
+  z-index: 999;
+  flex-direction: column;
+  overflow: hidden;
+  backdrop-filter: blur(16px);
+  animation: dropdownSlideDown 0.15s ease-out;
+}
+
+@keyframes dropdownSlideDown {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.searchable-select-wrap.is-open .searchable-dropdown-menu {
+  display: flex;
+}
+
+.searchable-search-box {
+  display: flex;
+  align-items: center;
+  padding: 10px 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(30, 41, 59, 0.8);
+  gap: 8px;
+}
+
+.searchable-search-box i {
+  width: 16px;
+  height: 16px;
+  color: var(--text-muted);
+}
+
+.searchable-search-input {
+  width: 100%;
+  background: transparent;
+  border: none;
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  outline: none;
+}
+
+.searchable-search-input::placeholder {
+  color: var(--text-muted);
+}
+
+.searchable-options-list {
+  overflow-y: auto;
+  max-height: 210px;
+  padding: 4px 0;
+}
+
+.searchable-option-item {
+  padding: 10px 16px;
+  font-size: 0.9rem;
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.searchable-option-item:hover,
+.searchable-option-item.is-focused {
+  background: rgba(99, 102, 241, 0.18);
+  color: #fff;
+}
+
+.searchable-option-item.is-selected {
+  background: rgba(99, 102, 241, 0.25);
+  color: #818cf8;
+  font-weight: 600;
+}
+
+.searchable-empty-hint {
+  padding: 14px 16px;
+  text-align: center;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+/* --- Form Deadline / Countdown Banner in Responder --- */
+.form-deadline-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(245, 158, 11, 0.12);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  color: #fbbf24;
+  padding: 8px 16px;
+  border-radius: 10px;
+  margin-bottom: 16px;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.form-deadline-banner i {
+  width: 16px;
+  height: 16px;
+}
+
+/* --- Form Closed Card (Expired or Max Responses) --- */
+.form-closed-notice-card {
+  text-align: center;
+  padding: 48px 24px;
+  background: rgba(30, 41, 59, 0.7);
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  margin: 30px auto;
+  max-width: 580px;
+}
+
+.form-closed-notice-card .closed-icon {
+  width: 64px;
+  height: 64px;
+  color: #f43f5e;
+  margin-bottom: 16px;
+}
+
+.form-closed-notice-card h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 10px;
+}
+
+.form-closed-notice-card p {
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  line-height: 1.5;
+  margin-bottom: 24px;
+}
+
+/* --- Quiz Results Score Card --- */
+.quiz-results-card {
+  background: rgba(15, 23, 42, 0.85);
+  border: 1.5px solid rgba(99, 102, 241, 0.4);
+  border-radius: 16px;
+  padding: 24px;
+  margin: 20px 0;
+  text-align: center;
+  box-shadow: 0 12px 32px -8px rgba(99, 102, 241, 0.3);
+}
+
+.quiz-score-header {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #a5b4fc;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 8px;
+}
+
+.quiz-score-circle {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(99, 102, 241, 0.25) 0%, rgba(15, 23, 42, 0.8) 100%);
+  border: 3px solid #818cf8;
+  margin: 12px auto;
+}
+
+.quiz-score-num {
+  font-size: 2.2rem;
+  font-weight: 800;
+  color: #fff;
+  line-height: 1;
+}
+
+.quiz-score-max {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  font-weight: 500;
+  margin-top: 2px;
+}
+
+.quiz-score-msg {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-top: 10px;
+}
+
+/* Review Answers in Quiz Result */
+.quiz-review-list {
+  text-align: left;
+  margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.quiz-review-item {
+  background: rgba(30, 41, 59, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  padding: 12px 16px;
+}
+
+.quiz-review-item.is-correct {
+  border-left: 4px solid #10b981;
+}
+
+.quiz-review-item.is-wrong {
+  border-left: 4px solid #f43f5e;
+}
+
+.quiz-review-q-title {
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 6px;
+}
+
+.quiz-review-ans-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+}
+
+.quiz-review-ans-row.user-ans {
+  color: var(--text-secondary);
+}
+
+.quiz-review-ans-row.correct-ans {
+  color: #34d399;
+  font-weight: 600;
+  margin-top: 4px;
+}

@@ -5,6 +5,34 @@
  */
 
 class FormViewer {
+
+  renderFormClosed(title, message) {
+    if (this.formElement) this.formElement.classList.add('hidden');
+    if (this.successCard) this.successCard.classList.add('hidden');
+    
+    let closedWrap = document.getElementById('form-closed-notice-wrap');
+    if (!closedWrap) {
+      closedWrap = document.createElement('div');
+      closedWrap.id = 'form-closed-notice-wrap';
+      const container = document.querySelector('.form-viewer-container') || document.body;
+      container.appendChild(closedWrap);
+    }
+    
+    closedWrap.innerHTML = `
+      <div class="form-closed-notice-card glass-card">
+        <i data-lucide="lock" class="closed-icon"></i>
+        <h2>${this.escapeHtml(title)}</h2>
+        <p>${this.escapeHtml(message)}</p>
+        <button type="button" class="btn btn-secondary btn-sm" onclick="window.location.hash = '#/dashboard'">
+          <i data-lucide="arrow-left"></i>
+          <span>Kembali ke Beranda</span>
+        </button>
+      </div>
+    `;
+    closedWrap.classList.remove('hidden');
+    if (window.lucide) window.lucide.createIcons();
+  }
+
   constructor() {
     this.currentForm = null;
     this.sections = [];
@@ -105,6 +133,25 @@ class FormViewer {
 
     this.currentForm = form;
 
+    const closedNotice = document.getElementById('form-closed-notice-wrap');
+    if (closedNotice) closedNotice.classList.add('hidden');
+
+    // 1. Check Deadline Limit
+    if (form.deadline) {
+      const deadlineDate = new Date(form.deadline);
+      if (!isNaN(deadlineDate.getTime()) && new Date() > deadlineDate) {
+        this.renderFormClosed('Batas Waktu Pengisian Telah Berakhir', 'Formulir ini telah ditutup karena telah melewati batas waktu pengisian (' + deadlineDate.toLocaleString('id-ID', { dateStyle: 'full', timeStyle: 'short' }) + ').');
+        return;
+      }
+    }
+
+    // 2. Check Quota / Max Responses Limit
+    if (form.maxResponses && form.responseCount >= form.maxResponses) {
+      this.renderFormClosed('Batas Kuota Responden Terpenuhi', 'Formulir ini telah ditutup karena telah mencapai batas kuota maksimal (' + form.maxResponses + ' responden).');
+      return;
+    }
+
+
     // Standardize sections
     if (!form.sections || form.sections.length === 0) {
       this.sections = [{ id: 'sec_1', title: form.title || 'Bagian 1', description: form.description || '' }];
@@ -136,6 +183,24 @@ class FormViewer {
       this.bannerEl.classList.remove('hidden');
     } else {
       this.bannerEl.classList.add('hidden');
+    }
+
+    
+    // Deadline Banner in header
+    let deadlineBanner = document.getElementById('form-view-deadline-banner');
+    if (form.deadline) {
+      const deadlineDate = new Date(form.deadline);
+      if (!deadlineBanner) {
+        deadlineBanner = document.createElement('div');
+        deadlineBanner.id = 'form-view-deadline-banner';
+        deadlineBanner.className = 'form-deadline-banner';
+        const headerCard = document.getElementById('form-view-header-card');
+        if (headerCard) headerCard.insertBefore(deadlineBanner, headerCard.querySelector('.live-header-text'));
+      }
+      deadlineBanner.innerHTML = '<i data-lucide="clock"></i> <span>Batas Waktu Pengisian: <strong>' + deadlineDate.toLocaleString('id-ID', { dateStyle: 'full', timeStyle: 'short' }) + '</strong></span>';
+      deadlineBanner.classList.remove('hidden');
+    } else if (deadlineBanner) {
+      deadlineBanner.classList.add('hidden');
     }
 
     // Success message text
@@ -312,13 +377,32 @@ class FormViewer {
     } else if (q.type === 'dropdown') {
       const options = q.options || ['Opsi 1'];
       inputHtml = `
-        <select class="live-select" name="${qName}">
-          <option value="">-- Pilih Jawaban --</option>
-          ${options.map(opt => {
-            const optText = typeof opt === 'object' ? (opt.text || '') : opt;
-            return `<option value="${this.escapeHtml(optText)}">${this.escapeHtml(optText)}</option>`;
-          }).join('')}
-        </select>
+        <div class="searchable-select-wrap" data-question-id="${q.id}">
+          <div class="searchable-select-trigger" tabindex="0">
+            <span class="trigger-text is-placeholder">-- Cari / Pilih Jawaban --</span>
+            <i data-lucide="chevron-down" class="trigger-icon"></i>
+          </div>
+          <div class="searchable-dropdown-menu">
+            <div class="searchable-search-box">
+              <i data-lucide="search"></i>
+              <input type="text" class="searchable-search-input" placeholder="Ketik 2-3 huruf untuk mencari...">
+            </div>
+            <div class="searchable-options-list">
+              ${options.map((opt, optIdx) => {
+                const optText = typeof opt === 'object' ? (opt.text || '') : opt;
+                return `<div class="searchable-option-item" data-value="${this.escapeHtml(optText)}">${this.escapeHtml(optText)}</div>`;
+              }).join('')}
+              <div class="searchable-empty-hint hidden">Tidak ada opsi yang cocok</div>
+            </div>
+          </div>
+          <select class="live-select hidden" name="${qName}" style="display:none;">
+            <option value="">-- Pilih Jawaban --</option>
+            ${options.map(opt => {
+              const optText = typeof opt === 'object' ? (opt.text || '') : opt;
+              return `<option value="${this.escapeHtml(optText)}">${this.escapeHtml(optText)}</option>`;
+            }).join('')}
+          </select>
+        </div>
       `;
     } else if (q.type === 'rating') {
       inputHtml = `
@@ -879,6 +963,89 @@ class FormViewer {
       });
     });
 
+    
+    // Searchable Select Interactive Binding
+    if (q.type === 'dropdown') {
+      const wrap = card.querySelector('.searchable-select-wrap');
+      if (wrap) {
+        const trigger = wrap.querySelector('.searchable-select-trigger');
+        const triggerText = wrap.querySelector('.trigger-text');
+        const searchInput = wrap.querySelector('.searchable-search-input');
+        const optionsList = wrap.querySelector('.searchable-options-list');
+        const optionItems = wrap.querySelectorAll('.searchable-option-item');
+        const emptyHint = wrap.querySelector('.searchable-empty-hint');
+        const hiddenSelect = wrap.querySelector('select.live-select');
+
+        // Preload answer if already answered
+        if (this.answers[q.id]) {
+          triggerText.textContent = this.answers[q.id];
+          triggerText.classList.remove('is-placeholder');
+          optionItems.forEach(item => {
+            if (item.dataset.value === this.answers[q.id]) {
+              item.classList.add('is-selected');
+            }
+          });
+        }
+
+        // Toggle open/close
+        trigger.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const isOpen = wrap.classList.contains('is-open');
+          document.querySelectorAll('.searchable-select-wrap').forEach(w => w.classList.remove('is-open'));
+          if (!isOpen) {
+            wrap.classList.add('is-open');
+            searchInput.value = '';
+            optionItems.forEach(item => item.style.display = '');
+            if (emptyHint) emptyHint.classList.add('hidden');
+            setTimeout(() => searchInput.focus(), 50);
+          }
+        });
+
+        // Search live filter
+        searchInput.addEventListener('input', (e) => {
+          const keyword = e.target.value.toLowerCase().trim();
+          let matchCount = 0;
+          optionItems.forEach(item => {
+            const text = (item.dataset.value || '').toLowerCase();
+            if (text.includes(keyword)) {
+              item.style.display = '';
+              matchCount++;
+            } else {
+              item.style.display = 'none';
+            }
+          });
+          if (emptyHint) {
+            emptyHint.classList.toggle('hidden', matchCount > 0);
+          }
+        });
+
+        searchInput.addEventListener('click', (e) => e.stopPropagation());
+
+        // Option click
+        optionItems.forEach(item => {
+          item.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const val = item.dataset.value;
+            triggerText.textContent = val;
+            triggerText.classList.remove('is-placeholder');
+            optionItems.forEach(i => i.classList.remove('is-selected'));
+            item.classList.add('is-selected');
+            if (hiddenSelect) {
+              hiddenSelect.value = val;
+            }
+            this.answers[q.id] = val;
+            wrap.classList.remove('is-open');
+            card.classList.remove('has-error');
+          });
+        });
+
+        // Close on outside click
+        document.addEventListener('click', () => {
+          wrap.classList.remove('is-open');
+        });
+      }
+    }
+
     return card;
   }
 
@@ -1191,6 +1358,92 @@ class FormViewer {
               console.error('GDrive upload error:', errUpload);
             }
           }
+        }
+      }
+
+      
+      // Auto-Grading for Quiz Mode
+      if (this.currentForm.isQuizMode === true) {
+        let earnedScore = 0;
+        let totalPossible = 0;
+        const questionResults = [];
+
+        (this.currentForm.questions || []).forEach(q => {
+          const points = q.points !== undefined ? q.points : 10;
+          totalPossible += points;
+          const userAns = this.answers[q.id];
+          let isCorrect = false;
+
+          if (q.type === 'checkbox') {
+            const correctArr = Array.isArray(q.correctAnswers) ? q.correctAnswers : (q.correctAnswer ? [q.correctAnswer] : []);
+            const userArr = Array.isArray(userAns) ? userAns : (userAns ? [userAns] : []);
+            isCorrect = correctArr.length > 0 && correctArr.length === userArr.length && correctArr.every(v => userArr.includes(v));
+          } else if (q.type === 'choice' || q.type === 'dropdown' || q.type === 'text' || q.type === 'number') {
+            isCorrect = q.correctAnswer && userAns && (String(userAns).trim().toLowerCase() === String(q.correctAnswer).trim().toLowerCase());
+          }
+
+          if (isCorrect) {
+            earnedScore += points;
+          }
+
+          questionResults.push({
+            qId: q.id,
+            title: q.title || 'Soal',
+            type: q.type,
+            userAns: Array.isArray(userAns) ? userAns.join(', ') : (userAns || '-'),
+            correctAns: Array.isArray(q.correctAnswers) ? q.correctAnswers.join(', ') : (q.correctAnswer || '-'),
+            isCorrect,
+            points,
+            earned: isCorrect ? points : 0
+          });
+        });
+
+        const percentage = totalPossible > 0 ? Math.round((earnedScore / totalPossible) * 100) : 0;
+        this.answers._quiz_score = earnedScore;
+        this.answers._quiz_total = totalPossible;
+        this.answers._quiz_percentage = percentage;
+
+        // Render Quiz Scorecard on Success screen
+        let scoreCard = document.getElementById('quiz-result-score-card');
+        if (!scoreCard) {
+          scoreCard = document.createElement('div');
+          scoreCard.id = 'quiz-result-score-card';
+          const successContent = this.successCard.querySelector('.success-card-content') || this.successCard;
+          successContent.insertBefore(scoreCard, this.successCard.querySelector('.success-actions') || null);
+        }
+
+        const showScore = this.currentForm.showQuizScore !== false;
+        const showAnswers = this.currentForm.showQuizAnswers !== false;
+
+        if (showScore) {
+          let scoreMsg = '🎉 Luar Biasa! Nilai Anda Sangat Baik.';
+          if (percentage < 50) scoreMsg = '📝 Teruslah Belajar & Berlatih!';
+          else if (percentage < 75) scoreMsg = '👍 Bagus! Nilai Anda Cukup Baik.';
+
+          scoreCard.innerHTML = `
+            <div class="quiz-results-card">
+              <div class="quiz-score-header"><i data-lucide="award"></i> Hasil Nilai Kuis Anda</div>
+              <div class="quiz-score-circle">
+                <span class="quiz-score-num">${earnedScore}</span>
+                <span class="quiz-score-max">dari ${totalPossible} poin</span>
+              </div>
+              <div class="quiz-score-msg">${scoreMsg} (Persentase: ${percentage}%)</div>
+              
+              ${showAnswers ? `
+                <div class="quiz-review-list">
+                  ${questionResults.map(r => `
+                    <div class="quiz-review-item ${r.isCorrect ? 'is-correct' : 'is-wrong'}">
+                      <div class="quiz-review-q-title">${this.escapeHtml(r.title)} (${r.earned}/${r.points} Poin)</div>
+                      <div class="quiz-review-ans-row user-ans">Jawaban Anda: <strong>${this.escapeHtml(r.userAns)}</strong> ${r.isCorrect ? '✅ Benar' : '❌ Salah'}</div>
+                      ${!r.isCorrect ? `<div class="quiz-review-ans-row correct-ans">Kunci Jawaban Benar: <strong>${this.escapeHtml(r.correctAns)}</strong></div>` : ''}
+                    </div>
+                  `).join('')}
+                </div>
+              ` : ''}
+            </div>
+          `;
+          scoreCard.classList.remove('hidden');
+          if (window.lucide) window.lucide.createIcons();
         }
       }
 

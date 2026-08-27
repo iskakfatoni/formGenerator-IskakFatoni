@@ -51,7 +51,11 @@ class ExcelExporter {
     try {
       // 1. Prepare Header Row mapping with consolidated columns
       const hasEmail = form.collectEmail || responses.some(r => !!r.respondentEmail || !!(r.answers && r.answers._respondent_email));
+      const isQuiz = form.isQuizMode === true;
       const headers = ['No', 'ID Respon', 'Waktu Pengisian (WIB/Lokal)'];
+      if (isQuiz) {
+        headers.push('Nilai Kuis (Poin)', 'Total Poin Maksimal', 'Persentase (%)');
+      }
       if (hasEmail) {
         headers.push('Email Responden');
       }
@@ -74,6 +78,13 @@ class ExcelExporter {
           timeStyle: 'medium'
         }) : '-';
         row.push(dateStr);
+
+        // Quiz Scores in Excel
+        if (isQuiz) {
+          row.push(resp.answers && resp.answers._quiz_score !== undefined ? resp.answers._quiz_score : '-');
+          row.push(resp.answers && resp.answers._quiz_total !== undefined ? resp.answers._quiz_total : '-');
+          row.push(resp.answers && resp.answers._quiz_percentage !== undefined ? resp.answers._quiz_percentage + '%' : '-');
+        }
 
         // Email
         if (hasEmail) {

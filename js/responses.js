@@ -219,7 +219,8 @@ class ResponsesDashboard {
     const hasEmail = form.collectEmail || this.responses.some(r => !!r.respondentEmail || !!(r.answers && r.answers._respondent_email));
 
     // 1. Render Table Headers
-    let headHtml = '<tr><th style="width: 50px;">#</th><th style="min-width: 150px;">Waktu Kirim</th>' + (hasEmail ? '<th style="min-width: 180px;">Email Responden</th>' : '');
+    const isQuiz = form.isQuizMode === true;
+    let headHtml = '<tr><th style="width: 50px;">#</th><th style="min-width: 150px;">Waktu Kirim</th>' + (isQuiz ? '<th style="min-width: 130px; color: #818cf8;"><i data-lucide="award"></i> Nilai Kuis</th>' : '') + (hasEmail ? '<th style="min-width: 180px;">Email Responden</th>' : '');
 
     columns.forEach(col => {
       headHtml += '<th title="' + this.escapeHtml(col.title) + '">' + this.escapeHtml(col.title) + '</th>';
@@ -266,7 +267,20 @@ class ResponsesDashboard {
 
       const emailStr = resp.respondentEmail || (resp.answers && resp.answers._respondent_email) || '-';
 
-      bodyHtml += '<tr><td><strong>' + (index + 1) + '</strong></td><td style="color: var(--text-secondary); font-size: 0.85rem;">' + dateStr + '</td>' + (hasEmail ? '<td style="font-weight: 500; color: #818cf8;">' + this.escapeHtml(emailStr) + '</td>' : '');
+      const isQuiz = this.currentForm.isQuizMode === true;
+      let quizScoreBadge = '';
+      if (isQuiz) {
+        if (resp.answers && resp.answers._quiz_score !== undefined) {
+          const score = resp.answers._quiz_score;
+          const total = resp.answers._quiz_total || 100;
+          const pct = resp.answers._quiz_percentage || Math.round((score / total) * 100);
+          quizScoreBadge = '<td style="font-weight: 700; color: #818cf8;"><span style="background: rgba(99, 102, 241, 0.15); padding: 3px 8px; border-radius: 6px; border: 1px solid rgba(99, 102, 241, 0.3);">' + score + ' / ' + total + ' (' + pct + '%)</span></td>';
+        } else {
+          quizScoreBadge = '<td style="color: var(--text-muted);">-</td>';
+        }
+      }
+
+      bodyHtml += '<tr><td><strong>' + (index + 1) + '</strong></td><td style="color: var(--text-secondary); font-size: 0.85rem;">' + dateStr + '</td>' + quizScoreBadge + (hasEmail ? '<td style="font-weight: 500; color: #818cf8;">' + this.escapeHtml(emailStr) + '</td>' : '');
 
       columns.forEach(col => {
         let ans = null;
@@ -344,7 +358,9 @@ class ResponsesDashboard {
     const hasEmail = this.currentForm.collectEmail || this.responses.some(r => !!r.respondentEmail || !!(r.answers && r.answers._respondent_email));
     const columns = this.getConsolidatedColumns(this.currentForm.questions || []);
 
+    const isQuiz = this.currentForm.isQuizMode === true;
     const headers = ['No', 'ID Respon', 'Waktu Pengisian'];
+    if (isQuiz) headers.push('Nilai Kuis', 'Total Poin', 'Persentase (%)');
     if (hasEmail) headers.push('Email Responden');
     columns.forEach(col => headers.push(col.title));
 
@@ -356,6 +372,11 @@ class ResponsesDashboard {
       row.push(idx + 1);
       row.push(resp.id || '-');
       row.push(resp.submittedAt ? new Date(resp.submittedAt).toLocaleString('id-ID') : '-');
+      if (isQuiz) {
+        row.push(resp.answers && resp.answers._quiz_score !== undefined ? resp.answers._quiz_score : '-');
+        row.push(resp.answers && resp.answers._quiz_total !== undefined ? resp.answers._quiz_total : '-');
+        row.push(resp.answers && resp.answers._quiz_percentage !== undefined ? resp.answers._quiz_percentage + '%' : '-');
+      }
       if (hasEmail) {
         row.push(resp.respondentEmail || (resp.answers && resp.answers._respondent_email) || '-');
       }

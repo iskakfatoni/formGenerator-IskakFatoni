@@ -757,6 +757,47 @@ class FormBuilder {
       });
     }
 
+    
+    // Quiz Points and Answer Key Event Listeners
+    const pointsInput = card.querySelector('.input-q-points');
+    if (pointsInput) {
+      pointsInput.addEventListener('input', (e) => {
+        q.points = parseInt(e.target.value) || 0;
+      });
+    }
+
+    const correctTextInput = card.querySelector('.input-q-correct-text');
+    if (correctTextInput) {
+      correctTextInput.addEventListener('input', (e) => {
+        q.correctAnswer = e.target.value.trim();
+      });
+    }
+
+    card.querySelectorAll('.btn-set-correct-answer').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const optRow = btn.closest('.option-row');
+        const optText = optRow ? optRow.querySelector('.input-option-text').value.trim() : '';
+        if (!optText) {
+          if (window.app) window.app.showToast('Isi teks opsi terlebih dahulu sebelum dijadikan kunci jawaban', 'error');
+          return;
+        }
+
+        if (q.type === 'checkbox') {
+          if (!Array.isArray(q.correctAnswers)) q.correctAnswers = [];
+          const idx = q.correctAnswers.indexOf(optText);
+          if (idx >= 0) {
+            q.correctAnswers.splice(idx, 1);
+          } else {
+            q.correctAnswers.push(optText);
+          }
+        } else {
+          q.correctAnswer = optText;
+        }
+        this.renderQuestions();
+      });
+    });
+
     return card;
   }
 
@@ -782,10 +823,27 @@ class FormBuilder {
             const optImg = typeof opt === 'object' ? (opt.imageUrl || '') : '';
             const optNext = typeof opt === 'object' ? (opt.nextSectionId || 'next') : 'next';
 
+            const isQuiz = this.currentForm && this.currentForm.isQuizMode === true;
+            let isCorrect = false;
+            if (isQuiz) {
+              if (q.type === 'checkbox') {
+                isCorrect = Array.isArray(q.correctAnswers) && q.correctAnswers.includes(optText);
+              } else {
+                isCorrect = q.correctAnswer === optText;
+              }
+            }
+
             return `
-              <div class="option-row" data-opt-index="${optIdx}">
+              <div class="option-row ${isCorrect ? 'correct-answer-row' : ''}" data-opt-index="${optIdx}">
                 <i data-lucide="${icon}" class="option-type-icon"></i>
                 <input type="text" class="input-option-text" value="${this.escapeHtml(optText)}" placeholder="Nama opsi (Bisa paste list Excel/Sheets)...">
+                
+                ${isQuiz ? `
+                  <button type="button" class="btn-set-correct-answer ${isCorrect ? 'is-correct' : ''}" data-opt-val="${this.escapeHtml(optText)}" title="Tentukan sebagai kunci jawaban benar">
+                    <i data-lucide="${isCorrect ? 'check-circle' : 'circle'}"></i>
+                    <span>${isCorrect ? 'Kunci Benar' : 'Jadikan Kunci'}</span>
+                  </button>
+                ` : ''}
                 
                 ${canBranch ? `
                   <div class="opt-branch-wrap" title="Aksi lanjut setelah opsi ini dipilih">
@@ -826,6 +884,19 @@ class FormBuilder {
             <i data-lucide="plus"></i>
             <span>Tambah Opsi</span>
           </button>
+          ${isQuiz ? `
+            <div class="q-quiz-config-bar">
+              <div class="q-quiz-points-wrap">
+                <i data-lucide="award"></i>
+                <span>Poin Soal:</span>
+                <input type="number" class="input-q-points" value="${q.points !== undefined ? q.points : 10}" min="0" max="100">
+              </div>
+              <div class="q-quiz-answer-hint">
+                <i data-lucide="check-circle-2"></i>
+                <span>Kunci: <strong>${this.escapeHtml(q.type === 'checkbox' ? (Array.isArray(q.correctAnswers) ? q.correctAnswers.join(', ') : 'Belum ditentukan') : (q.correctAnswer || 'Belum ditentukan'))}</strong></span>
+              </div>
+            </div>
+          ` : ''}
         </div>
       `;
     } else if (q.type === 'rating') {
@@ -920,7 +991,23 @@ class FormBuilder {
     } else if (q.type === 'number') {
       optionsHtml = `<div class="text-preview-box">Input Angka / Nomor...</div>`;
     } else {
-      optionsHtml = `<div class="text-preview-box">Teks jawaban singkat responden...</div>`;
+      const isQuiz = this.currentForm && this.currentForm.isQuizMode === true;
+      optionsHtml = `
+        <div class="text-preview-box">Teks jawaban singkat responden...</div>
+        ${isQuiz ? `
+          <div class="q-quiz-config-bar">
+            <div class="q-quiz-points-wrap">
+              <i data-lucide="award"></i>
+              <span>Poin Soal:</span>
+              <input type="number" class="input-q-points" value="${q.points !== undefined ? q.points : 10}" min="0" max="100">
+            </div>
+            <div style="display: flex; align-items: center; gap: 8px; flex: 1; min-width: 200px;">
+              <span style="font-size: 0.8rem; color: #34d399; font-weight: 500;">Kunci Teks:</span>
+              <input type="text" class="input-q-correct-text input-text" value="${this.escapeHtml(q.correctAnswer || '')}" placeholder="Kunci jawaban teks/angka yang benar..." style="padding: 4px 8px; font-size: 0.85rem;">
+            </div>
+          </div>
+        ` : ''}
+      `;
     }
 
     card.innerHTML = `

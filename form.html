@@ -400,6 +400,58 @@
               </div>
             </div>
 
+            
+            <!-- Quiz Mode Card -->
+            <div class="settings-card glass-card">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                <h3 style="display: flex; align-items: center; gap: 8px; color: #818cf8; margin: 0;">
+                  <i data-lucide="award"></i> Mode Kuis & Ujian
+                </h3>
+                <label class="switch">
+                  <input type="checkbox" id="form-is-quiz-mode">
+                  <span class="slider"></span>
+                </label>
+              </div>
+              <p class="settings-subtitle">Berikan poin/nilai pada setiap pertanyaan dan tentukan kunci jawaban untuk penilaian otomatis.</p>
+              
+              <div id="quiz-options-wrap" class="quiz-sub-settings hidden" style="margin-top: 14px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 12px;">
+                <div class="setting-item checkbox-setting">
+                  <label class="custom-checkbox-label">
+                    <input type="checkbox" id="form-show-quiz-score" checked>
+                    <span class="custom-box"></span>
+                    <span>Tampilkan nilai/skor akhir langsung kepada responden</span>
+                  </label>
+                </div>
+                <div class="setting-item checkbox-setting">
+                  <label class="custom-checkbox-label">
+                    <input type="checkbox" id="form-show-quiz-answers" checked>
+                    <span class="custom-box"></span>
+                    <span>Tampilkan pembahasan jawaban benar/salah setelah submit</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <!-- Deadline & Response Limits Card -->
+            <div class="settings-card glass-card">
+              <h3><i data-lucide="timer"></i> Batas Waktu & Kuota Pengisian</h3>
+              <p class="settings-subtitle">Formulir otomatis ditutup jika melewati batas waktu atau kuota terpenuhi.</p>
+              
+              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; margin-top: 12px;">
+                <div class="setting-item">
+                  <label for="form-deadline-input"><i data-lucide="clock"></i> Batas Waktu (Deadline)</label>
+                  <input type="datetime-local" id="form-deadline-input" class="input-text">
+                  <span style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-top: 4px;">Kosongkan jika form tidak memiliki batas waktu penutupan.</span>
+                </div>
+
+                <div class="setting-item">
+                  <label for="form-max-responses-input"><i data-lucide="users"></i> Kuota Maksimal Responden</label>
+                  <input type="number" id="form-max-responses-input" class="input-text" min="1" placeholder="Contoh: 100 (Opsional)">
+                  <span style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-top: 4px;">Formulir otomatis nonaktif setelah mencapai jumlah kuota ini.</span>
+                </div>
+              </div>
+            </div>
+
             <!-- Google Drive Integration Card -->
             <div class="settings-card glass-card" style="grid-column: 1 / -1;">
               <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 12px;">
