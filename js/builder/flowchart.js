@@ -1,12 +1,12 @@
 /**
  * FORMCRAFT - 2D Interactive Flowchart & Bezier Wiring Engine
- * Renders nodes for sections & branching logic with interactive curved wires and canvas panning.
+ * Accurately models form navigation: option branches, question flow, and section sequences.
  */
 
 window.BuilderFlowchart = {
   currentZoom: 1,
-  panX: 0,
-  panY: 0,
+  panX: 40,
+  panY: 40,
   isPanning: false,
   startX: 0,
   startY: 0,
@@ -18,6 +18,11 @@ window.BuilderFlowchart = {
     const canvas = document.getElementById('flowchart-graph-canvas');
     const viewport = document.getElementById('flowchart-graph-viewport');
     if (!nodesLayer || !svgLayer || !canvas || !viewport) return;
+
+    // Harvest latest DOM values to ensure 100% up-to-date section and option flow
+    if (typeof builderInstance.harvestDomValues === 'function') {
+      builderInstance.harvestDomValues();
+    }
 
     // Reset pan & zoom
     this.currentZoom = 1;
@@ -40,74 +45,112 @@ window.BuilderFlowchart = {
       return;
     }
 
-    // Dynamic grid layout positioning
-    const cardWidth = 330;
-    const colGap = 90;
-    const rowGap = 70;
+    // Layout configuration
+    const cardWidth = 340;
+    const colGap = 120;
+    const rowGap = 60;
     const cols = 3;
 
-    // Track column heights to prevent vertical overlapping
-    const colHeights = [40, 40, 40];
+    const colHeights = Array(cols).fill(40);
 
+    // 1. Render Section Nodes
     sections.forEach((sec, idx) => {
       const col = idx % cols;
       const posX = 50 + col * (cardWidth + colGap);
       const posY = colHeights[col];
 
-      const nodeEl = this.createSectionNode(sec, idx, questions, builderInstance, posX, posY);
+      const nodeEl = this.createSectionNode(sec, idx, sections, questions, builderInstance, posX, posY);
       nodesLayer.appendChild(nodeEl);
 
-      // Estimate card height based on branches + base height
+      // Estimate card height
       const secQuestions = questions.filter(q => q.sectionId === sec.id);
-      const branchQuestions = secQuestions.filter(q => (q.type === 'choice' || q.type === 'checkbox') && Array.isArray(q.options) && q.options.some(opt => typeof opt === 'object' && opt.nextSectionId && opt.nextSectionId !== 'inherit' && opt.nextSectionId !== 'next'));
+      const branchQuestions = secQuestions.filter(q => (q.type === 'choice' || q.type === 'checkbox' || q.type === 'dropdown') && Array.isArray(q.options) && q.options.some(opt => {
+        const nextId = typeof opt === 'object' ? (opt.nextSectionId || '') : '';
+        return nextId && nextId !== 'inherit' && nextId !== 'next';
+      }));
+
       let branchCount = 0;
       branchQuestions.forEach(q => {
         q.options.forEach(opt => {
-          if (typeof opt === 'object' && opt.nextSectionId && opt.nextSectionId !== 'inherit' && opt.nextSectionId !== 'next') branchCount++;
+          const nextId = typeof opt === 'object' ? (opt.nextSectionId || '') : '';
+          if (nextId && nextId !== 'inherit' && nextId !== 'next') branchCount++;
         });
       });
 
-      const estimatedHeight = 160 + (branchCount * 36);
+      const estimatedHeight = 160 + (branchCount * 42);
       colHeights[col] += estimatedHeight + rowGap;
     });
 
+    // 2. Render Submit Terminal Node at bottom right
+    const maxColHeight = Math.max(...colHeights, 600);
+    const submitCol = (sections.length) % cols;
+    const submitPosX = 50 + submitCol * (cardWidth + colGap);
+    const submitPosY = colHeights[submitCol] + 20;
+
+    const submitTerminal = document.createElement('div');
+    submitTerminal.className = 'graph-node-card end-terminal-node';
+    submitTerminal.id = 'graph-node-submit';
+    submitTerminal.style.left = `${submitPosX}px`;
+    submitTerminal.style.top = `${submitPosY}px`;
+    submitTerminal.innerHTML = `
+      <div class="graph-node-port-in green"></div>
+      <div class="graph-node-top">
+        <span class="graph-node-badge badge-green"><i data-lucide="check-circle-2"></i> Selesai</span>
+      </div>
+      <div class="graph-node-body">
+        <h4 class="graph-node-title">🚀 Kirim & Simpan Formulir</h4>
+        <p class="graph-node-desc">Titik akhir alur respon. Seluruh jawaban direkam ke database dan Google Drive.</p>
+      </div>
+    `;
+    nodesLayer.appendChild(submitTerminal);
+
     if (window.lucide) window.lucide.createIcons();
 
-    // Adjust canvas size to fit all nodes
-    const maxColHeight = Math.max(...colHeights, 1200);
-    canvas.style.minHeight = `${maxColHeight + 300}px`;
-    canvas.style.minWidth = `${50 + cols * (cardWidth + colGap) + 400}px`;
+    // Adjust canvas dimensions to contain everything comfortably
+    canvas.style.minHeight = `${submitPosY + 350}px`;
+    canvas.style.minWidth = `${50 + cols * (cardWidth + colGap) + 500}px`;
 
-    // Draw wires after nodes are in DOM
+    // 3. Draw All Connecting Wires after DOM paints
     setTimeout(() => {
       this.drawWires(svgLayer, canvas, sections, questions);
-    }, 60);
+    }, 80);
   },
 
-  createSectionNode(sec, secIdx, questions, builderInstance, posX, posY) {
+  createSectionNode(sec, secIdx, sections, questions, builderInstance, posX, posY) {
     const node = document.createElement('div');
-    node.className = `graph-node-card ${secIdx === 0 ? 'start-node' : (sec.nextSectionId === 'submit' ? 'end-node' : '')}`;
+    node.className = `graph-node-card ${secIdx === 0 ? 'start-node' : ''}`;
     node.id = `graph-node-${sec.id}`;
     node.dataset.sectionId = sec.id;
     node.style.left = `${posX}px`;
     node.style.top = `${posY}px`;
 
     const secQuestions = questions.filter(q => q.sectionId === sec.id);
-    const branchQuestions = secQuestions.filter(q => (q.type === 'choice' || q.type === 'checkbox') && Array.isArray(q.options) && q.options.some(opt => typeof opt === 'object' && opt.nextSectionId && opt.nextSectionId !== 'inherit' && opt.nextSectionId !== 'next'));
+    const branchQuestions = secQuestions.filter(q => (q.type === 'choice' || q.type === 'checkbox' || q.type === 'dropdown') && Array.isArray(q.options) && q.options.some(opt => {
+      const nextId = typeof opt === 'object' ? (opt.nextSectionId || '') : '';
+      return nextId && nextId !== 'inherit' && nextId !== 'next';
+    }));
 
     let branchHtml = '';
     if (branchQuestions.length > 0) {
       branchHtml = `<div class="node-branches-list">`;
       branchQuestions.forEach(q => {
-        branchHtml += `<div class="node-branch-item"><div class="branch-q-title"><i data-lucide="git-branch"></i> ${builderInstance.escapeHtml(q.title || 'Pilihan')}</div>`;
+        branchHtml += `<div class="node-branch-item"><div class="branch-q-title"><i data-lucide="git-branch"></i> ${builderInstance.escapeHtml(q.title || 'Pilihan Percabangan')}</div>`;
         q.options.forEach((opt, oIdx) => {
-          if (typeof opt === 'object' && opt.nextSectionId && opt.nextSectionId !== 'inherit' && opt.nextSectionId !== 'next') {
-            const targetSec = builderInstance.sections.find(s => s.id === opt.nextSectionId);
-            const targetTitle = targetSec ? targetSec.title : (opt.nextSectionId === 'submit' ? 'Kirim Formulir' : opt.nextSectionId);
+          const nextId = typeof opt === 'object' ? (opt.nextSectionId || '') : '';
+          if (nextId && nextId !== 'inherit' && nextId !== 'next') {
+            let targetLabel = '';
+            if (nextId === 'submit') {
+              targetLabel = 'Kirim Formulir';
+            } else {
+              const targetSec = sections.find(s => s.id === nextId);
+              const targetSecIdx = sections.findIndex(s => s.id === nextId);
+              targetLabel = targetSec ? `Bagian ${targetSecIdx + 1}: ${targetSec.title || 'Tanpa Judul'}` : nextId;
+            }
+            const optText = typeof opt === 'object' ? (opt.text || '') : opt;
             branchHtml += `
               <div class="branch-opt-row" id="port-out-${sec.id}-${q.id}-${oIdx}">
-                <span class="opt-label-text">"${builderInstance.escapeHtml(opt.text)}" &rarr; <strong>${builderInstance.escapeHtml(targetTitle)}</strong></span>
-                <span class="graph-port-dot-out cyan"></span>
+                <span class="opt-label-text">"${builderInstance.escapeHtml(optText)}" &rarr; <strong>${builderInstance.escapeHtml(targetLabel)}</strong></span>
+                <span class="graph-port-dot-out ${nextId === 'submit' ? 'green' : 'cyan'}"></span>
               </div>
             `;
           }
@@ -117,18 +160,36 @@ window.BuilderFlowchart = {
       branchHtml += `</div>`;
     }
 
-    const defaultNext = sec.nextSectionId || 'inherit';
-    let defaultNextLabel = 'Lanjut ke Bagian Berikutnya (Default)';
-    if (defaultNext === 'submit') defaultNextLabel = 'Kirim / Selesai Formulir';
-    else if (defaultNext !== 'inherit') {
-      const ts = builderInstance.sections.find(s => s.id === defaultNext);
-      if (ts) defaultNextLabel = `Lanjut ke: ${ts.title}`;
+    // Default flow calculation
+    const rawNext = sec.nextSectionId || 'next';
+    let defaultNextLabel = '';
+    let portColor = 'purple';
+
+    if (rawNext === 'submit') {
+      defaultNextLabel = 'Kirim / Selesai Formulir';
+      portColor = 'green';
+    } else if (rawNext !== 'next' && rawNext !== 'inherit') {
+      const targetSec = sections.find(s => s.id === rawNext);
+      const targetSecIdx = sections.findIndex(s => s.id === rawNext);
+      if (targetSec) {
+        defaultNextLabel = `Lanjut ke Bagian ${targetSecIdx + 1}: ${targetSec.title || 'Tanpa Judul'}`;
+      } else {
+        defaultNextLabel = `Lanjut ke: ${rawNext}`;
+      }
+    } else {
+      if (secIdx < sections.length - 1) {
+        const nextSec = sections[secIdx + 1];
+        defaultNextLabel = `Lanjut ke Bagian ${secIdx + 2}: ${nextSec.title || 'Tanpa Judul'} (Default)`;
+      } else {
+        defaultNextLabel = 'Kirim / Selesai Formulir (Bagian Terakhir)';
+        portColor = 'green';
+      }
     }
 
     node.innerHTML = `
-      <div class="graph-node-port-in"></div>
+      ${secIdx > 0 ? '<div class="graph-node-port-in"></div>' : ''}
       <div class="graph-node-top">
-        <span class="graph-node-badge">${secIdx === 0 ? 'Mulai' : `Bagian ${secIdx + 1}`}</span>
+        <span class="graph-node-badge">${secIdx === 0 ? 'Mulai (Bagian 1)' : `Bagian ${secIdx + 1}`}</span>
         <span class="graph-node-q-count"><i data-lucide="help-circle"></i> ${secQuestions.length} Soal</span>
       </div>
       <div class="graph-node-body">
@@ -138,7 +199,7 @@ window.BuilderFlowchart = {
         <div class="node-default-flow" id="port-default-${sec.id}">
           <i data-lucide="corner-down-right"></i>
           <span>${builderInstance.escapeHtml(defaultNextLabel)}</span>
-          <span class="graph-port-dot-out ${sec.nextSectionId === 'submit' ? 'green' : 'purple'}"></span>
+          <span class="graph-port-dot-out ${portColor}"></span>
         </div>
       </div>
     `;
@@ -149,59 +210,89 @@ window.BuilderFlowchart = {
   drawWires(svgLayer, canvas, sections, questions) {
     if (!svgLayer || !canvas) return;
 
-    // Clear existing paths while preserving defs
     const defs = svgLayer.querySelector('defs');
     svgLayer.innerHTML = '';
     if (defs) svgLayer.appendChild(defs);
 
     sections.forEach((sec, idx) => {
-      // 1. Branch wires (Cyan)
+      // 1. Option-Level Branch Wires (Cyan / Green for Submit)
       const secQuestions = questions.filter(q => q.sectionId === sec.id);
       secQuestions.forEach(q => {
-        if ((q.type === 'choice' || q.type === 'checkbox') && Array.isArray(q.options)) {
+        if ((q.type === 'choice' || q.type === 'checkbox' || q.type === 'dropdown') && Array.isArray(q.options)) {
           q.options.forEach((opt, oIdx) => {
-            if (typeof opt === 'object' && opt.nextSectionId && opt.nextSectionId !== 'inherit' && opt.nextSectionId !== 'next' && opt.nextSectionId !== 'submit') {
+            const nextId = typeof opt === 'object' ? (opt.nextSectionId || '') : '';
+            if (nextId && nextId !== 'inherit' && nextId !== 'next') {
               const fromPort = document.getElementById(`port-out-${sec.id}-${q.id}-${oIdx}`);
-              const toNode = document.getElementById(`graph-node-${opt.nextSectionId}`);
+              let toNode = null;
+              let wireColor = 'cyan';
+
+              if (nextId === 'submit') {
+                toNode = document.getElementById('graph-node-submit');
+                wireColor = 'green';
+              } else {
+                toNode = document.getElementById(`graph-node-${nextId}`);
+              }
+
               if (fromPort && toNode) {
-                this.connectNodesWithBezier(svgLayer, fromPort, toNode, 'cyan', canvas);
+                this.connectNodesWithBezier(svgLayer, fromPort, toNode, wireColor, canvas);
               }
             }
           });
         }
       });
 
-      // 2. Default flow wires (Purple / Green)
-      if (sec.nextSectionId && sec.nextSectionId !== 'inherit' && sec.nextSectionId !== 'submit') {
-        const fromDefault = document.getElementById(`port-default-${sec.id}`);
-        const toNode = document.getElementById(`graph-node-${sec.nextSectionId}`);
-        if (fromDefault && toNode) {
-          this.connectNodesWithBezier(svgLayer, fromDefault, toNode, 'purple', canvas);
-        }
-      } else if (sec.nextSectionId === 'inherit' && idx < sections.length - 1) {
-        const nextSec = sections[idx + 1];
-        const fromDefault = document.getElementById(`port-default-${sec.id}`);
-        const toNode = document.getElementById(`graph-node-${nextSec.id}`);
-        if (fromDefault && toNode) {
-          this.connectNodesWithBezier(svgLayer, fromDefault, toNode, 'green', canvas);
+      // 2. Section-Level Default Navigation Wire
+      const fromDefault = document.getElementById(`port-default-${sec.id}`);
+      const rawNext = sec.nextSectionId || 'next';
+
+      if (fromDefault) {
+        if (rawNext === 'submit') {
+          const submitNode = document.getElementById('graph-node-submit');
+          if (submitNode) {
+            this.connectNodesWithBezier(svgLayer, fromDefault, submitNode, 'green', canvas);
+          }
+        } else if (rawNext !== 'next' && rawNext !== 'inherit') {
+          const targetNode = document.getElementById(`graph-node-${rawNext}`);
+          if (targetNode) {
+            this.connectNodesWithBezier(svgLayer, fromDefault, targetNode, 'purple', canvas);
+          }
+        } else {
+          // Default sequential flow
+          if (idx < sections.length - 1) {
+            const nextSec = sections[idx + 1];
+            const nextNode = document.getElementById(`graph-node-${nextSec.id}`);
+            if (nextNode) {
+              this.connectNodesWithBezier(svgLayer, fromDefault, nextNode, 'purple', canvas);
+            }
+          } else {
+            // Last section naturally flows to submit
+            const submitNode = document.getElementById('graph-node-submit');
+            if (submitNode) {
+              this.connectNodesWithBezier(svgLayer, fromDefault, submitNode, 'green', canvas);
+            }
+          }
         }
       }
     });
   },
 
   connectNodesWithBezier(svgLayer, fromEl, toNode, colorType, canvas) {
-    const fromRect = fromEl.getBoundingClientRect();
-    const toRect = toNode.getBoundingClientRect();
+    const fromPortDot = fromEl.querySelector('.graph-port-dot-out') || fromEl;
+    const toPortDot = toNode.querySelector('.graph-node-port-in') || toNode;
+
+    const fromRect = fromPortDot.getBoundingClientRect();
+    const toRect = toPortDot.getBoundingClientRect();
     const canvasRect = canvas.getBoundingClientRect();
     const zoom = this.currentZoom || 1;
 
-    // Convert screen coordinates to canvas coordinate space
-    const x1 = (fromRect.right - canvasRect.left) / zoom;
+    // Normalize coordinates to canvas coordinate space regardless of pan / zoom
+    const x1 = (fromRect.left + fromRect.width / 2 - canvasRect.left) / zoom;
     const y1 = (fromRect.top + fromRect.height / 2 - canvasRect.top) / zoom;
-    const x2 = (toRect.left - canvasRect.left) / zoom;
-    const y2 = (toRect.top + 32 - canvasRect.top) / zoom;
+    const x2 = (toRect.left + toRect.width / 2 - canvasRect.left) / zoom;
+    const y2 = (toRect.top + toRect.height / 2 - canvasRect.top) / zoom;
 
-    const dx = Math.max(Math.abs(x2 - x1) * 0.55, 60);
+    // Smooth Bezier Curve with horizontal bias
+    const dx = Math.max(Math.abs(x2 - x1) * 0.5, 80);
     const pathData = `M ${x1} ${y1} C ${x1 + dx} ${y1}, ${x2 - dx} ${y2}, ${x2} ${y2}`;
 
     const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
@@ -216,7 +307,6 @@ window.BuilderFlowchart = {
     this.initializedPan = true;
 
     viewport.addEventListener('mousedown', (e) => {
-      // Pan only if clicked on empty canvas/viewport or middle click
       if (e.target.closest('.graph-node-card')) return;
       this.isPanning = true;
       this.startX = e.clientX - this.panX;
@@ -238,7 +328,6 @@ window.BuilderFlowchart = {
       }
     });
 
-    // Zoom on mouse wheel with ctrl/meta or normal wheel
     viewport.addEventListener('wheel', (e) => {
       e.preventDefault();
       if (e.deltaY < 0) {

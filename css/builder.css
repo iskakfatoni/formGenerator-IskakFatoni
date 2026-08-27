@@ -2817,3 +2817,21 @@ input:checked + .slider:before {
   font-size: 0.95rem !important;
   gap: 8px !important;
 }
+
+
+/* Submit Terminal Node Styles */
+.graph-node-card.end-terminal-node {
+  border-color: #10b981 !important;
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(15, 23, 42, 0.95) 100%) !important;
+  box-shadow: 0 12px 30px rgba(16, 185, 129, 0.3) !important;
+}
+
+.graph-node-badge.badge-green {
+  background: rgba(16, 185, 129, 0.25) !important;
+  color: #6ee7b7 !important;
+}
+
+.graph-node-port-in.green {
+  background: #10b981 !important;
+  box-shadow: 0 0 8px #10b981 !important;
+}
