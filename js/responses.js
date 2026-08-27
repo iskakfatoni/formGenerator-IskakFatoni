@@ -374,8 +374,7 @@ class ResponsesDashboard {
       rows.push(row.map(v => '"' + String(v).replace(/"/g, '""') + '"').join(','));
     });
 
-    const csvContent = 'data:text/csv;charset=utf-8,﻿' + rows.join('
-');
+    const csvContent = 'data:text/csv;charset=utf-8,﻿' + rows.join(String.fromCharCode(10));
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement('a');
     link.setAttribute('href', encodedUri);
