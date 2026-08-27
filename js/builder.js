@@ -7,12 +7,20 @@
 class FormBuilder {
 
   updatePublishUI() {
+    if (!this.btnTogglePublish) this.btnTogglePublish = document.getElementById('btn-toggle-publish');
+    if (!this.publishLabel) this.publishLabel = document.getElementById('btn-publish-label');
     if (!this.btnTogglePublish || !this.publishLabel) return;
+    
     const isPublished = (this.currentForm && this.currentForm.isPublished !== false);
-    this.btnTogglePublish.classList.toggle('is-published', isPublished);
-    this.btnTogglePublish.classList.toggle('is-draft', !isPublished);
-    this.publishLabel.textContent = isPublished ? 'Published' : 'Draft';
-    this.btnTogglePublish.title = isPublished ? 'Status: Dipublikasikan (Klik untuk jadikan Draft)' : 'Status: Draft (Klik untuk Publikasikan)';
+    if (isPublished) {
+      this.btnTogglePublish.className = 'btn btn-sm btn-publish-toggle is-published';
+      this.publishLabel.textContent = 'Published';
+      this.btnTogglePublish.title = 'Status: Dipublikasikan (Klik untuk jadikan Draft)';
+    } else {
+      this.btnTogglePublish.className = 'btn btn-sm btn-publish-toggle is-draft';
+      this.publishLabel.textContent = 'Draft';
+      this.btnTogglePublish.title = 'Status: Draft (Klik untuk Publikasikan)';
+    }
   }
 
 
@@ -646,6 +654,7 @@ class FormBuilder {
     // Update banner UI state
     this.updateBannerUI();
 
+    this.updatePublishUI();
     this.renderQuestions();
   }
 
