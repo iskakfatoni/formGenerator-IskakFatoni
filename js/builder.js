@@ -796,23 +796,23 @@ class FormBuilder {
           </button>
           <span class="piping-syntax-hint">Gunakan <code>{{Nama Pertanyaan}}</code> untuk memanggil jawaban responden secara dinamis</span>
         </div>
-
-        ${totalSections > 1 && secIdx < totalSections - 1 ? `
-          <div class="section-flow-row">
-            <div class="section-flow-label">
-              <i data-lucide="corner-down-right"></i>
-              <span>Setelah Bagian ${secIdx + 1}:</span>
-            </div>
-            <select class="select-section-flow select-styled">
-              <option value="next" ${(!sec.nextSectionId || sec.nextSectionId === 'next') ? 'selected' : ''}>Lanjut ke bagian berikutnya (Default)</option>
-              ${this.sections.map((s, sIdx) => `
-                <option value="${s.id}" ${sec.nextSectionId === s.id ? 'selected' : ''}>Buka Bagian ${sIdx + 1}: ${this.escapeHtml(s.title || 'Tanpa Judul')}</option>
-              `).join('')}
-              <option value="submit" ${sec.nextSectionId === 'submit' ? 'selected' : ''}>Kirim formulir (Submit Langsung)</option>
-            </select>
-          </div>
-        ` : ''}
       </div>
+
+      ${totalSections > 1 && secIdx < totalSections - 1 ? `
+        <div class="section-flow-row ${isCollapsed ? 'is-in-collapsed-sec' : ''}">
+          <div class="section-flow-label">
+            <i data-lucide="corner-down-right"></i>
+            <span>Setelah Bagian ${secIdx + 1}:</span>
+          </div>
+          <select class="select-section-flow select-styled">
+            <option value="next" ${(!sec.nextSectionId || sec.nextSectionId === 'next') ? 'selected' : ''}>Lanjut ke bagian berikutnya (Default)</option>
+            ${this.sections.map((s, sIdx) => `
+              <option value="${s.id}" ${sec.nextSectionId === s.id ? 'selected' : ''}>Buka Bagian ${sIdx + 1}: ${this.escapeHtml(s.title || 'Tanpa Judul')}</option>
+            `).join('')}
+            <option value="submit" ${sec.nextSectionId === 'submit' ? 'selected' : ''}>Kirim formulir (Submit Langsung)</option>
+          </select>
+        </div>
+      ` : ''}
     `;
 
     // Toggle Section Collapse
