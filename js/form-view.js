@@ -1052,7 +1052,10 @@ class FormViewer {
             searchInput.value = '';
             optionItems.forEach(item => item.style.display = '');
             if (emptyHint) emptyHint.classList.add('hidden');
-            setTimeout(() => searchInput.focus(), 50);
+            setTimeout(() => {
+              searchInput.focus();
+              wrap.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }, 60);
           }
         });
 

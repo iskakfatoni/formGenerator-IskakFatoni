@@ -1189,24 +1189,21 @@ body.responder-mode .container {
 
 .searchable-dropdown-menu {
   display: none;
-  position: absolute;
-  top: calc(100% + 6px);
-  left: 0;
+  position: relative; /* IN-FLOW: Naturally expands and pushes down the section/buttons below it */
   width: 100%;
+  margin-top: 8px;
   max-height: 280px;
-  background: #0f172a;
-  border: 1.5px solid rgba(99, 102, 241, 0.4);
+  background: rgba(15, 23, 42, 0.98);
+  border: 1.5px solid rgba(99, 102, 241, 0.5);
   border-radius: 12px;
-  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.6);
-  z-index: 999;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.45);
   flex-direction: column;
   overflow: hidden;
-  backdrop-filter: blur(16px);
-  animation: dropdownSlideDown 0.15s ease-out;
+  animation: dropdownExpandInFlow 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-@keyframes dropdownSlideDown {
-  from { opacity: 0; transform: translateY(-8px); }
+@keyframes dropdownExpandInFlow {
+  from { opacity: 0; transform: translateY(-6px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
