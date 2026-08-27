@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%236366f1'><path d='M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z'/></svg>">
-  <title>formGenerator-IskakFatoni - Modern Form Builder & Excel Export</title>
+  <title>formGenerator-IskakFatoni - Portal Masuk & Workspace</title>
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
@@ -35,42 +35,20 @@
   <!-- Main Top Navigation -->
   <header id="main-nav" class="navbar glass">
     <div class="nav-container">
-      <div class="brand" onclick="window.scrollTo({ top: 0, behavior: 'smooth' })">
+      <div class="brand" onclick="window.location.href = 'index.html'">
         <div class="brand-icon">
           <i data-lucide="sparkles"></i>
         </div>
         <div class="brand-text">
           <span class="brand-name">formGenerator-IskakFatoni</span>
-          <span class="brand-tag">Cloud & Excel</span>
+          <span class="brand-tag">Portal Workspace</span>
         </div>
       </div>
 
-      <nav class="nav-links" id="nav-links">
-        <a href="#fitur" class="nav-link">
-          <i data-lucide="layers"></i>
-          <span>Fitur</span>
-        </a>
-        <a href="#keunggulan" class="nav-link">
-          <i data-lucide="shield-check"></i>
-          <span>Keunggulan</span>
-        </a>
-        <a href="#cara-kerja" class="nav-link">
-          <i data-lucide="workflow"></i>
-          <span>Cara Kerja</span>
-        </a>
-        <a href="#demo" class="nav-link">
-          <i data-lucide="play-circle"></i>
-          <span>Preview</span>
-        </a>
-      </nav>
-
       <div class="nav-actions">
-        <!-- Auth Status / Action Pill -->
-        <button id="nav-user-auth-pill" class="user-auth-pill logged-out" title="Masuk atau Keluar Akun">
-          <span id="nav-user-auth-avatar" class="nav-avatar-icon">
-            <i data-lucide="log-in"></i>
-          </span>
-          <span id="nav-user-auth-name" class="nav-user-name">Masuk / Daftar</span>
+        <button class="btn btn-secondary btn-sm" onclick="window.location.href = 'form.html#/dashboard'" title="Langsung buka Dashboard Formulir">
+          <i data-lucide="layout-dashboard"></i>
+          <span>Buka Dashboard</span>
         </button>
 
         <button id="btn-theme-toggle" class="icon-btn" title="Ganti Tema (Gelap/Terang)">
@@ -80,382 +58,164 @@
     </div>
   </header>
 
-  <!-- Main Landing Container -->
-  <main class="container">
+  <!-- Main Portal Container -->
+  <main class="container" style="max-width: 1080px; min-height: calc(100vh - 140px); display: flex; flex-direction: column; justify-content: center; padding: 40px 20px 20px 20px;">
 
-    <!-- HERO SECTION & LOGIN PORTAL -->
-    <section class="landing-section" style="padding-top: 40px;">
-      <div class="dashboard-hero-container">
-        
-        <!-- Left Hero Presentation Content -->
-        <div class="dashboard-hero glass-card">
-          <div class="hero-content">
-            <div class="landing-eyebrow">
-              <i data-lucide="sparkles"></i>
-              <span>Platform Formulir Modern & Realtime</span>
-            </div>
-            
-            <h1 class="hero-title" style="font-size: 2.6rem;">
-              Formulir Cerdas <span class="gradient-text">Cloud</span>
-            </h1>
-            
-            <p class="hero-desc" style="font-size: 1.05rem; line-height: 1.6;">
-              Buat formulir kustom interaktif, kumpulkan tanggapan responden secara realtime dengan Cloud, dan ekspor rekapan data langsung ke format spreadsheet.
-            </p>
-            
-            <div class="hero-cta-group" style="margin-top: 24px;">
-              <button id="landing-main-cta" class="btn btn-primary btn-lg">
-                <i data-lucide="arrow-right"></i>
-                <span>Mulai Buat Form Gratis</span>
-              </button>
-              <a href="#fitur" class="btn btn-secondary btn-lg">
-                <i data-lucide="layers"></i>
-                <span>Lihat Fitur</span>
-              </a>
-            </div>
-
-            <div class="hero-feature-tags">
-              <span class="hero-tag"><i data-lucide="zap"></i> Realtime Sync</span>
-              <span class="hero-tag"><i data-lucide="file-spreadsheet"></i> Export .xlsx</span>
-              <span class="hero-tag"><i data-lucide="lock"></i> Firebase Auth</span>
-              <span class="hero-tag"><i data-lucide="smartphone"></i> 100% Responsif</span>
-            </div>
+    <!-- FOCUSED PORTAL HERO & AUTH BOX -->
+    <div class="dashboard-hero-container" style="margin-bottom: 30px;">
+      
+      <!-- Left Info Presentation -->
+      <div class="dashboard-hero glass-card" style="display: flex; flex-direction: column; justify-content: center; padding: 36px 32px;">
+        <div class="hero-content">
+          <div class="landing-eyebrow" style="margin-bottom: 14px;">
+            <i data-lucide="sparkles"></i>
+            <span>Platform Formulir Cloud & Realtime</span>
           </div>
-        </div>
-
-        <!-- Right Hero Authentication Card -->
-        <div id="hero-auth-container" class="hero-auth-container glass-card">
           
-          <!-- State 1: Logged Out Card (Login & Register Portal) -->
-          <div id="hero-auth-logged-out" class="hero-auth-box">
-            <div class="auth-box-header">
-              <div class="auth-icon-badge">
-                <i data-lucide="user-check"></i>
-              </div>
-              <div>
-                <h3 class="auth-box-title">Portal Akun & Workspace</h3>
-                <p class="auth-box-subtitle">Masuk atau daftar untuk mengelola formulir Anda</p>
-              </div>
-            </div>
-
-            <!-- Tab Switcher (Masuk vs Daftar) -->
-            <div class="auth-tabs">
-              <button type="button" id="tab-auth-login" class="auth-tab-btn active">
-                <i data-lucide="log-in"></i>
-                <span>Masuk (Login)</span>
-              </button>
-              <button type="button" id="tab-auth-register" class="auth-tab-btn">
-                <i data-lucide="user-plus"></i>
-                <span>Daftar Akun</span>
-              </button>
-            </div>
-
-            <!-- Google Login Button -->
-            <button type="button" id="btn-hero-google-login" class="btn btn-google-auth">
-              <svg class="google-svg-icon" viewBox="0 0 24 24">
-                <path fill="#EA4335" d="M12 5c1.56 0 2.97.57 4.08 1.5l3.05-3.05C17.27 1.69 14.81 1 12 1 7.52 1 3.73 3.56 1.87 7.29l3.71 2.88C6.46 7.23 8.99 5 12 5z"/>
-                <path fill="#4285F4" d="M23.49 12.27c0-.79-.07-1.54-.19-2.27H12v4.51h6.47c-.29 1.48-1.14 2.73-2.4 3.58l3.71 2.88c2.16-1.99 3.71-4.93 3.71-8.7z"/>
-                <path fill="#FBBC05" d="M5.58 14.83c-.23-.69-.36-1.42-.36-2.18s.13-1.49.36-2.18L1.87 7.59C1.1 9.13.67 10.86.67 12.65s.43 3.52 1.2 5.06l3.71-2.88z"/>
-                <path fill="#34A853" d="M12 23.65c3.24 0 5.95-1.08 7.93-2.93l-3.71-2.88c-1.07.72-2.44 1.15-4.22 1.15-3.01 0-5.54-2.23-6.42-5.17L1.87 16.7C3.73 20.44 7.52 23.65 12 23.65z"/>
-              </svg>
-              <span>Lanjut dengan Google</span>
-            </button>
-
-            <div class="auth-divider">
-              <span>atau gunakan Email & Sandi</span>
-            </div>
-
-            <!-- Form 1: Firebase Email & Password LOGIN Form -->
-            <form id="hero-email-login-form" class="auth-email-form">
-              <div class="auth-input-group">
-                <div class="auth-field-wrap">
-                  <i data-lucide="mail" class="input-icon"></i>
-                  <input type="email" id="auth-email-input" class="input-text auth-input" placeholder="Masukkan alamat email Anda..." autocomplete="email" required>
-                </div>
-                <div class="auth-field-wrap">
-                  <i data-lucide="lock" class="input-icon"></i>
-                  <input type="password" id="auth-password-input" class="input-text auth-input" placeholder="Masukkan Kata Sandi..." minlength="6" autocomplete="current-password" required>
-                </div>
-              </div>
-
-              <div class="auth-submit-row">
-                <button type="submit" id="btn-auth-submit" class="btn btn-primary btn-block">
-                  <i data-lucide="log-in" id="auth-submit-icon"></i>
-                  <span id="auth-submit-label">Masuk ke Workspace</span>
-                </button>
-              </div>
-            </form>
-
-            <!-- Form 2: Firebase Email & Password REGISTER Form -->
-            <form id="hero-email-register-form" class="auth-email-form hidden">
-              <div class="auth-input-group">
-                <div class="auth-field-wrap">
-                  <i data-lucide="user" class="input-icon"></i>
-                  <input type="text" id="reg-name-input" class="input-text auth-input" placeholder="Nama Lengkap Anda..." autocomplete="name" required>
-                </div>
-                <div class="auth-field-wrap">
-                  <i data-lucide="mail" class="input-icon"></i>
-                  <input type="email" id="reg-email-input" class="input-text auth-input" placeholder="Alamat Email Baru..." autocomplete="email" required>
-                </div>
-                <div class="auth-field-wrap">
-                  <i data-lucide="lock" class="input-icon"></i>
-                  <input type="password" id="reg-password-input" class="input-text auth-input" placeholder="Buat Kata Sandi (min. 6 karakter)..." minlength="6" autocomplete="new-password" required>
-                </div>
-              </div>
-
-              <div class="auth-submit-row">
-                <button type="submit" id="btn-register-submit" class="btn btn-primary btn-block">
-                  <i data-lucide="user-plus" id="register-submit-icon"></i>
-                  <span id="register-submit-label">Buat Akun Baru</span>
-                </button>
-              </div>
-            </form>
-
-          </div>
-
-          <!-- State 2: Logged In Card -->
-          <div id="hero-auth-logged-in" class="hero-auth-box hidden">
-            <div class="auth-profile-card">
-              <div class="auth-profile-top">
-                <div id="hero-user-avatar" class="hero-user-avatar">
-                  <i data-lucide="user"></i>
-                </div>
-                <div class="hero-user-info">
-                  <div class="verified-badge">
-                    <span class="pulse-dot"></span>
-                    <span id="hero-user-role">Kreator Terverifikasi</span>
-                  </div>
-                  <h3 id="hero-user-name" class="hero-user-name">Pengguna</h3>
-                  <p id="hero-user-email" class="hero-user-email">user@gmail.com</p>
-                </div>
-              </div>
-
-              <div class="auth-profile-actions">
-                <button class="btn btn-primary btn-block btn-lg" onclick="window.location.href = 'form.html#/dashboard'">
-                  <i data-lucide="layout-dashboard"></i>
-                  <span>Buka Form Builder & Dashboard</span>
-                </button>
-                <button type="button" id="btn-hero-logout" class="btn btn-ghost btn-sm btn-block text-danger">
-                  <i data-lucide="log-out"></i>
-                  <span>Keluar (Logout)</span>
-                </button>
-              </div>
-            </div>
-          </div>
-
-        </div>
-      </div>
-    </section>
-
-    <!-- FEATURES SHOWCASE SECTION -->
-    <section id="fitur" class="landing-section">
-      <div class="landing-section-header">
-        <div class="landing-eyebrow">
-          <i data-lucide="sparkles"></i>
-          <span>Fitur Lengkap</span>
-        </div>
-        <h2 class="landing-section-title">Dirancang untuk Kemudahan & Produktivitas</h2>
-        <p class="landing-section-desc">
-          Semua kebutuhan pembuatan formulir, pengumpulan respon responden, hingga analisis spreadsheet terintegrasi dalam satu platform modern.
-        </p>
-      </div>
-
-      <div class="landing-grid-3">
-        <!-- Feature 1 -->
-        <div class="landing-feature-card glass-card">
-          <div class="feature-icon-box">
-            <i data-lucide="edit-3"></i>
-          </div>
-          <h3>Form Builder Fleksibel</h3>
-          <p>Dukungan ragam jenis pertanyaan: Jawaban Singkat, Paragraf, Pilihan Ganda, Checkbox, Rating Bintang 1-5, dan Pemilih Tanggal.</p>
-        </div>
-
-        <!-- Feature 2 -->
-        <div class="landing-feature-card glass-card">
-          <div class="feature-icon-box emerald">
-            <i data-lucide="database"></i>
-          </div>
-          <h3>Cloud Firestore Realtime</h3>
-          <p>Setiap jawaban yang dikirim responden langsung tersinkronisasi otomatis ke Google Firebase Cloud Firestore tanpa delay.</p>
-        </div>
-
-        <!-- Feature 3 -->
-        <div class="landing-feature-card glass-card">
-          <div class="feature-icon-box excel">
-            <i data-lucide="file-spreadsheet"></i>
-          </div>
-          <h3>Export Excel (.xlsx) 1-Klik</h3>
-          <p>Unduh seluruh data respon dalam format Microsoft Excel resmi dengan format header kolom pertanyaan yang rapi dan siap olah.</p>
-        </div>
-
-        <!-- Feature 4 -->
-        <div class="landing-feature-card glass-card">
-          <div class="feature-icon-box amber">
-            <i data-lucide="layers"></i>
-          </div>
-          <h3>Multi-Section / Multi-Page</h3>
-          <p>Bagi formulir panjang menjadi beberapa bagian halaman dengan indikator progress bar otomatis untuk meningkatkan kenyamanan responden.</p>
-        </div>
-
-        <!-- Feature 5 -->
-        <div class="landing-feature-card glass-card">
-          <div class="feature-icon-box cyan">
-            <i data-lucide="palette"></i>
-          </div>
-          <h3>Kustomisasi Tema & Visual</h3>
-          <p>Pilih dari palet warna aksen modern, tambahkan gambar banner kustom, dan sesuaikan pesan terima kasih untuk responden.</p>
-        </div>
-
-        <!-- Feature 6 -->
-        <div class="landing-feature-card glass-card">
-          <div class="feature-icon-box rose">
-            <i data-lucide="shield-check"></i>
-          </div>
-          <h3>Akses Terproteksi</h3>
-          <p>Halaman dashboard dan form builder dilindungi autentikasi Firebase. Hanya admin terdaftar yang dapat mengedit dan melihat data respon.</p>
-        </div>
-      </div>
-    </section>
-
-    <!-- KEUNGGULAN SECTION -->
-    <section id="keunggulan" class="landing-section">
-      <div class="landing-section-header">
-        <div class="landing-eyebrow">
-          <i data-lucide="check-circle-2"></i>
-          <span>Keunggulan Utama</span>
-        </div>
-        <h2 class="landing-section-title">Mengapa Memilih formGenerator-IskakFatoni?</h2>
-        <p class="landing-section-desc">
-          Bebas biaya langganan, tanpa batasan baris data, dan dapat di-host langsung di GitHub Pages.
-        </p>
-      </div>
-
-      <div class="landing-grid-3">
-        <div class="landing-feature-card glass-card">
-          <div class="feature-icon-box cyan">
-            <i data-lucide="infinity"></i>
-          </div>
-          <h3>Tanpa Batasan Respon</h3>
-          <p>Kumpulkan respon sebanyak kapasitas Firebase Anda tanpa dibatasi kuota bulanan seperti platform berbayar.</p>
-        </div>
-
-        <div class="landing-feature-card glass-card">
-          <div class="feature-icon-box emerald">
-            <i data-lucide="zap"></i>
-          </div>
-          <h3>Super Ringan & Cepat</h3>
-          <p>Dibangun dengan Vanilla JS dan CSS modern murni tanpa library berat, menjamin waktu muat instan di semua perangkat.</p>
-        </div>
-
-        <div class="landing-feature-card glass-card">
-          <div class="feature-icon-box amber">
-            <i data-lucide="share-2"></i>
-          </div>
-          <h3>Tautan Bagikan Instan</h3>
-          <p>Responden dapat langsung membuka dan mengisi form melalui ponsel atau komputer tanpa perlu mendaftar akun.</p>
-        </div>
-      </div>
-    </section>
-
-    <!-- CARA KERJA SECTION -->
-    <section id="cara-kerja" class="landing-section">
-      <div class="landing-section-header">
-        <div class="landing-eyebrow">
-          <i data-lucide="workflow"></i>
-          <span>Alur Penggunaan</span>
-        </div>
-        <h2 class="landing-section-title">4 Langkah Mudah</h2>
-        <p class="landing-section-desc">
-          Mulai dari pembuatan form hingga rekapitulasi data Excel hanya dalam hitungan menit.
-        </p>
-      </div>
-
-      <div class="landing-steps-grid">
-        <div class="landing-step-card glass-card">
-          <div class="step-badge">1</div>
-          <h4>Masuk / Login</h4>
-          <p>Gunakan akun Google atau Email & Password Anda pada portal login.</p>
-        </div>
-
-        <div class="landing-step-card glass-card">
-          <div class="step-badge">2</div>
-          <h4>Buat Formulir</h4>
-          <p>Susun pertanyaan, pilih tipe input, atur bagian halaman, dan sesuaikan tema.</p>
-        </div>
-
-        <div class="landing-step-card glass-card">
-          <div class="step-badge">3</div>
-          <h4>Bagikan Tautan</h4>
-          <p>Salin tautan formulir dan sebarkan ke responden melalui WhatsApp atau Email.</p>
-        </div>
-
-        <div class="landing-step-card glass-card">
-          <div class="step-badge">4</div>
-          <h4>Download Excel</h4>
-          <p>Pantau respon masuk di dashboard dan unduh data ke format spreadsheet .xlsx.</p>
-        </div>
-      </div>
-    </section>
-
-    <!-- DEMO / PREVIEW SECTION -->
-    <section id="demo" class="landing-section">
-      <div class="demo-preview-card glass-card">
-        <div>
-          <div class="landing-eyebrow">
-            <i data-lucide="eye"></i>
-            <span>Tampilan Responden & Admin</span>
-          </div>
-          <h2 style="font-size: 1.9rem; margin-bottom: 14px;">Pengalaman Responden yang Elegan & Mudah Digunakan</h2>
-          <p style="color: var(--text-secondary); line-height: 1.6; margin-bottom: 20px;">
-            Responden mendapatkan tampilan formulir glassmorphism yang responsif, validasi pertanyaan otomatis, dan indikator pengisian bertahap (multi-section) yang jelas.
+          <h1 class="hero-title" style="font-size: 2.3rem; margin-bottom: 14px; letter-spacing: -0.02em;">
+            Form Generator & <span class="gradient-text">Analytics</span>
+          </h1>
+          
+          <p class="hero-desc" style="font-size: 0.96rem; line-height: 1.6; color: var(--text-secondary); margin-bottom: 22px;">
+            Platform pembuatan formulir modern dengan fitur survei percabangan multi-bagian, kuis otomatis, perekaman lokasi GPS, tanda tangan digital, grafis peta alur 2D, dan ekspor data Excel (.xlsx) realtime.
           </p>
-          <div style="display: flex; gap: 12px; flex-wrap: wrap;">
-            <button class="btn btn-primary" onclick="const el = document.getElementById('hero-auth-container'); if(el) el.scrollIntoView({behavior: 'smooth', block: 'center'});">
-              <i data-lucide="log-in"></i>
-              <span>Masuk untuk Mulai</span>
-            </button>
-          </div>
-        </div>
 
-        <div class="demo-preview-mockup">
-          <div class="mockup-header-bar">
-            <span class="mockup-dot red"></span>
-            <span class="mockup-dot yellow"></span>
-            <span class="mockup-dot green"></span>
-            <span style="font-size: 0.75rem; color: var(--text-muted); margin-left: 8px;">preview-form.html</span>
-          </div>
-          <div class="mockup-item">
-            <span><strong>1. Nama Lengkap *</strong> (Teks Singkat)</span>
-            <span style="color: var(--primary);">Diisi</span>
-          </div>
-          <div class="mockup-item">
-            <span><strong>2. Penilaian Layanan *</strong> (Rating ⭐⭐⭐⭐⭐)</span>
-            <span style="color: var(--accent-amber);">5 Bintang</span>
-          </div>
-          <div class="mockup-item">
-            <span><strong>3. Pilihan Kategori *</strong> (Pilihan Ganda)</span>
-            <span style="color: var(--accent-emerald);">Terpilih</span>
-          </div>
-          <div style="text-align: right; padding-top: 6px;">
-            <button class="btn btn-primary btn-sm" style="pointer-events: none;">Kirim Formulir <i data-lucide="send"></i></button>
+          <div class="hero-feature-tags" style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px;">
+            <span class="hero-tag"><i data-lucide="layers"></i> Multi-Bagian & Percabangan</span>
+            <span class="hero-tag"><i data-lucide="git-merge"></i> Grafis Peta Alur 2D</span>
+            <span class="hero-tag"><i data-lucide="file-spreadsheet"></i> Ekspor Excel (.xlsx)</span>
+            <span class="hero-tag"><i data-lucide="map-pin"></i> GPS & Tanda Tangan</span>
+            <span class="hero-tag"><i data-lucide="cloud"></i> Cloud Firestore</span>
           </div>
         </div>
       </div>
-    </section>
 
-    <!-- CALL TO ACTION BANNER -->
-    <div class="landing-cta-banner">
-      <h2>Siap Mengelola Formulir Online Anda?</h2>
-      <p>Masuk sekarang dan buat formulir pertama Anda dengan integrasi Cloud Firestore dan export Excel otomatis.</p>
-      <button class="btn btn-primary btn-lg" onclick="const el = document.getElementById('hero-auth-container'); if(el) el.scrollIntoView({behavior: 'smooth', block: 'center'});">
-        <i data-lucide="sparkles"></i>
-        <span>Mulai Sekarang</span>
-      </button>
+      <!-- Right Hero Authentication Card -->
+      <div id="hero-auth-container" class="hero-auth-container glass-card">
+        
+        <!-- State 1: Logged Out Card (Login & Register Portal) -->
+        <div id="hero-auth-logged-out" class="hero-auth-box">
+          <div class="auth-box-header">
+            <div class="auth-icon-badge">
+              <i data-lucide="user-check"></i>
+            </div>
+            <div>
+              <h3 class="auth-box-title">Portal Akun & Workspace</h3>
+              <p class="auth-box-subtitle">Masuk untuk mengelola formulir Anda</p>
+            </div>
+          </div>
+
+          <!-- Tab Switcher (Masuk vs Daftar) -->
+          <div class="auth-tabs">
+            <button type="button" id="tab-auth-login" class="auth-tab-btn active">
+              <i data-lucide="log-in"></i>
+              <span>Masuk (Login)</span>
+            </button>
+            <button type="button" id="tab-auth-register" class="auth-tab-btn">
+              <i data-lucide="user-plus"></i>
+              <span>Daftar Akun</span>
+            </button>
+          </div>
+
+          <!-- Google Login Button -->
+          <button type="button" id="btn-hero-google-login" class="btn btn-google-auth">
+            <svg class="google-svg-icon" viewBox="0 0 24 24">
+              <path fill="#EA4335" d="M12 5c1.56 0 2.97.57 4.08 1.5l3.05-3.05C17.27 1.69 14.81 1 12 1 7.52 1 3.73 3.56 1.87 7.29l3.71 2.88C6.46 7.23 8.99 5 12 5z"/>
+              <path fill="#4285F4" d="M23.49 12.27c0-.79-.07-1.54-.19-2.27H12v4.51h6.47c-.29 1.48-1.14 2.73-2.4 3.58l3.71 2.88c2.16-1.99 3.71-4.93 3.71-8.7z"/>
+              <path fill="#FBBC05" d="M5.58 14.83c-.23-.69-.36-1.42-.36-2.18s.13-1.49.36-2.18L1.87 7.59C1.1 9.13.67 10.86.67 12.65s.43 3.52 1.2 5.06l3.71-2.88z"/>
+              <path fill="#34A853" d="M12 23.65c3.24 0 5.95-1.08 7.93-2.93l-3.71-2.88c-1.07.72-2.44 1.15-4.22 1.15-3.01 0-5.54-2.23-6.42-5.17L1.87 16.7C3.73 20.44 7.52 23.65 12 23.65z"/>
+            </svg>
+            <span>Lanjut dengan Google</span>
+          </button>
+
+          <div class="auth-divider">
+            <span>atau gunakan Email & Sandi</span>
+          </div>
+
+          <!-- Form 1: Firebase Email & Password LOGIN Form -->
+          <form id="hero-email-login-form" class="auth-email-form">
+            <div class="auth-input-group">
+              <div class="auth-field-wrap">
+                <i data-lucide="mail" class="input-icon"></i>
+                <input type="email" id="auth-email-input" class="input-text auth-input" placeholder="Masukkan alamat email Anda..." autocomplete="email" required>
+              </div>
+              <div class="auth-field-wrap">
+                <i data-lucide="lock" class="input-icon"></i>
+                <input type="password" id="auth-password-input" class="input-text auth-input" placeholder="Masukkan Kata Sandi..." minlength="6" autocomplete="current-password" required>
+              </div>
+            </div>
+
+            <div class="auth-submit-row">
+              <button type="submit" id="btn-auth-submit" class="btn btn-primary btn-block">
+                <i data-lucide="log-in" id="auth-submit-icon"></i>
+                <span id="auth-submit-label">Masuk ke Workspace</span>
+              </button>
+            </div>
+          </form>
+
+          <!-- Form 2: Firebase Email & Password REGISTER Form -->
+          <form id="hero-email-register-form" class="auth-email-form hidden">
+            <div class="auth-input-group">
+              <div class="auth-field-wrap">
+                <i data-lucide="user" class="input-icon"></i>
+                <input type="text" id="reg-name-input" class="input-text auth-input" placeholder="Nama Lengkap Anda..." autocomplete="name" required>
+              </div>
+              <div class="auth-field-wrap">
+                <i data-lucide="mail" class="input-icon"></i>
+                <input type="email" id="reg-email-input" class="input-text auth-input" placeholder="Alamat Email Baru..." autocomplete="email" required>
+              </div>
+              <div class="auth-field-wrap">
+                <i data-lucide="lock" class="input-icon"></i>
+                <input type="password" id="reg-password-input" class="input-text auth-input" placeholder="Buat Kata Sandi (min. 6 karakter)..." minlength="6" autocomplete="new-password" required>
+              </div>
+            </div>
+
+            <div class="auth-submit-row">
+              <button type="submit" id="btn-register-submit" class="btn btn-primary btn-block">
+                <i data-lucide="user-plus" id="register-submit-icon"></i>
+                <span id="register-submit-label">Buat Akun Baru</span>
+              </button>
+            </div>
+          </form>
+
+        </div>
+
+        <!-- State 2: Logged In Card -->
+        <div id="hero-auth-logged-in" class="hero-auth-box hidden">
+          <div class="auth-profile-card">
+            <div class="auth-profile-top">
+              <div id="hero-user-avatar" class="hero-user-avatar">
+                <i data-lucide="user"></i>
+              </div>
+              <div class="hero-user-info">
+                <div class="verified-badge">
+                  <span class="pulse-dot"></span>
+                  <span id="hero-user-role">Kreator Terverifikasi</span>
+                </div>
+                <h3 id="hero-user-name" class="hero-user-name">Pengguna</h3>
+                <p id="hero-user-email" class="hero-user-email">user@gmail.com</p>
+              </div>
+            </div>
+
+            <div class="auth-profile-actions">
+              <button class="btn btn-primary btn-block btn-lg" onclick="window.location.href = 'form.html#/dashboard'">
+                <i data-lucide="layout-dashboard"></i>
+                <span>Buka Dashboard Formulir</span>
+              </button>
+              <button type="button" id="btn-hero-logout" class="btn btn-ghost btn-sm btn-block text-danger">
+                <i data-lucide="log-out"></i>
+                <span>Keluar (Logout)</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </div>
     </div>
 
-    <!-- LANDING FOOTER -->
-    <footer class="landing-footer">
-      <p>&copy; 2026 <strong>formGenerator-IskakFatoni</strong>. Dibuat dengan Firebase Cloud & SheetJS Excel Export.</p>
+    <!-- MINIMAL CLEAN FOOTER -->
+    <footer style="text-align: center; padding: 20px 0; color: var(--text-muted); font-size: 0.82rem; border-top: 1px solid rgba(255,255,255,0.06);">
+      <p>&copy; 2026 <strong>formGenerator-IskakFatoni</strong> • Dibuat dengan Firebase Cloud & SheetJS Excel Export.</p>
     </footer>
 
   </main>
@@ -464,9 +224,9 @@
   <div id="toast-container" class="toast-container"></div>
 
   <!-- Application Logic Modules -->
-  <script src="js/firebase-config.js?v=1.0.2"></script>
-  <script src="js/storage.js?v=1.0.2"></script>
-  <script src="js/auth.js?v=1.0.2"></script>
+  <script src="js/firebase-config.js?v=1.0.3"></script>
+  <script src="js/storage.js?v=1.0.3"></script>
+  <script src="js/auth.js?v=1.0.3"></script>
 
   <!-- Landing Page Helper Script -->
   <script>
