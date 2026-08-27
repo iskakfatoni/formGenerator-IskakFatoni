@@ -1,6 +1,6 @@
 /**
  * FORMCRAFT - 2D Interactive Flowchart & Bezier Wiring Engine
- * Accurately models form navigation: option branches, question flow, and section sequences.
+ * Streamlined 2D node graph with consolidated branch targets (no redundant option bloat).
  */
 
 window.BuilderFlowchart = {
@@ -19,12 +19,10 @@ window.BuilderFlowchart = {
     const viewport = document.getElementById('flowchart-graph-viewport');
     if (!nodesLayer || !svgLayer || !canvas || !viewport) return;
 
-    // Harvest latest DOM values to ensure 100% up-to-date section and option flow
     if (typeof builderInstance.harvestDomValues === 'function') {
       builderInstance.harvestDomValues();
     }
 
-    // Reset pan & zoom
     this.currentZoom = 1;
     this.panX = 40;
     this.panY = 40;
@@ -45,10 +43,10 @@ window.BuilderFlowchart = {
       return;
     }
 
-    // Layout configuration
+    // Grid layout with compact card height
     const cardWidth = 340;
-    const colGap = 120;
-    const rowGap = 60;
+    const colGap = 110;
+    const rowGap = 50;
     const cols = 3;
 
     const colHeights = Array(cols).fill(40);
@@ -62,27 +60,16 @@ window.BuilderFlowchart = {
       const nodeEl = this.createSectionNode(sec, idx, sections, questions, builderInstance, posX, posY);
       nodesLayer.appendChild(nodeEl);
 
-      // Estimate card height
+      // Compact height estimation
       const secQuestions = questions.filter(q => q.sectionId === sec.id);
-      const branchQuestions = secQuestions.filter(q => (q.type === 'choice' || q.type === 'checkbox' || q.type === 'dropdown') && Array.isArray(q.options) && q.options.some(opt => {
-        const nextId = typeof opt === 'object' ? (opt.nextSectionId || '') : '';
-        return nextId && nextId !== 'inherit' && nextId !== 'next';
-      }));
+      const uniqueTargets = this.getSectionUniqueBranches(sec, secQuestions);
+      const branchCount = uniqueTargets.length;
 
-      let branchCount = 0;
-      branchQuestions.forEach(q => {
-        q.options.forEach(opt => {
-          const nextId = typeof opt === 'object' ? (opt.nextSectionId || '') : '';
-          if (nextId && nextId !== 'inherit' && nextId !== 'next') branchCount++;
-        });
-      });
-
-      const estimatedHeight = 160 + (branchCount * 42);
+      const estimatedHeight = 150 + (branchCount * 36);
       colHeights[col] += estimatedHeight + rowGap;
     });
 
-    // 2. Render Submit Terminal Node at bottom right
-    const maxColHeight = Math.max(...colHeights, 600);
+    // 2. Render Submit Terminal Node
     const submitCol = (sections.length) % cols;
     const submitPosX = 50 + submitCol * (cardWidth + colGap);
     const submitPosY = colHeights[submitCol] + 20;
@@ -106,14 +93,45 @@ window.BuilderFlowchart = {
 
     if (window.lucide) window.lucide.createIcons();
 
-    // Adjust canvas dimensions to contain everything comfortably
     canvas.style.minHeight = `${submitPosY + 350}px`;
     canvas.style.minWidth = `${50 + cols * (cardWidth + colGap) + 500}px`;
 
-    // 3. Draw All Connecting Wires after DOM paints
+    // 3. Draw All Clean Wires
     setTimeout(() => {
       this.drawWires(svgLayer, canvas, sections, questions);
     }, 80);
+  },
+
+  /**
+   * Extracts clean unique branch destinations for a section (consolidating multiple options)
+   */
+  getSectionUniqueBranches(sec, secQuestions) {
+    const branches = [];
+    secQuestions.forEach(q => {
+      if ((q.type === 'choice' || q.type === 'checkbox' || q.type === 'dropdown') && Array.isArray(q.options)) {
+        const targetMap = {};
+        q.options.forEach((opt) => {
+          const nextId = typeof opt === 'object' ? (opt.nextSectionId || '') : '';
+          if (nextId && nextId !== 'inherit' && nextId !== 'next') {
+            const optText = typeof opt === 'object' ? (opt.text || '') : opt;
+            if (!targetMap[nextId]) targetMap[nextId] = [];
+            targetMap[nextId].push(optText);
+          }
+        });
+
+        Object.keys(targetMap).forEach(targetId => {
+          branches.push({
+            questionId: q.id,
+            questionTitle: q.title || 'Pilihan',
+            targetId: targetId,
+            optionCount: targetMap[targetId].length,
+            sampleText: targetMap[targetId][0],
+            allOptions: targetMap[targetId]
+          });
+        });
+      }
+    });
+    return branches;
   },
 
   createSectionNode(sec, secIdx, sections, questions, builderInstance, posX, posY) {
@@ -125,37 +143,35 @@ window.BuilderFlowchart = {
     node.style.top = `${posY}px`;
 
     const secQuestions = questions.filter(q => q.sectionId === sec.id);
-    const branchQuestions = secQuestions.filter(q => (q.type === 'choice' || q.type === 'checkbox' || q.type === 'dropdown') && Array.isArray(q.options) && q.options.some(opt => {
-      const nextId = typeof opt === 'object' ? (opt.nextSectionId || '') : '';
-      return nextId && nextId !== 'inherit' && nextId !== 'next';
-    }));
+    const uniqueBranches = this.getSectionUniqueBranches(sec, secQuestions);
 
     let branchHtml = '';
-    if (branchQuestions.length > 0) {
+    if (uniqueBranches.length > 0) {
       branchHtml = `<div class="node-branches-list">`;
-      branchQuestions.forEach(q => {
-        branchHtml += `<div class="node-branch-item"><div class="branch-q-title"><i data-lucide="git-branch"></i> ${builderInstance.escapeHtml(q.title || 'Pilihan Percabangan')}</div>`;
-        q.options.forEach((opt, oIdx) => {
-          const nextId = typeof opt === 'object' ? (opt.nextSectionId || '') : '';
-          if (nextId && nextId !== 'inherit' && nextId !== 'next') {
-            let targetLabel = '';
-            if (nextId === 'submit') {
-              targetLabel = 'Kirim Formulir';
-            } else {
-              const targetSec = sections.find(s => s.id === nextId);
-              const targetSecIdx = sections.findIndex(s => s.id === nextId);
-              targetLabel = targetSec ? `Bagian ${targetSecIdx + 1}: ${targetSec.title || 'Tanpa Judul'}` : nextId;
-            }
-            const optText = typeof opt === 'object' ? (opt.text || '') : opt;
-            branchHtml += `
-              <div class="branch-opt-row" id="port-out-${sec.id}-${q.id}-${oIdx}">
-                <span class="opt-label-text">"${builderInstance.escapeHtml(optText)}" &rarr; <strong>${builderInstance.escapeHtml(targetLabel)}</strong></span>
-                <span class="graph-port-dot-out ${nextId === 'submit' ? 'green' : 'cyan'}"></span>
-              </div>
-            `;
-          }
-        });
-        branchHtml += `</div>`;
+      uniqueBranches.forEach((b) => {
+        let targetLabel = '';
+        if (b.targetId === 'submit') {
+          targetLabel = 'Kirim Formulir';
+        } else {
+          const targetSec = sections.find(s => s.id === b.targetId);
+          const targetSecIdx = sections.findIndex(s => s.id === b.targetId);
+          targetLabel = targetSec ? `Bagian ${targetSecIdx + 1}: ${targetSec.title || 'Tanpa Judul'}` : b.targetId;
+        }
+
+        // Consolidated clean label: if many options (e.g. > 1), show count summary instead of bloating card
+        let displayText = '';
+        if (b.optionCount > 1) {
+          displayText = `${b.optionCount} Opsi Pilihan &rarr; <strong>${builderInstance.escapeHtml(targetLabel)}</strong>`;
+        } else {
+          displayText = `"${builderInstance.escapeHtml(b.sampleText)}" &rarr; <strong>${builderInstance.escapeHtml(targetLabel)}</strong>`;
+        }
+
+        branchHtml += `
+          <div class="branch-opt-row" id="port-out-${sec.id}-${b.questionId}-${b.targetId}">
+            <span class="opt-label-text">${displayText}</span>
+            <span class="graph-port-dot-out ${b.targetId === 'submit' ? 'green' : 'cyan'}"></span>
+          </div>
+        `;
       });
       branchHtml += `</div>`;
     }
@@ -215,29 +231,24 @@ window.BuilderFlowchart = {
     if (defs) svgLayer.appendChild(defs);
 
     sections.forEach((sec, idx) => {
-      // 1. Option-Level Branch Wires (Cyan / Green for Submit)
       const secQuestions = questions.filter(q => q.sectionId === sec.id);
-      secQuestions.forEach(q => {
-        if ((q.type === 'choice' || q.type === 'checkbox' || q.type === 'dropdown') && Array.isArray(q.options)) {
-          q.options.forEach((opt, oIdx) => {
-            const nextId = typeof opt === 'object' ? (opt.nextSectionId || '') : '';
-            if (nextId && nextId !== 'inherit' && nextId !== 'next') {
-              const fromPort = document.getElementById(`port-out-${sec.id}-${q.id}-${oIdx}`);
-              let toNode = null;
-              let wireColor = 'cyan';
+      const uniqueBranches = this.getSectionUniqueBranches(sec, secQuestions);
 
-              if (nextId === 'submit') {
-                toNode = document.getElementById('graph-node-submit');
-                wireColor = 'green';
-              } else {
-                toNode = document.getElementById(`graph-node-${nextId}`);
-              }
+      // 1. Draw 1 Clean Wire per Unique Branch Destination (Consolidated)
+      uniqueBranches.forEach((b) => {
+        const fromPort = document.getElementById(`port-out-${sec.id}-${b.questionId}-${b.targetId}`);
+        let toNode = null;
+        let wireColor = 'cyan';
 
-              if (fromPort && toNode) {
-                this.connectNodesWithBezier(svgLayer, fromPort, toNode, wireColor, canvas);
-              }
-            }
-          });
+        if (b.targetId === 'submit') {
+          toNode = document.getElementById('graph-node-submit');
+          wireColor = 'green';
+        } else {
+          toNode = document.getElementById(`graph-node-${b.targetId}`);
+        }
+
+        if (fromPort && toNode) {
+          this.connectNodesWithBezier(svgLayer, fromPort, toNode, wireColor, canvas);
         }
       });
 
@@ -257,7 +268,6 @@ window.BuilderFlowchart = {
             this.connectNodesWithBezier(svgLayer, fromDefault, targetNode, 'purple', canvas);
           }
         } else {
-          // Default sequential flow
           if (idx < sections.length - 1) {
             const nextSec = sections[idx + 1];
             const nextNode = document.getElementById(`graph-node-${nextSec.id}`);
@@ -265,7 +275,6 @@ window.BuilderFlowchart = {
               this.connectNodesWithBezier(svgLayer, fromDefault, nextNode, 'purple', canvas);
             }
           } else {
-            // Last section naturally flows to submit
             const submitNode = document.getElementById('graph-node-submit');
             if (submitNode) {
               this.connectNodesWithBezier(svgLayer, fromDefault, submitNode, 'green', canvas);
@@ -285,13 +294,11 @@ window.BuilderFlowchart = {
     const canvasRect = canvas.getBoundingClientRect();
     const zoom = this.currentZoom || 1;
 
-    // Normalize coordinates to canvas coordinate space regardless of pan / zoom
     const x1 = (fromRect.left + fromRect.width / 2 - canvasRect.left) / zoom;
     const y1 = (fromRect.top + fromRect.height / 2 - canvasRect.top) / zoom;
     const x2 = (toRect.left + toRect.width / 2 - canvasRect.left) / zoom;
     const y2 = (toRect.top + toRect.height / 2 - canvasRect.top) / zoom;
 
-    // Smooth Bezier Curve with horizontal bias
     const dx = Math.max(Math.abs(x2 - x1) * 0.5, 80);
     const pathData = `M ${x1} ${y1} C ${x1 + dx} ${y1}, ${x2 - dx} ${y2}, ${x2} ${y2}`;
 
