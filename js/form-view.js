@@ -76,6 +76,8 @@ class FormViewer {
 
 
   renderFormClosed(title, message) {
+    const headerCard = document.getElementById('form-view-header-card');
+    if (headerCard) headerCard.classList.add('hidden');
     if (this.formElement) this.formElement.classList.add('hidden');
     if (this.successCard) this.successCard.classList.add('hidden');
     
@@ -186,6 +188,8 @@ class FormViewer {
     this.historyStack = [0];
     this.successCard.classList.add('hidden');
     this.formElement.classList.remove('hidden');
+    const headerCard = document.getElementById('form-view-header-card');
+    if (headerCard) headerCard.classList.remove('hidden');
 
     if (!formId) {
       window.app.showToast('ID Formulir tidak valid', 'error');
