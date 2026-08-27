@@ -234,6 +234,7 @@ class App {
       const isQuiz = form.isQuizMode === true;
       const hasDeadline = !!form.deadline;
       const isActive = form.isActive !== false;
+      const isPublished = form.isPublished !== false;
 
       card.innerHTML = `
         <div class="form-card-top-accent" style="background: ${color};"></div>
@@ -242,9 +243,9 @@ class App {
           <div class="form-card-badge-row">
             ${isQuiz ? '<span class="card-feature-pill quiz"><i data-lucide="award" style="width:12px;height:12px;"></i> Mode Kuis</span>' : ''}
             ${hasDeadline ? '<span class="card-feature-pill deadline"><i data-lucide="clock" style="width:12px;height:12px;"></i> Batas Waktu</span>' : ''}
-            <div class="card-status-tag" style="color: ${isActive ? '#10b981' : '#94a3b8'};">
-              <span class="status-dot ${isActive ? 'active' : 'inactive'}"></span>
-              <span>${isActive ? 'Aktif' : 'Nonaktif'}</span>
+            <div class="card-status-tag" style="color: ${!isPublished ? '#fbbf24' : (isActive ? '#10b981' : '#94a3b8')};">
+              <span class="status-dot ${!isPublished ? 'draft' : (isActive ? 'active' : 'inactive')}"></span>
+              <span>${!isPublished ? 'Draft' : (isActive ? 'Published' : 'Nonaktif')}</span>
             </div>
           </div>
 

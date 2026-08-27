@@ -205,6 +205,13 @@ class FormViewer {
     const closedNotice = document.getElementById('form-closed-notice-wrap');
     if (closedNotice) closedNotice.classList.add('hidden');
 
+    
+    // Check if form is published (Draft Protection)
+    if (form.isPublished === false) {
+      this.renderFormClosed('Formulir Belum Dipublikasikan (Draft)', 'Formulir ini saat ini masih dalam tahap penyusunan (Draft) oleh pembuatnya dan belum dibuka untuk pengisian umum.');
+      return;
+    }
+
     // 1. Check Deadline Limit
     if (form.deadline) {
       const deadlineDate = new Date(form.deadline);

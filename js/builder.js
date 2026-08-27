@@ -6,6 +6,16 @@
 
 class FormBuilder {
 
+  updatePublishUI() {
+    if (!this.btnTogglePublish || !this.publishLabel) return;
+    const isPublished = (this.currentForm && this.currentForm.isPublished !== false);
+    this.btnTogglePublish.classList.toggle('is-published', isPublished);
+    this.btnTogglePublish.classList.toggle('is-draft', !isPublished);
+    this.publishLabel.textContent = isPublished ? 'Published' : 'Draft';
+    this.btnTogglePublish.title = isPublished ? 'Status: Dipublikasikan (Klik untuk jadikan Draft)' : 'Status: Draft (Klik untuk Publikasikan)';
+  }
+
+
   openPipingPicker(targetInput, secIdx) {
     // Remove existing picker if open
     document.querySelectorAll('.piping-picker-modal, .piping-picker-backdrop').forEach(el => el.remove());
@@ -203,9 +213,28 @@ class FormBuilder {
     this.headerBannerImg = document.getElementById('form-header-banner-img');
     this.btnQuickChangeBanner = document.getElementById('btn-quick-change-banner');
     this.btnQuickRemoveBanner = document.getElementById('btn-quick-remove-banner');
+    this.btnTogglePublish = document.getElementById('btn-toggle-publish');
+    this.publishLabel = document.getElementById('btn-publish-label');
   }
 
   bindEvents() {
+
+    // Publish / Draft Toggle Click
+    if (this.btnTogglePublish) {
+      this.btnTogglePublish.addEventListener('click', async () => {
+        if (!this.currentForm) return;
+        const currentStatus = (this.currentForm.isPublished !== false);
+        const newStatus = !currentStatus;
+        this.currentForm.isPublished = newStatus;
+        this.updatePublishUI();
+        
+        await this.saveCurrentForm();
+        if (window.app && typeof window.app.showToast === 'function') {
+          window.app.showToast(newStatus ? 'Formulir berhasil dipublikasikan! Responden dapat mengisi form.' : 'Formulir dialihkan ke status Draft (Tertutup untuk umum).', newStatus ? 'success' : 'info');
+        }
+      });
+    }
+
 
     // Toolbar Collapse / Expand All Buttons
     const btnToggleAllQ = document.getElementById('btn-toggle-all-questions');
@@ -1771,6 +1800,7 @@ class FormBuilder {
       collectEmail: this.collectEmailCheck ? this.collectEmailCheck.checked : false,
       allowMultiple: this.allowMultipleCheck ? this.allowMultipleCheck.checked : true,
       isActive: this.isActiveCheck ? this.isActiveCheck.checked : true,
+      isPublished: (this.currentForm && this.currentForm.isPublished !== false),
       gdriveScriptUrl: this.gdriveScriptUrlInput ? this.gdriveScriptUrlInput.value.trim() : '',
       gdriveFolderId: this.gdriveFolderIdInput ? this.gdriveFolderIdInput.value.trim() : '',
       sections: this.sections,

@@ -1887,3 +1887,63 @@ input:checked + .slider:before {
   border: 1px solid rgba(99, 102, 241, 0.25);
   border-radius: 8px;
 }
+
+
+/* ===================================================
+   PUBLISH / DRAFT STATUS TOGGLE BUTTON
+   =================================================== */
+
+.btn-publish-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 14px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  border: 1px solid transparent;
+  user-select: none;
+}
+
+.btn-publish-toggle.is-draft {
+  background: rgba(245, 158, 11, 0.15);
+  color: #fbbf24;
+  border-color: rgba(245, 158, 11, 0.35);
+}
+
+.btn-publish-toggle.is-draft:hover {
+  background: rgba(245, 158, 11, 0.25);
+  border-color: #f59e0b;
+  transform: translateY(-1px);
+}
+
+.btn-publish-toggle.is-published {
+  background: rgba(16, 185, 129, 0.16);
+  color: #34d399;
+  border-color: rgba(16, 185, 129, 0.4);
+}
+
+.btn-publish-toggle.is-published:hover {
+  background: rgba(16, 185, 129, 0.26);
+  border-color: #10b981;
+  transform: translateY(-1px);
+}
+
+.publish-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  transition: background var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.btn-publish-toggle.is-draft .publish-dot {
+  background: #f59e0b;
+  box-shadow: 0 0 6px rgba(245, 158, 11, 0.8);
+}
+
+.btn-publish-toggle.is-published .publish-dot {
+  background: #10b981;
+  box-shadow: 0 0 8px rgba(16, 185, 129, 0.8);
+}
