@@ -69,6 +69,10 @@ class App {
     }
   }
 
+  createWhatsAppSurveyTemplate() {
+    window.location.hash = '#/builder/template-whatsapp-pendataan';
+  }
+
   createStudentBioTemplate() {
     window.location.hash = '#/builder/template-biodata';
   }

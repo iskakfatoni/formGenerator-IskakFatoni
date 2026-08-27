@@ -1372,6 +1372,220 @@ class FormBuilder {
     }
   }
 
+  
+  loadWhatsAppSurveyTemplate() {
+    this.switchTab('questions');
+    const ts = Date.now();
+    const secSekolahId = 'sec_' + ts + '_sekolah';
+    const secKelasJetisId = 'sec_' + ts + '_kls_jetis';
+    const secKelasMutuId = 'sec_' + ts + '_kls_mutu';
+    const secNamaJetis1Id = 'sec_' + ts + '_nama_jetis1';
+    const secNamaJetis2Id = 'sec_' + ts + '_nama_jetis2';
+    const secNamaMutu1Id = 'sec_' + ts + '_nama_mutu1';
+    const secNamaMutu2Id = 'sec_' + ts + '_nama_mutu2';
+    const secKontakId = 'sec_' + ts + '_kontak';
+
+    const listJetis1 = [
+      'ACHMAD HAMDHANI', 'ADINKA AULIA ERNATA', 'AHMAD RIDLOL MAHBUB', 'ALFATHIH KHARISMA',
+      'ALFIAN ABDI RAMADHANI PUTRA', 'ALIF SETIYA RAMADHANI', 'ANGEL CLEODYA ARETA AZARIA HAFA',
+      'BIMA DWI BINTANG AGUSTINO', 'CHANTIKA FASHESHA SALVA SALSA BELLA', 'CHEIZA ADHITYA PUTRI PERMANA',
+      'CHIKITA FACHECHA SALWA SALSA BELLA', 'CIKA OKTAVIA', 'DAFFA HANNAFI PRATAMA',
+      'DEVINA WAHYU NUR FADILLA', 'DEWI SILA', 'DIMAS ERVAN HARDIANSYAH',
+      'DINDA PUTRI WISDIANINGSIH', 'DJOHAN ADAM ADINATA', 'ERINA AYU ANGGRAENI',
+      'ERLIN FELICIA ELVARETTA', 'EVAN ADI SAPUTRA', 'FADHIL RASSA MAULIDI UBAIDILLAH',
+      'FAHREZA AFIF FANANI', 'FARIDATUS SHOLIHAH', 'GADIS RAHMADANI YUDIARTI',
+      'GHULAM NADIYUL KAFI', 'INDRI WIDYANTI AULIAH', 'IQBAL ARIZONA',
+      'IRZAQI AZIZ RIZALDI', 'KAFKA NAFISA KEVIN ZAINUL PRATAMA', 'KHANZA AURELYA PUTRI',
+      'KHUSNUL AMEL FEBRIYANINGSIH', 'LAUDYA DEVIRA NAURA ZALFARIMBI', 'LIA AMANDA RAHMAWATI',
+      'MELATI PUTRI KHAMIDDA', 'MOCH FUAD BURHANUDDIN'
+    ];
+
+    const listJetis2 = [
+      'MOCHAMAD HAFIS ALFARIDZI', 'MOH ABIL DINEYJAD', 'MOH ARIF RAHMAN HAKIM',
+      'MOKHAMMAD AINUR HAQIQI', 'MUCHAMMAD GALIH IMANUDDIN', 'MUHAMMAD ABDUR ROFIQ',
+      'MUHAMMAD ANDIKA SAPUTRA', 'MUHAMMAD ARDIKA PUTRA PRATAMA', 'MUHAMMAD FARELINO ABDULNANI',
+      'MUHAMMAD IRSADIL IBAD BY HAKI', 'MUHAMMAD KHOIRUL AZAM', 'MUHAMMAD NUR QAISHA AL AZZAM',
+      'MUHAMMAD REYHAN BRAMANTYO', 'MUHAMMAD REYHAN FARRIANSYAH', 'MUHAMMAD SYIHABUDDIN ZAKKI',
+      'NAILA FAIRUZ TSAQILA', 'NATASYA ADELIA PUTRI', 'NOVIANTI ISNATUL ARAFA',
+      'RAFFI AHYAR ABDILLAH', 'RAFLIANO TRI AL HABSY', 'RAHMAD AGENG BUNTARAN',
+      'RAKA DITYA SAPUTRA', 'REHAN ARIL ALVINO', 'RIFALDO ADITYA CHAFIDZ',
+      'RIFAN YUNI ERMAWAN', 'RINFI LAILATUL FAJRI NIHAYATUDDIYANAH', 'ROKHMAD SWARDANA',
+      'SHAVYRA HANUM RAHMADANI', 'SHELVYA LAILA ARDANNA', 'TANIA OKTAVIANI DWI AGUSTIN',
+      'VELLA ARDIANTI', 'VERONIKA ADELIA TKELA', 'VIRLY NAZWA AINUN PUTRI',
+      'WILDAN GAISAN FAHLAVI VIPUTRO', 'ZORA WIDYANATA AGUSTIN'
+    ];
+
+    const listMutu1 = [
+      'Afreyza Nurul Dwi Putra', 'Ahmad Bayhaqy Yulianto', 'Alfian Cahyo', 'Alridho Fitrah Ramadhani',
+      'Anandah Cahaya Puspita', 'Andini Ziadatul Husnah', 'Andreano Gilang Pratama Daryanto',
+      'Aurellia Putri Margaretta', 'Bisma Tirta Fachrudin', 'Davinesta Abelino Priyaka',
+      'Dimas Aditya Pratama', 'Dinda Lupita Sari', 'Edra Syifa\' Gian Agta', 'Egik Andika Pratama',
+      'Erlangga Zaelani Revandi Pratama', 'Fahreza Septian Ramadhani', 'Fhadil Alfino Wahyudi',
+      'Hanafi Wisnu Kholilullah', 'Intan Rohmatun Muntahana', 'Izzana Zahrothul Zahwa',
+      'Khafidz Azka Saputra', 'Muhammad Zakka Khamalulloh', 'Muhammad Zakki Khamilulloh',
+      'Muhammad Kevin Ulumul Fu\'adi'
+    ];
+
+    const listMutu2 = [
+      'Maulidus Diyon Safaat', 'Mecha Dea Olivia', 'Mohammad Rizal Ardiansyah',
+      'Mohammad Indra Wahyu Jati Ababil', 'Muhammad Hafiz Zulfikri', 'Muhammad Deva Julianda',
+      'Muhammad Fadel Roby Assiddiqy', 'Muhammad Ilham Ulinnuha', 'Nafisah Dwi Nur Ibadillah',
+      'Nanda Dwi Bagus Rahmadani', 'Natasya Mei Madinah', 'Nur Yana Putri Olivia',
+      'Rahayu Puwanti', 'Rani Artalita', 'Reyhan Dwi Ramadhani', 'Reynata Putra Ardiansyah',
+      'Robiht Afthon Maulana', 'Sifa Nur Aini', 'Siti Alfiah Intan Ramadani', 'Sony Abdila Rafi',
+      'Tri Setyo Wicaksono', 'Uzlifatil Jannah', 'Zaidanil Akhmal Subhqi', 'Anggun Latifa', 'Andrian'
+    ];
+
+    this.currentForm = {
+      id: null,
+      title: 'FORM PENDATAAN NO WHATSAPP AKTIF',
+      description: 'Formulir pendataan nomor WhatsApp aktif siswa jurusan Teknik Elektronika Industri (TEI). Mohon pilih sekolah, kelas, nama lengkap Anda, dan masukkan nomor WhatsApp aktif.',
+      themeColor: '#6366f1',
+      bannerUrl: '',
+      submitMessage: 'Terima kasih! Nomor WhatsApp Anda telah berhasil direkam ke dalam database.',
+      collectEmail: false,
+      allowMultiple: false,
+      isActive: true,
+      responseCount: 0,
+      sections: [
+        {
+          id: secSekolahId,
+          title: 'Bagian 1: Pilih Sekolah',
+          description: 'Pilih sekolah asal Anda untuk diarahkan ke kelas yang sesuai.'
+        },
+        {
+          id: secKelasJetisId,
+          title: 'Bagian 2: Pilih Kelas (SMK Negeri 1 Jetis)',
+          description: 'Pilih kelas Anda di SMK Negeri 1 Jetis.'
+        },
+        {
+          id: secKelasMutuId,
+          title: 'Bagian 3: Pilih Kelas (SMK Mutu Kemlagi)',
+          description: 'Pilih kelas Anda di SMK Mutu Kemlagi.'
+        },
+        {
+          id: secNamaJetis1Id,
+          title: 'Bagian 4: Data Siswa XI TEI 1 (SMKN 1 Jetis)',
+          description: 'Pilih nama lengkap Anda dari daftar siswa berikut.'
+        },
+        {
+          id: secNamaJetis2Id,
+          title: 'Bagian 5: Data Siswa XI TEI 2 (SMKN 1 Jetis)',
+          description: 'Pilih nama lengkap Anda dari daftar siswa berikut.'
+        },
+        {
+          id: secNamaMutu1Id,
+          title: 'Bagian 6: Data Siswa XI TEI 1 (SMK Mutu Kemlagi)',
+          description: 'Pilih nama lengkap Anda dari daftar siswa berikut.'
+        },
+        {
+          id: secNamaMutu2Id,
+          title: 'Bagian 7: Data Siswa XI TEI 2 (SMK Mutu Kemlagi)',
+          description: 'Pilih nama lengkap Anda dari daftar siswa berikut.'
+        },
+        {
+          id: secKontakId,
+          title: 'Bagian 8: Nomor WhatsApp Aktif',
+          description: 'Isikan nomor WhatsApp aktif yang dapat dihubungi.'
+        }
+      ],
+      questions: [
+        // 1. Pilih Sekolah
+        {
+          id: 'q_' + ts + '_sekolah',
+          sectionId: secSekolahId,
+          type: 'dropdown',
+          title: 'SEKOLAH',
+          required: true,
+          options: [
+            { text: 'SMK NEGERI 1 JETIS', nextSectionId: secKelasJetisId },
+            { text: 'SMK MUTU KEMLAGI', nextSectionId: secKelasMutuId }
+          ]
+        },
+        // 2. Kelas Jetis
+        {
+          id: 'q_' + ts + '_kls_jetis',
+          sectionId: secKelasJetisId,
+          type: 'dropdown',
+          title: 'KELAS',
+          required: true,
+          options: [
+            { text: 'XI TEI 1', nextSectionId: secNamaJetis1Id },
+            { text: 'XI TEI 2', nextSectionId: secNamaJetis2Id }
+          ]
+        },
+        // 3. Kelas Mutu
+        {
+          id: 'q_' + ts + '_kls_mutu',
+          sectionId: secKelasMutuId,
+          type: 'dropdown',
+          title: 'KELAS',
+          required: true,
+          options: [
+            { text: 'XI TEI 1', nextSectionId: secNamaMutu1Id },
+            { text: 'XI TEI 2', nextSectionId: secNamaMutu2Id }
+          ]
+        },
+        // 4. Nama Siswa Jetis 1
+        {
+          id: 'q_' + ts + '_nama_jetis1',
+          sectionId: secNamaJetis1Id,
+          type: 'dropdown',
+          title: 'NAMA LENGKAP',
+          required: true,
+          options: listJetis1.map(name => ({ text: name, nextSectionId: secKontakId }))
+        },
+        // 5. Nama Siswa Jetis 2
+        {
+          id: 'q_' + ts + '_nama_jetis2',
+          sectionId: secNamaJetis2Id,
+          type: 'dropdown',
+          title: 'NAMA LENGKAP',
+          required: true,
+          options: listJetis2.map(name => ({ text: name, nextSectionId: secKontakId }))
+        },
+        // 6. Nama Siswa Mutu 1
+        {
+          id: 'q_' + ts + '_nama_mutu1',
+          sectionId: secNamaMutu1Id,
+          type: 'dropdown',
+          title: 'NAMA LENGKAP',
+          required: true,
+          options: listMutu1.map(name => ({ text: name, nextSectionId: secKontakId }))
+        },
+        // 7. Nama Siswa Mutu 2
+        {
+          id: 'q_' + ts + '_nama_mutu2',
+          sectionId: secNamaMutu2Id,
+          type: 'dropdown',
+          title: 'NAMA LENGKAP',
+          required: true,
+          options: listMutu2.map(name => ({ text: name, nextSectionId: secKontakId }))
+        },
+        // 8. No WhatsApp Utama
+        {
+          id: 'q_' + ts + '_wa_utama',
+          sectionId: secKontakId,
+          type: 'text',
+          title: 'NO WHATSAPP UTAMA',
+          required: true,
+          placeholder: 'Contoh: 081234567890'
+        }
+      ]
+    };
+
+    this.sections = this.currentForm.sections;
+    this.questions = this.currentForm.questions;
+    this.renderForm();
+
+    if (this.statusBadge) this.statusBadge.textContent = 'Template Pendataan No WhatsApp';
+    if (this.responsesTabLink) this.responsesTabLink.style.display = 'none';
+
+    if (window.app && typeof window.app.showToast === 'function') {
+      window.app.showToast('Template Pendataan No WhatsApp aktif berhasil dimuat! Anda dapat langsung menyimpannya atau menyesuaikan pertanyaan.', 'success');
+    }
+  }
+
   loadStudentBioTemplate() {
     this.switchTab('questions');
     const sec1Id = 'sec_' + Date.now() + '_1';
