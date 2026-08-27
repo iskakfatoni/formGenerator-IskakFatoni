@@ -140,6 +140,10 @@ class ResponsesDashboard {
     }
   }
 
+  async loadDashboard(formId) {
+    return this.loadResponses(formId);
+  }
+
   async loadResponses(formId) {
     if (!formId) {
       window.location.hash = '#/dashboard';

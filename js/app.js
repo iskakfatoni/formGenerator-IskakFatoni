@@ -151,7 +151,13 @@ class App {
       if (previewAdminBar) previewAdminBar.classList.add('hidden');
       document.body.classList.remove('responder-mode');
       this.showSection('view-responses');
-      if (this.responsesDashboard) this.responsesDashboard.loadDashboard(param);
+      if (this.responsesDashboard) {
+        if (typeof this.responsesDashboard.loadDashboard === 'function') {
+          this.responsesDashboard.loadDashboard(param);
+        } else if (typeof this.responsesDashboard.loadResponses === 'function') {
+          this.responsesDashboard.loadResponses(param);
+        }
+      }
     } else {
       // Fallback
       window.location.hash = '#/dashboard';
