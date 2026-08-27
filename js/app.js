@@ -87,6 +87,9 @@ class App {
 
     const mainNav = document.getElementById('main-nav');
     const previewAdminBar = document.getElementById('preview-admin-bar');
+    const navDashboard = document.getElementById('nav-dashboard');
+    const navBuilder = document.getElementById('nav-builder');
+    const navBrandTag = document.getElementById('nav-brand-tag');
 
     // Update active nav link
     document.querySelectorAll('.nav-link').forEach(link => {
@@ -98,20 +101,28 @@ class App {
       sec.classList.remove('active');
     });
 
-    const navDashboard = document.getElementById('nav-dashboard');
-    const navBuilder = document.getElementById('nav-builder');
+    // Toggle clean CSS body mode classes
+    document.body.classList.remove('mode-dashboard', 'mode-builder', 'mode-responses', 'responder-mode');
 
     if (route === 'dashboard' || route === '') {
+      // Auto-save form if currently open in builder
+      if (this.builder && this.builder.currentForm) {
+        try { this.builder.saveCurrentForm(true); } catch (e) {}
+      }
+      document.body.classList.add('mode-dashboard');
       if (mainNav) mainNav.style.display = '';
       if (previewAdminBar) previewAdminBar.classList.add('hidden');
-      document.body.classList.remove('responder-mode');
+      if (navBrandTag) navBrandTag.textContent = 'Workspace';
+
       this.showSection('view-dashboard');
       if (navDashboard) navDashboard.classList.add('active');
       this.loadDashboard();
     } else if (route === 'builder') {
+      document.body.classList.add('mode-builder');
       if (mainNav) mainNav.style.display = '';
       if (previewAdminBar) previewAdminBar.classList.add('hidden');
-      document.body.classList.remove('responder-mode');
+      if (navBrandTag) navBrandTag.textContent = 'Builder';
+
       this.showSection('view-builder');
       if (navBuilder) navBuilder.classList.add('active');
       if (this.builder) {
@@ -124,9 +135,8 @@ class App {
         }
       }
     } else if (route === 'view' || route === 'form') {
-      // HIDE main dashboard navbar so responder is 100% focused on the form
-      if (mainNav) mainNav.style.display = 'none';
       document.body.classList.add('responder-mode');
+      if (mainNav) mainNav.style.display = 'none';
 
       // If viewing user is the logged in admin, show subtle floating preview bar
       const isOwner = window.authManager && window.authManager.isLoggedIn();
@@ -147,9 +157,11 @@ class App {
       this.showSection('view-form');
       if (this.viewer) this.viewer.loadForm(param);
     } else if (route === 'responses') {
+      document.body.classList.add('mode-responses');
       if (mainNav) mainNav.style.display = '';
       if (previewAdminBar) previewAdminBar.classList.add('hidden');
-      document.body.classList.remove('responder-mode');
+      if (navBrandTag) navBrandTag.textContent = 'Respon Data';
+
       this.showSection('view-responses');
       if (this.responsesDashboard) {
         if (typeof this.responsesDashboard.loadDashboard === 'function') {
@@ -159,7 +171,6 @@ class App {
         }
       }
     } else {
-      // Fallback
       window.location.hash = '#/dashboard';
     }
 

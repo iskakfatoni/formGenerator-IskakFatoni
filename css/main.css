@@ -2242,3 +2242,49 @@ h1, h2, h3, h4, h5, h6 {
     padding: 6px 10px;
   }
 }
+
+
+/* ==========================================================================
+   UNIFIED HEADER DISPLAY RULES BY ROUTE STATE
+   ========================================================================== */
+
+/* Default State (Dashboard) */
+#dashboard-nav-links {
+  display: flex !important;
+}
+#builder-nav-tabs,
+#builder-header-actions,
+#btn-builder-back {
+  display: none !important;
+}
+
+/* Builder Mode State */
+body.mode-builder #dashboard-nav-links {
+  display: none !important;
+}
+body.mode-builder #builder-nav-tabs {
+  display: flex !important;
+}
+body.mode-builder #builder-header-actions {
+  display: flex !important;
+}
+body.mode-builder #btn-builder-back {
+  display: flex !important;
+}
+
+/* Responses Mode State */
+body.mode-responses #dashboard-nav-links {
+  display: flex !important;
+}
+body.mode-responses #builder-nav-tabs,
+body.mode-responses #builder-header-actions {
+  display: none !important;
+}
+body.mode-responses #btn-builder-back {
+  display: flex !important;
+}
+
+/* Public Viewer Mode State */
+body.responder-mode #main-nav {
+  display: none !important;
+}

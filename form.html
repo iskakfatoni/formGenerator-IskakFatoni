@@ -30,10 +30,10 @@
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-storage-compat.js"></script>
 
   <!-- Application Stylesheets -->
-  <link rel="stylesheet" href="css/main.css">
-  <link rel="stylesheet" href="css/builder.css">
-  <link rel="stylesheet" href="css/form-view.css">
-  <link rel="stylesheet" href="css/responses.css">
+  <link rel="stylesheet" href="css/main.css?v=1787841670341">
+  <link rel="stylesheet" href="css/builder.css?v=1787841670341">
+  <link rel="stylesheet" href="css/form-view.css?v=1787841670341">
+  <link rel="stylesheet" href="css/responses.css?v=1787841670341">
 </head>
 <body class="theme-dark">
 
@@ -62,7 +62,7 @@
       
       <!-- Left: Brand Logo & Back Button for Builder -->
       <div class="nav-left-group">
-        <button id="btn-builder-back" class="btn-back hidden" onclick="window.location.hash = '#/dashboard'" title="Kembali ke Dashboard">
+        <button id="btn-builder-back" class="btn-back" onclick="window.location.hash = '#/dashboard'" title="Kembali ke Dashboard">
           <i data-lucide="arrow-left"></i>
         </button>
         <div class="brand" onclick="window.location.hash = '#/dashboard'">
@@ -89,7 +89,7 @@
       </nav>
 
       <!-- Center B: Form Builder Tabs (Visible in Builder Mode) -->
-      <div class="builder-tabs hidden" id="builder-nav-tabs">
+      <div class="builder-tabs" id="builder-nav-tabs">
         <button class="builder-tab active" id="tab-btn-questions">
           <i data-lucide="help-circle"></i>
           <span>Pertanyaan</span>
@@ -116,7 +116,7 @@
       <div class="nav-actions">
         
         <!-- Builder Action Controls (Publish, Preview, Save) -->
-        <div class="builder-header-actions hidden" id="builder-header-actions">
+        <div class="builder-header-actions" id="builder-header-actions">
           <button type="button" class="btn btn-sm btn-publish-toggle is-published" id="btn-toggle-publish" title="Status Publikasi Form">
             <span class="publish-dot"></span>
             <span id="btn-publish-label">Published</span>
@@ -947,15 +947,15 @@
   <div id="toast-container" class="toast-container"></div>
 
   <!-- Application Logic Modules -->
-  <script src="js/firebase-config.js?v=1787841506128"></script>
-  <script src="js/storage.js?v=1787841506128"></script>
-  <script src="js/auth.js?v=1787841506128"></script>
-  <script src="js/image-uploader.js?v=1787841506128"></script>
-  <script src="js/gdrive-uploader.js?v=1787841506128"></script>
-  <script src="js/export-excel.js?v=1787841506128"></script>
-  <script src="js/builder.js?v=1787841506128"></script>
-  <script src="js/form-view.js?v=1787841506128"></script>
-  <script src="js/responses.js?v=1787841506128"></script>
-  <script src="js/app.js?v=1787841506128"></script>
+  <script src="js/firebase-config.js?v=1787841670341"></script>
+  <script src="js/storage.js?v=1787841670341"></script>
+  <script src="js/auth.js?v=1787841670341"></script>
+  <script src="js/image-uploader.js?v=1787841670341"></script>
+  <script src="js/gdrive-uploader.js?v=1787841670341"></script>
+  <script src="js/export-excel.js?v=1787841670341"></script>
+  <script src="js/builder.js?v=1787841670341"></script>
+  <script src="js/form-view.js?v=1787841670341"></script>
+  <script src="js/responses.js?v=1787841670341"></script>
+  <script src="js/app.js?v=1787841670341"></script>
 </body>
 </html>
