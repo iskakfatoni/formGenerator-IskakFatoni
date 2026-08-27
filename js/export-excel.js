@@ -1,9 +1,42 @@
 /**
  * FORMCRAFT - Excel Export Engine
  * Converts Form Responses to structured, formatted Microsoft Excel (.xlsx) files using SheetJS.
+ * Automatically consolidates questions with the same field name into a single column.
  */
 
 class ExcelExporter {
+  static getConsolidatedColumns(rawQuestions) {
+    const consolidated = [];
+    const map = new Map();
+
+    (rawQuestions || []).forEach((q, idx) => {
+      const rawTitle = (q.title || ('Pertanyaan ' + (idx + 1))).trim();
+      const key = rawTitle.toLowerCase();
+
+      if (map.has(key)) {
+        const existing = consolidated[map.get(key)];
+        existing.questionIds.push(q.id);
+        if (!existing.types.includes(q.type)) {
+          existing.types.push(q.type);
+        }
+        existing.questions.push(q);
+      } else {
+        const entry = {
+          title: rawTitle,
+          type: q.type,
+          types: [q.type],
+          questionIds: [q.id],
+          questions: [q],
+          required: q.required
+        };
+        map.set(key, consolidated.length);
+        consolidated.push(entry);
+      }
+    });
+
+    return consolidated;
+  }
+
   static exportFormResponses(form, responses) {
     if (!window.XLSX) {
       alert('Library SheetJS belum termuat. Periksa koneksi internet Anda.');
@@ -16,18 +49,16 @@ class ExcelExporter {
     }
 
     try {
-      // 1. Prepare Header Row mapping
+      // 1. Prepare Header Row mapping with consolidated columns
       const hasEmail = form.collectEmail || responses.some(r => !!r.respondentEmail || !!(r.answers && r.answers._respondent_email));
       const headers = ['No', 'ID Respon', 'Waktu Pengisian (WIB/Lokal)'];
       if (hasEmail) {
         headers.push('Email Responden');
       }
 
-      const questionMap = []; // { id, title }
-      form.questions.forEach((q, idx) => {
-        const title = q.title || `Pertanyaan ${idx + 1}`;
-        headers.push(title);
-        questionMap.push({ id: q.id, title });
+      const columns = this.getConsolidatedColumns(form.questions || []);
+      columns.forEach(col => {
+        headers.push(col.title);
       });
 
       // 2. Prepare Data Rows
@@ -50,10 +81,21 @@ class ExcelExporter {
           row.push(emailVal);
         }
 
-        // Answers
-        questionMap.forEach(q => {
-          let ans = resp.answers ? resp.answers[q.id] : '';
-          if (q.type === 'location' || (ans && typeof ans === 'object' && ans.lat)) {
+        // Answers across consolidated columns
+        columns.forEach(col => {
+          let ans = null;
+          let activeQ = col.questions[0];
+
+          for (const q of col.questions) {
+            const val = resp.answers ? resp.answers[q.id] : null;
+            if (val !== null && val !== undefined && val !== '') {
+              ans = val;
+              activeQ = q;
+              break;
+            }
+          }
+
+          if (activeQ.type === 'location' || (ans && typeof ans === 'object' && ans.lat)) {
             let locObj = ans;
             if (typeof locObj === 'string' && locObj.startsWith('{')) {
               try { locObj = JSON.parse(locObj); } catch(e){}
@@ -61,7 +103,7 @@ class ExcelExporter {
             if (locObj && typeof locObj === 'object' && locObj.lat) {
               ans = `${locObj.lat}, ${locObj.lng} (https://www.google.com/maps?q=${locObj.lat},${locObj.lng})`;
             }
-          } else if (q.type === 'file_gdrive' || (ans && typeof ans === 'object' && ans.url)) {
+          } else if (activeQ.type === 'file_gdrive' || (ans && typeof ans === 'object' && ans.url)) {
             let fileObj = ans;
             if (typeof fileObj === 'string' && fileObj.startsWith('{')) {
               try { fileObj = JSON.parse(fileObj); } catch(e){}
@@ -69,13 +111,13 @@ class ExcelExporter {
             if (typeof fileObj === 'object' && fileObj.url) {
               ans = `${fileObj.name || 'Berkas'}: ${fileObj.url}`;
             } else {
-              ans = String(ans);
+              ans = String(ans || '-');
             }
-          } else if (q.type === 'signature' && typeof ans === 'string' && ans.startsWith('data:image')) {
+          } else if (activeQ.type === 'signature' && typeof ans === 'string' && ans.startsWith('data:image')) {
             ans = '[Tanda Tangan Digital Terverifikasi]';
           } else if (Array.isArray(ans)) {
             ans = ans.join(', ');
-          } else if (ans === undefined || ans === null) {
+          } else if (ans === undefined || ans === null || ans === '') {
             ans = '-';
           }
           row.push(ans);
@@ -103,7 +145,7 @@ class ExcelExporter {
 
       // 5. Append sheet to Workbook
       const workbook = XLSX.utils.book_new();
-      const sheetName = (form.title || 'Respon Form').substring(0, 30).replace(/[:\\\/\?\*\[\]]/g, '_');
+      const sheetName = (form.title || 'Respon Form').substring(0, 30).replace(/[:\\/\?\*\[\]]/g, '_');
       XLSX.utils.book_append_sheet(workbook, worksheet, sheetName);
 
       // 6. Generate filename with date
@@ -118,15 +160,11 @@ class ExcelExporter {
       // 7. Trigger download
       XLSX.writeFile(workbook, filename);
 
-      if (window.app) {
-        window.app.showToast(`Berhasil mengekspor ${responses.length} respon ke file ${filename}`, 'success');
-      }
+      if (window.app) window.app.showToast('Data respon berhasil diexport ke Excel (.xlsx)!', 'success');
       return true;
     } catch (err) {
-      console.error('Gagal mengekspor data ke Excel:', err);
-      if (window.app) {
-        window.app.showToast('Gagal mengekspor ke Excel: ' + err.message, 'error');
-      }
+      console.error('Export Excel Error:', err);
+      if (window.app) window.app.showToast('Gagal mengekspor data ke Excel: ' + err.message, 'error');
       return false;
     }
   }

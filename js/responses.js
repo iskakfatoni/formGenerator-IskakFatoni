@@ -1,6 +1,7 @@
 /**
- * FORMCRAFT - Responses & Analytics Dashboard Logic
- * Displays collected form submissions in a clean data table with search filtering and Excel export.
+ * FORMCRAFT - Responses Dashboard & Table Engine
+ * Handles data presentation, search/filter, and individual response detail viewer.
+ * Automatically consolidates questions with the same field name into a single column.
  */
 
 class ResponsesDashboard {
@@ -8,102 +9,99 @@ class ResponsesDashboard {
     this.currentForm = null;
     this.responses = [];
     this.filteredResponses = [];
-    this.initElements();
-    this.bindEvents();
-  }
 
-  initElements() {
-    this.titleEl = document.getElementById('resp-page-title');
-    this.subtitleEl = document.getElementById('resp-page-subtitle');
-    this.statTotal = document.getElementById('resp-stat-total');
-    this.statLatest = document.getElementById('resp-stat-latest');
-    this.statRate = document.getElementById('resp-stat-rate');
+    // DOM Elements
+    this.titleEl = document.getElementById('responses-form-title');
+    this.subtitleEl = document.getElementById('responses-subtitle');
+    this.statTotal = document.getElementById('stat-resp-total');
+    this.statLatest = document.getElementById('stat-resp-latest');
+    this.statRate = document.getElementById('stat-resp-rate');
+
+    this.searchInput = document.getElementById('input-search-responses');
     this.tableHead = document.getElementById('responses-table-head');
     this.tableBody = document.getElementById('responses-table-body');
-    this.emptyTable = document.getElementById('responses-empty-table');
-    this.searchInput = document.getElementById('resp-search-input');
+    this.emptyTable = document.getElementById('table-empty-state');
+
     this.btnExportExcel = document.getElementById('btn-export-excel');
-    this.btnShareForm = document.getElementById('btn-copy-form-share');
-    this.btnEditForm = document.getElementById('btn-edit-form-from-resp');
-    this.btnClearAll = document.getElementById('btn-clear-all-responses');
+    this.btnExportCsv = document.getElementById('btn-export-csv');
+
+    this.initEvents();
   }
 
-  bindEvents() {
-    // Export to Excel Button
-    if (this.btnExportExcel) {
-      this.btnExportExcel.addEventListener('click', () => {
-        if (this.currentForm && this.responses.length > 0) {
-          window.ExcelExporter.exportFormResponses(this.currentForm, this.responses);
-        } else {
-          window.app.showToast('Belum ada data tanggapan untuk diekspor', 'error');
-        }
-      });
-    }
+  getConsolidatedColumns(rawQuestions) {
+    const consolidated = [];
+    const map = new Map();
 
-    // Share Form Button
-    if (this.btnShareForm) {
-      this.btnShareForm.addEventListener('click', () => {
-        if (this.currentForm) {
-          window.app.openShareModal(this.currentForm.id);
-        }
-      });
-    }
+    (rawQuestions || []).forEach((q, idx) => {
+      const rawTitle = (q.title || ('Pertanyaan ' + (idx + 1))).trim();
+      const key = rawTitle.toLowerCase();
 
-    // Edit Form Button
-    if (this.btnEditForm) {
-      this.btnEditForm.addEventListener('click', () => {
-        if (this.currentForm) {
-          window.location.hash = `#/builder/${this.currentForm.id}`;
+      if (map.has(key)) {
+        const existing = consolidated[map.get(key)];
+        existing.questionIds.push(q.id);
+        if (!existing.types.includes(q.type)) {
+          existing.types.push(q.type);
         }
-      });
-    }
+        existing.questions.push(q);
+      } else {
+        const entry = {
+          title: rawTitle,
+          type: q.type,
+          types: [q.type],
+          questionIds: [q.id],
+          questions: [q],
+          required: q.required
+        };
+        map.set(key, consolidated.length);
+        consolidated.push(entry);
+      }
+    });
 
-    // Clear All Responses Button
-    if (this.btnClearAll) {
-      this.btnClearAll.addEventListener('click', async () => {
-        if (!this.currentForm || this.responses.length === 0) return;
-        if (confirm(`Apakah Anda yakin ingin menghapus seluruh (${this.responses.length}) tanggapan dari formulir ini? Tindakan ini tidak dapat dibatalkan.`)) {
-          await window.formStorage.clearResponsesByFormId(this.currentForm.id);
-          window.app.showToast('Seluruh tanggapan berhasil dihapus', 'info');
-          this.loadDashboard(this.currentForm.id);
-        }
-      });
-    }
+    return consolidated;
+  }
 
-    // Search in responses
+  initEvents() {
     if (this.searchInput) {
       this.searchInput.addEventListener('input', (e) => {
-        const q = e.target.value.toLowerCase().trim();
-        if (!q) {
+        const query = e.target.value.toLowerCase().trim();
+        if (!query) {
           this.filteredResponses = [...this.responses];
         } else {
-          this.filteredResponses = this.responses.filter(r => {
-            // Search in submittedAt or any answer
-            if (r.submittedAt && r.submittedAt.toLowerCase().includes(q)) return true;
-            for (const key in r.answers) {
-              const val = r.answers[key];
-              if (Array.isArray(val)) {
-                if (val.some(v => String(v).toLowerCase().includes(q))) return true;
-              } else if (val && String(val).toLowerCase().includes(q)) {
-                return true;
-              }
-            }
-            return false;
+          this.filteredResponses = this.responses.filter(resp => {
+            const dateStr = resp.submittedAt ? new Date(resp.submittedAt).toLocaleDateString('id-ID') : '';
+            const emailStr = (resp.respondentEmail || (resp.answers && resp.answers._respondent_email) || '').toLowerCase();
+            const answersStr = resp.answers ? JSON.stringify(Object.values(resp.answers)).toLowerCase() : '';
+            return dateStr.includes(query) || emailStr.includes(query) || answersStr.includes(query);
           });
         }
         this.renderTableRows();
       });
     }
+
+    if (this.btnExportExcel) {
+      this.btnExportExcel.addEventListener('click', () => {
+        if (!this.currentForm || this.responses.length === 0) {
+          if (window.app) window.app.showToast('Tidak ada data respon untuk diekspor ke Excel', 'error');
+          return;
+        }
+        window.ExcelExporter.exportFormResponses(this.currentForm, this.responses);
+      });
+    }
+
+    if (this.btnExportCsv) {
+      this.btnExportCsv.addEventListener('click', () => {
+        this.exportToCsv();
+      });
+    }
   }
 
-  async loadDashboard(formId) {
+  async loadResponses(formId) {
     if (!formId) {
-      window.app.showToast('ID Formulir tidak valid', 'error');
       window.location.hash = '#/dashboard';
       return;
     }
 
-    const form = await window.formStorage.getFormById(formId);
+    const form = await window.formStorage.getForm(formId);
     if (!form) {
       window.app.showToast('Formulir tidak ditemukan', 'error');
       window.location.hash = '#/dashboard';
@@ -144,6 +142,7 @@ class ResponsesDashboard {
   renderTable() {
     const form = this.currentForm;
     const questions = form.questions || [];
+    const columns = this.getConsolidatedColumns(questions);
     const hasEmail = form.collectEmail || this.responses.some(r => !!r.respondentEmail || !!(r.answers && r.answers._respondent_email));
 
     // 1. Render Table Headers
@@ -154,8 +153,8 @@ class ResponsesDashboard {
         ${hasEmail ? '<th style="min-width: 180px;">Email Responden</th>' : ''}
     `;
 
-    questions.forEach((q, idx) => {
-      headHtml += `<th title="${this.escapeHtml(q.title || '')}">${this.escapeHtml(q.title || `Pertanyaan ${idx + 1}`)}</th>`;
+    columns.forEach(col => {
+      headHtml += `<th title="${this.escapeHtml(col.title)}">${this.escapeHtml(col.title)}</th>`;
     });
 
     headHtml += `</tr>`;
@@ -167,6 +166,7 @@ class ResponsesDashboard {
 
   renderTableRows() {
     const questions = this.currentForm.questions || [];
+    const columns = this.getConsolidatedColumns(questions);
     const count = this.filteredResponses.length;
     const hasEmail = this.currentForm.collectEmail || this.responses.some(r => !!r.respondentEmail || !!(r.answers && r.answers._respondent_email));
 
@@ -197,14 +197,25 @@ class ResponsesDashboard {
           ${hasEmail ? `<td style="font-weight: 500; color: #818cf8;">${this.escapeHtml(emailStr)}</td>` : ''}
       `;
 
-      questions.forEach(q => {
-        let ans = resp.answers ? resp.answers[q.id] : null;
+      columns.forEach(col => {
+        let ans = null;
+        let activeQ = col.questions[0];
+
+        for (const q of col.questions) {
+          const val = resp.answers ? resp.answers[q.id] : null;
+          if (val !== null && val !== undefined && val !== '') {
+            ans = val;
+            activeQ = q;
+            break;
+          }
+        }
+
         let displayVal = '-';
 
         if (Array.isArray(ans)) {
           displayVal = this.escapeHtml(ans.join(', '));
         } else if (ans !== null && ans !== undefined && ans !== '') {
-          if (q.type === 'location') {
+          if (activeQ.type === 'location') {
             let locObj = ans;
             if (typeof locObj === 'string' && locObj.startsWith('{')) {
               try { locObj = JSON.parse(locObj); } catch(e){}
@@ -220,7 +231,7 @@ class ResponsesDashboard {
             } else {
               displayVal = this.escapeHtml(String(ans));
             }
-          } else if (q.type === 'file_gdrive') {
+          } else if (activeQ.type === 'file_gdrive') {
             let fileObj = ans;
             if (typeof fileObj === 'string' && fileObj.startsWith('{')) {
               try { fileObj = JSON.parse(fileObj); } catch(e){}
@@ -238,21 +249,21 @@ class ResponsesDashboard {
             } else {
               displayVal = `📁 ${this.escapeHtml(name)}`;
             }
-          } else if (q.type === 'file') {
+          } else if (activeQ.type === 'file') {
             displayVal = `
               <a href="${this.escapeHtml(String(ans))}" target="_blank" class="btn btn-ghost btn-xs" style="color: var(--primary); text-decoration: underline;" title="Buka / Unduh Foto">
                 <i data-lucide="image" style="width:13px; height:13px;"></i>
                 <span>Lihat Foto</span>
               </a>
             `;
-          } else if (q.type === 'signature') {
+          } else if (activeQ.type === 'signature') {
             displayVal = `
               <a href="${this.escapeHtml(String(ans))}" target="_blank" class="btn btn-ghost btn-xs" style="color: var(--primary); text-decoration: underline;" title="Lihat Gambar Tanda Tangan">
                 <i data-lucide="pen-tool" style="width:13px; height:13px;"></i>
                 <span>Lihat TTD</span>
               </a>
             `;
-          } else if (q.type === 'rating') {
+          } else if (activeQ.type === 'rating') {
             displayVal = `⭐ ${ans} / 5`;
           } else {
             displayVal = this.escapeHtml(String(ans));
@@ -269,6 +280,66 @@ class ResponsesDashboard {
     if (window.lucide) {
       window.lucide.createIcons();
     }
+  }
+
+  exportToCsv() {
+    if (!this.currentForm || this.responses.length === 0) {
+      if (window.app) window.app.showToast('Tidak ada data respon untuk diekspor', 'error');
+      return;
+    }
+
+    const hasEmail = this.currentForm.collectEmail || this.responses.some(r => !!r.respondentEmail || !!(r.answers && r.answers._respondent_email));
+    const columns = this.getConsolidatedColumns(this.currentForm.questions || []);
+
+    const headers = ['No', 'ID Respon', 'Waktu Pengisian'];
+    if (hasEmail) headers.push('Email Responden');
+    columns.forEach(col => headers.push(col.title));
+
+    const rows = [];
+    rows.push(headers.map(h => `"${h.replace(/"/g, '""')}"`).join(','));
+
+    this.responses.forEach((resp, idx) => {
+      const row = [];
+      row.push(idx + 1);
+      row.push(resp.id || '-');
+      row.push(resp.submittedAt ? new Date(resp.submittedAt).toLocaleString('id-ID') : '-');
+      if (hasEmail) {
+        row.push(resp.respondentEmail || (resp.answers && resp.answers._respondent_email) || '-');
+      }
+
+      columns.forEach(col => {
+        let ans = null;
+        for (const q of col.questions) {
+          const val = resp.answers ? resp.answers[q.id] : null;
+          if (val !== null && val !== undefined && val !== '') {
+            ans = val;
+            break;
+          }
+        }
+
+        if (Array.isArray(ans)) {
+          row.push(ans.join('; '));
+        } else if (ans && typeof ans === 'object') {
+          row.push(JSON.stringify(ans));
+        } else {
+          row.push(ans !== null && ans !== undefined ? String(ans) : '-');
+        }
+      });
+
+      rows.push(row.map(v => `"${String(v).replace(/"/g, '""')}"`).join(','));
+    });
+
+    const csvContent = 'data:text/csv;charset=utf-8,\uFEFF' + rows.join('\n');
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement('a');
+    link.setAttribute('href', encodedUri);
+    const filename = (this.currentForm.title || 'Respon_Form').toLowerCase().replace(/[^a-z0-9]/g, '_') + '_responses.csv';
+    link.setAttribute('download', filename);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    if (window.app) window.app.showToast('Data respon berhasil diexport ke CSV!', 'success');
   }
 
   escapeHtml(str) {
