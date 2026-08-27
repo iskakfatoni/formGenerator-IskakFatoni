@@ -6,6 +6,48 @@
 
 class FormBuilder {
 
+  saveFoldingState() {
+    const formId = (this.currentForm && this.currentForm.id) ? this.currentForm.id : 'temp_current_form';
+    const state = {
+      collapsedSections: Array.from(this.collapsedSections || []),
+      collapsedQuestions: Array.from(this.collapsedQuestions || [])
+    };
+    try {
+      localStorage.setItem('formcraft_folding_' + formId, JSON.stringify(state));
+    } catch (e) {
+      console.warn('Could not save folding state to localStorage', e);
+    }
+    if (this.currentForm) {
+      this.currentForm.collapsedSections = state.collapsedSections;
+      this.currentForm.collapsedQuestions = state.collapsedQuestions;
+    }
+  }
+
+  restoreFoldingState(formId) {
+    const targetId = formId || (this.currentForm && this.currentForm.id) || 'temp_current_form';
+    let state = null;
+
+    // 1. Check form object
+    if (this.currentForm && (this.currentForm.collapsedSections || this.currentForm.collapsedQuestions)) {
+      state = {
+        collapsedSections: this.currentForm.collapsedSections || [],
+        collapsedQuestions: this.currentForm.collapsedQuestions || []
+      };
+    } else {
+      // 2. Check localStorage
+      try {
+        const saved = localStorage.getItem('formcraft_folding_' + targetId);
+        if (saved) {
+          state = JSON.parse(saved);
+        }
+      } catch (e) {}
+    }
+
+    this.collapsedSections = new Set((state && state.collapsedSections) ? state.collapsedSections : []);
+    this.collapsedQuestions = new Set((state && state.collapsedQuestions) ? state.collapsedQuestions : []);
+  }
+
+
   getTypeMeta(type) {
     const meta = {
       text: { icon: 'type', label: 'Teks Singkat' },
@@ -452,6 +494,8 @@ class FormBuilder {
           return q;
         });
 
+        
+        this.restoreFoldingState(formId);
         this.renderForm();
         if (this.statusBadge) this.statusBadge.textContent = 'Edit Formulir';
         if (this.responsesTabLink) this.responsesTabLink.style.display = 'inline-flex';
@@ -685,6 +729,7 @@ class FormBuilder {
         } else {
           this.collapsedSections.add(sec.id);
         }
+        this.saveFoldingState();
         this.renderQuestions();
       });
     }
@@ -693,6 +738,7 @@ class FormBuilder {
     if (previewRow) {
       previewRow.addEventListener('click', () => {
         this.collapsedSections.delete(sec.id);
+        this.saveFoldingState();
         this.renderQuestions();
       });
     }
@@ -1133,6 +1179,7 @@ class FormBuilder {
         } else {
           this.collapsedQuestions.add(q.id);
         }
+        this.saveFoldingState();
         this.renderQuestions();
       });
     });
