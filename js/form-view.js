@@ -1242,6 +1242,9 @@ class FormViewer {
         if (val.length === 0) val = [];
       } else if (q.type === 'location' || q.type === 'rating' || q.type === 'file' || q.type === 'signature') {
         val = this.answers[q.id] || null;
+      } else if (q.type === 'dropdown') {
+        const sel = qCard.querySelector(`select[name="${qName}"]`);
+        val = (sel && sel.value) ? sel.value.trim() : (this.answers[q.id] || '');
       } else {
         const input = qCard.querySelector(`[name="${qName}"]`);
         val = input ? input.value.trim() : '';
@@ -1298,40 +1301,50 @@ class FormViewer {
 
     let branchAction = 'next';
 
-    // 1. Priority 1: Option-Level Branching (Specific choice/dropdown selection)
+    // 1. Check if the user's SELECTED ANSWER has an explicit custom nextSectionId
+    // (Jika alur jawaban diatur secara khusus, prioritas adalah alur jawaban)
     for (const q of stepQuestions) {
       if ((q.type === 'choice' || q.type === 'dropdown') && q.options && q.options.length > 0) {
         const ansVal = this.answers[q.id];
         if (ansVal) {
           const matchedOpt = q.options.find(opt => {
-            const text = typeof opt === 'object' ? opt.text : opt;
-            return text === ansVal;
+            const text = typeof opt === 'object' ? (opt.text || '') : opt;
+            return String(text).trim().toLowerCase() === String(ansVal).trim().toLowerCase();
           });
 
-          if (matchedOpt && typeof matchedOpt === 'object' && matchedOpt.nextSectionId && matchedOpt.nextSectionId !== 'next' && matchedOpt.nextSectionId !== 'inherit') {
-            branchAction = matchedOpt.nextSectionId;
-            break;
+          if (matchedOpt && typeof matchedOpt === 'object' && matchedOpt.nextSectionId) {
+            const optTarget = String(matchedOpt.nextSectionId).trim();
+            if (optTarget !== '' && optTarget !== 'next' && optTarget !== 'inherit') {
+              branchAction = optTarget;
+              break;
+            }
           }
         }
       }
     }
 
-    // 2. Priority 2: Question-Level Global Branching (q.nextSectionId)
+    // 2. If the answer flow is default, check Question-Level Global Branching (q.nextSectionId)
     if (branchAction === 'next') {
       for (const q of stepQuestions) {
-        if (q.nextSectionId && q.nextSectionId !== 'inherit' && q.nextSectionId !== 'next') {
-          // If question was answered or required
-          if (this.answers[q.id] !== undefined && this.answers[q.id] !== '') {
-            branchAction = q.nextSectionId;
-            break;
+        if (q.nextSectionId) {
+          const qTarget = String(q.nextSectionId).trim();
+          if (qTarget !== '' && qTarget !== 'next' && qTarget !== 'inherit') {
+            if (this.answers[q.id] !== undefined && this.answers[q.id] !== null && this.answers[q.id] !== '') {
+              branchAction = qTarget;
+              break;
+            }
           }
         }
       }
     }
 
-    // 3. Priority 3: Section-Level Global Navigation (currentSec.nextSectionId)
-    if (branchAction === 'next' && currentSec && currentSec.nextSectionId && currentSec.nextSectionId !== 'next') {
-      branchAction = currentSec.nextSectionId;
+    // 3. If answer flow is still default, check Section-Level Global Flow (currentSec.nextSectionId)
+    // (Jika alur global sudah diatur dan alur jawaban masih default, maka prioritas adalah alur global)
+    if (branchAction === 'next' && currentSec && currentSec.nextSectionId) {
+      const secTarget = String(currentSec.nextSectionId).trim();
+      if (secTarget !== '' && secTarget !== 'next' && secTarget !== 'inherit') {
+        branchAction = secTarget;
+      }
     }
 
     if (branchAction === 'submit') {

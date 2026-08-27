@@ -1010,7 +1010,7 @@ class FormBuilder {
                   <div class="opt-branch-wrap" title="Aksi lanjut setelah opsi ini dipilih">
                     <i data-lucide="corner-down-right" class="branch-icon"></i>
                     <select class="select-opt-branch">
-                      <option value="next" ${(!optNext || optNext === 'next') ? 'selected' : ''}>Lanjut bagian berikutnya</option>
+                      <option value="next" ${(!optNext || optNext === 'next' || optNext === 'inherit') ? 'selected' : ''}>Lanjut bagian berikutnya (Default)</option>
                       ${this.sections.map((s, sIdx) => `
                         <option value="${s.id}" ${optNext === s.id ? 'selected' : ''}>Buka Bagian ${sIdx + 1}: ${this.escapeHtml(s.title || 'Tanpa Judul')}</option>
                       `).join('')}
