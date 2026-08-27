@@ -1445,3 +1445,53 @@ body.responder-mode .container {
   margin-top: 6px;
   font-weight: 400;
 }
+
+
+/* Dual Photo Action Buttons (Camera vs Gallery) */
+.file-dual-actions-box {
+  display: flex;
+  gap: 12px;
+  width: 100%;
+}
+
+.btn-file-dual-btn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 16px 12px;
+  background: rgba(15, 23, 42, 0.45);
+  border: 2px dashed rgba(255, 255, 255, 0.15);
+  border-radius: 12px;
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  font-size: 0.88rem;
+  font-weight: 500;
+}
+
+.btn-file-dual-btn:hover {
+  background: rgba(99, 102, 241, 0.15);
+  border-color: var(--primary-color);
+  transform: translateY(-2px);
+}
+
+.btn-action-camera i {
+  width: 26px;
+  height: 26px;
+  color: #38bdf8;
+}
+
+.btn-action-gallery i {
+  width: 26px;
+  height: 26px;
+  color: #a855f7;
+}
+
+@media (max-width: 520px) {
+  .file-dual-actions-box {
+    flex-direction: column;
+  }
+}

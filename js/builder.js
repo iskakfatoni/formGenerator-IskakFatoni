@@ -60,6 +60,8 @@ class FormBuilder {
         if (reqCheck) q.required = reqCheck.checked;
         if (pointsInput) q.points = parseFloat(pointsInput.value) || 0;
         if (correctTextInput) q.correctAnswer = correctTextInput.value.trim();
+        const photoSourceSel = qCard.querySelector('.select-photo-source');
+        if (photoSourceSel) q.photoSource = photoSourceSel.value;
 
         // Harvest options text & branch
         const optRows = qCard.querySelectorAll('.option-row');
@@ -1651,12 +1653,22 @@ class FormBuilder {
         </div>
       `;
     } else if (q.type === 'file') {
+      const photoSource = q.photoSource || 'all'; // 'all' (Kamera & Galeri), 'camera' (Wajib Kamera), 'gallery' (Hanya Galeri)
       optionsHtml = `
-        <div class="file-preview-box">
-          <i data-lucide="camera"></i>
-          <div>
-            <strong>Upload Foto / Berkas (Kamera & Galeri)</strong>
-            <span>Responden dapat mengambil foto langsung dari kamera HP atau memilih file dari galeri.</span>
+        <div class="file-preview-box" style="padding: 14px 16px;">
+          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+            <i data-lucide="camera" style="color: #38bdf8; width: 18px; height: 18px;"></i>
+            <strong style="font-size: 0.9rem;">Opsi Sumber Pengambilan Foto:</strong>
+          </div>
+          <div class="photo-source-selector">
+            <select class="select-photo-source input-select-sm" style="width: 100%; max-width: 400px; padding: 6px 10px; border-radius: 8px;">
+              <option value="all" ${photoSource === 'all' ? 'selected' : ''}>📸 Bebas (Tersedia Tombol Kamera & Galeri)</option>
+              <option value="camera" ${photoSource === 'camera' ? 'selected' : ''}>📷 Wajib Kamera Langsung (Live Camera Capture)</option>
+              <option value="gallery" ${photoSource === 'gallery' ? 'selected' : ''}>🖼️ Hanya Upload Galeri / Berkas Foto</option>
+            </select>
+          </div>
+          <div style="font-size: 0.78rem; color: var(--text-muted); margin-top: 6px;">
+            ${photoSource === 'camera' ? '⚠️ Responden akan langsung membuka kamera HP saat menekan tombol.' : (photoSource === 'gallery' ? '📁 Responden akan memilih file gambar dari galeri HP atau komputer.' : '✨ Responden dapat memilih mengambil foto langsung via Kamera atau upload dari Galeri.')}
           </div>
         </div>
       `;
@@ -1895,6 +1907,14 @@ class FormBuilder {
     if (descInput) {
       descInput.addEventListener('input', (e) => {
         q.description = e.target.value;
+      });
+    }
+
+    const photoSourceSel = card.querySelector('.select-photo-source');
+    if (photoSourceSel) {
+      photoSourceSel.addEventListener('change', (e) => {
+        q.photoSource = e.target.value;
+        this.triggerAutoSave(true);
       });
     }
 

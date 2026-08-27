@@ -594,14 +594,49 @@ class FormViewer {
         </div>
       `;
     } else if (q.type === 'file') {
-      inputHtml = `
-        <div class="live-file-uploader" data-question-id="${q.id}">
+      const source = q.photoSource || 'all'; // 'all', 'camera', 'gallery'
+
+      let actionButtonsHtml = '';
+      if (source === 'camera') {
+        actionButtonsHtml = `
           <div class="file-dropzone-box" id="dropzone-${q.id}">
-            <i data-lucide="camera" class="file-dropzone-icon"></i>
-            <div class="file-dropzone-label">Ambil Foto / Pilih File Berkas</div>
+            <i data-lucide="camera" class="file-dropzone-icon" style="color:#38bdf8;"></i>
+            <div class="file-dropzone-label">Buka Kamera & Ambil Foto Langsung</div>
+            <div class="file-dropzone-sub">Kamera HP akan langsung terbuka otomatis</div>
+            <input type="file" class="input-file-element" accept="image/*" capture="environment" style="display:none;">
+          </div>
+        `;
+      } else if (source === 'gallery') {
+        actionButtonsHtml = `
+          <div class="file-dropzone-box" id="dropzone-${q.id}">
+            <i data-lucide="image" class="file-dropzone-icon" style="color:#a855f7;"></i>
+            <div class="file-dropzone-label">Pilih Foto dari Galeri / Berkas</div>
             <div class="file-dropzone-sub">Format JPG, PNG, WEBP (Otomatis dikompresi)</div>
             <input type="file" class="input-file-element" accept="image/*" style="display:none;">
           </div>
+        `;
+      } else {
+        // Dual Buttons (Camera and Gallery)
+        actionButtonsHtml = `
+          <div class="file-dual-actions-box" id="dropzone-${q.id}">
+            <button type="button" class="btn-file-dual-btn btn-action-camera" title="Ambil foto langsung dengan kamera">
+              <i data-lucide="camera"></i>
+              <span>Ambil dari Kamera</span>
+              <input type="file" class="input-camera-trigger" accept="image/*" capture="environment" style="display:none;">
+            </button>
+            <button type="button" class="btn-file-dual-btn btn-action-gallery" title="Pilih foto dari galeri HP atau komputer">
+              <i data-lucide="image"></i>
+              <span>Pilih dari Galeri</span>
+              <input type="file" class="input-gallery-trigger" accept="image/*" style="display:none;">
+            </button>
+          </div>
+          <div style="text-align:center; font-size:0.75rem; color:var(--text-muted); margin-top:6px;">Format JPG, PNG, WEBP (Otomatis dikompresi)</div>
+        `;
+      }
+
+      inputHtml = `
+        <div class="live-file-uploader" data-question-id="${q.id}">
+          ${actionButtonsHtml}
           <div class="file-preview-card hidden" id="file-preview-${q.id}">
             <div class="file-preview-left">
               <img src="" alt="Thumbnail File" class="file-thumb-img">
