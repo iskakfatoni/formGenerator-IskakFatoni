@@ -863,15 +863,23 @@ class FormViewer {
             }
             try {
               const formId = this.currentForm ? this.currentForm.id : 'form_upload';
+              const formTitle = this.currentForm ? (this.currentForm.title || 'Formulir') : 'Formulir';
+              const scriptUrl = this.currentForm ? this.currentForm.gdriveScriptUrl : '';
+              const folderId = this.currentForm ? this.currentForm.gdriveFolderId : '';
+
               const result = await window.imageUploader.processAndUpload(file, {
                 formId,
+                formTitle,
+                scriptUrl,
+                folderId,
+                questionTitle: q.title || 'Foto',
                 context: 'submission',
                 maxWidth: 1200,
                 quality: 0.85
               });
               this.answers[q.id] = result.url;
               hiddenInput.value = result.url;
-              thumbImg.src = result.url;
+              thumbImg.src = result.previewUrl || result.url;
               metaSize.textContent = `${(result.size / 1024).toFixed(0)} KB (Tersimpan)`;
               previewCard.classList.remove('hidden');
               dropzone.classList.add('hidden');

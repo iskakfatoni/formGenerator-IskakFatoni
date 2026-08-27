@@ -1,7 +1,7 @@
 /**
- * FORMCRAFT - Client-side Image Compression & Cloud Uploader Engine
- * Automatically compresses high-resolution images via HTML5 Canvas (WebP/JPEG, ~80-120KB)
- * and uploads them to Firebase Storage with instant Base64 fallback.
+ * FORMCRAFT - Client-side Image Compression & Google Drive Uploader Engine
+ * Automatically compresses high-resolution images via HTML5 Canvas (WebP/JPEG, ~60-100KB)
+ * and uploads them directly to Google Drive folders via Google Apps Script Webhook (Zero Firebase Storage).
  */
 
 class ImageUploaderEngine {
@@ -9,10 +9,6 @@ class ImageUploaderEngine {
     this.DEFAULT_MAX_WIDTH_QUESTION = 1200;
     this.DEFAULT_MAX_WIDTH_OPTION = 600;
     this.DEFAULT_QUALITY = 0.82;
-  }
-
-  get storage() {
-    return window.firebaseManager && window.firebaseManager.storage ? window.firebaseManager.storage : null;
   }
 
   /**
@@ -46,7 +42,7 @@ class ImageUploaderEngine {
             width = maxWidth;
           }
 
-          // Max height limit (e.g. 1600px)
+          // Max height limit
           const maxHeight = maxWidth * 1.5;
           if (height > maxHeight) {
             width = Math.round((width * maxHeight) / height);
@@ -58,7 +54,6 @@ class ImageUploaderEngine {
           canvas.height = height;
 
           const ctx = canvas.getContext('2d');
-          // High quality image smoothing
           ctx.imageSmoothingEnabled = true;
           ctx.imageSmoothingQuality = 'high';
           ctx.drawImage(img, 0, 0, width, height);
@@ -73,7 +68,6 @@ class ImageUploaderEngine {
 
           canvas.toBlob((blob) => {
             if (!blob) {
-              // Fallback to dataURL conversion if toBlob is null
               const byteString = atob(dataUrl.split(',')[1]);
               const ab = new ArrayBuffer(byteString.length);
               const ia = new Uint8Array(ab);
@@ -109,59 +103,59 @@ class ImageUploaderEngine {
   }
 
   /**
-   * Compresses and uploads an image to Firebase Storage with Base64 fallback.
+   * Compresses an image and uploads directly to Google Drive (Zero Firebase Storage dependency)
+   * with compressed Base64 fallback.
    * @param {File} file
-   * @param {Object} options - { formId, context: 'question'|'option', maxWidth, quality }
-   * @returns {Promise<{ url: string, size: number, type: 'cloud'|'base64' }>}
+   * @param {Object} options - { formId, formTitle, scriptUrl, folderId, questionTitle, context: 'submission'|'question'|'banner', maxWidth, quality }
+   * @returns {Promise<{ url: string, downloadUrl?: string, previewUrl: string, size: number, type: 'gdrive'|'base64' }>}
    */
   async processAndUpload(file, options = {}) {
     const context = options.context || 'question';
     const maxWidth = options.maxWidth || (context === 'option' ? this.DEFAULT_MAX_WIDTH_OPTION : this.DEFAULT_MAX_WIDTH_QUESTION);
     const formId = options.formId || 'form_' + Date.now();
 
-    // 1. Compress Image
+    // 1. Compress Image via HTML5 Canvas (High efficiency WebP/JPEG)
     const compressed = await this.compressImage(file, { maxWidth, quality: options.quality });
-    console.log(`[ImageEngine] Gambar dikompres: ${(compressed.originalSize / 1024).toFixed(1)} KB -> ${(compressed.compressedSize / 1024).toFixed(1)} KB (${compressed.width}x${compressed.height}px)`);
+    console.log(`[ImageEngine] Foto berhasil dikompres: ${(compressed.originalSize / 1024).toFixed(1)} KB -> ${(compressed.compressedSize / 1024).toFixed(1)} KB (${compressed.width}x${compressed.height}px)`);
 
-    // 2. Try Upload to Firebase Storage with strict 3.5s timeout to prevent hanging
-    if (this.storage) {
+    // 2. Upload to Google Drive via Apps Script Webhook
+    if (window.gdriveUploader && typeof window.gdriveUploader.uploadBase64 === 'function') {
       try {
         const fileExt = compressed.blob.type === 'image/webp' ? 'webp' : 'jpg';
-        const fileName = `${context}_${Date.now()}_${Math.random().toString(36).substr(2, 5)}.${fileExt}`;
-        const storageRef = this.storage.ref().child(`forms/${formId}/images/${fileName}`);
-
-        const uploadPromise = async () => {
-          const snapshot = await storageRef.put(compressed.blob, {
-            contentType: compressed.blob.type,
-            cacheControl: 'public,max-age=31536000'
-          });
-          return await snapshot.ref.getDownloadURL();
-        };
-
-        const timeoutPromise = new Promise((_, reject) => {
-          setTimeout(() => reject(new Error('Firebase Storage timeout')), 3500);
+        const safeFormName = (options.formTitle || formId).replace(/[^a-zA-Z0-9_-]/g, '_');
+        const fileName = `${safeFormName}_foto_${Date.now()}.${fileExt}`;
+        
+        // Strip data:mime/type;base64, prefix
+        const base64Data = compressed.dataUrl.substring(compressed.dataUrl.indexOf(',') + 1);
+        
+        const gdriveRes = await window.gdriveUploader.uploadBase64(base64Data, fileName, compressed.blob.type, {
+          scriptUrl: options.scriptUrl,
+          folderId: options.folderId,
+          formId: formId,
+          formTitle: options.formTitle || 'Formulir Respon',
+          questionTitle: options.questionTitle || 'Foto'
         });
 
-        const downloadUrl = await Promise.race([uploadPromise(), timeoutPromise]);
-        return {
-          url: downloadUrl,
-          size: compressed.compressedSize,
-          type: 'cloud'
-        };
-      } catch (storageErr) {
-        console.warn('[ImageEngine] Firebase Storage upload error/timeout (fallback to compressed Data URL):', storageErr);
-        // Fallback directly to compressed Data URL
-        return {
-          url: compressed.dataUrl,
-          size: compressed.compressedSize,
-          type: 'base64'
-        };
+        if (gdriveRes && gdriveRes.url) {
+          console.log(`[ImageEngine] Foto terunggah ke Google Drive: ${gdriveRes.url}`);
+          return {
+            url: gdriveRes.url,
+            downloadUrl: gdriveRes.downloadUrl,
+            previewUrl: compressed.dataUrl,
+            size: compressed.compressedSize,
+            type: 'gdrive',
+            fileId: gdriveRes.fileId
+          };
+        }
+      } catch (gdriveErr) {
+        console.warn('[ImageEngine] Upload Google Drive gagal/timeout, fallback ke base64 data URL:', gdriveErr);
       }
     }
 
-    // Direct fallback if storage not initialized
+    // 3. Fallback to compressed Data URL if offline / Google Drive not responding
     return {
       url: compressed.dataUrl,
+      previewUrl: compressed.dataUrl,
       size: compressed.compressedSize,
       type: 'base64'
     };

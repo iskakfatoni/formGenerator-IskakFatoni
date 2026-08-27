@@ -5,6 +5,65 @@
  */
 
 class GoogleDriveUploader {
+
+  /**
+   * Upload raw base64 data directly to Google Drive via Apps Script Webhook
+   * @param {string} base64Data - Raw base64 string (without data: prefix)
+   * @param {string} fileName
+   * @param {string} mimeType
+   * @param {Object} options - { scriptUrl, folderId, formId, formTitle, questionTitle }
+   */
+  async uploadBase64(base64Data, fileName, mimeType, options = {}) {
+    let scriptUrl = (options.scriptUrl || '').trim() || this.defaultGlobalScriptUrl;
+    if (scriptUrl && !scriptUrl.startsWith('http')) {
+      scriptUrl = `https://script.google.com/macros/s/${scriptUrl}/exec`;
+    }
+    const folderId = (options.folderId || '').trim();
+
+    if (scriptUrl) {
+      try {
+        const payload = {
+          fileName: fileName || `photo_${Date.now()}.webp`,
+          mimeType: mimeType || 'image/webp',
+          base64Data: base64Data,
+          folderId: folderId,
+          formId: options.formId || '',
+          formTitle: options.formTitle || 'Formulir Respon',
+          questionTitle: options.questionTitle || '',
+          uploadedAt: new Date().toISOString()
+        };
+
+        const response = await fetch(scriptUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'text/plain;charset=utf-8',
+          },
+          body: JSON.stringify(payload)
+        });
+
+        if (!response.ok) {
+          throw new Error('HTTP error status: ' + response.status);
+        }
+
+        const result = await response.json();
+        if (result && (result.status === 'success' || result.url || result.fileId)) {
+          const viewUrl = result.url || (`https://drive.google.com/file/d/${result.fileId}/view`);
+          return {
+            success: true,
+            storage: 'gdrive',
+            url: viewUrl,
+            fileId: result.fileId || null,
+            downloadUrl: result.downloadUrl || null,
+            fileName: payload.fileName
+          };
+        }
+      } catch (err) {
+        console.warn('[GDriveEngine] Upload base64 error:', err);
+      }
+    }
+    return null;
+  }
+
   constructor() {
     // Default Global Web App URL for all forms in the application
     this.defaultGlobalScriptUrl = 'https://script.google.com/macros/s/AKfycbyXoRdg_Sgqhy9AZi2XbrF_uT_dP3xsJZk7Dylu3F9CKJ3Co-WSls86gOhxoCg3P_hT/exec';
