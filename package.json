@@ -2,13 +2,8 @@
   "name": "formgenerator-iskakfatoni",
   "version": "1.0.0",
   "description": "formGenerator-IskakFatoni - Modern Form Builder & Excel Export Desktop App",
-  "main": "electron/main.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "electron .",
-    "build:portable": "electron-builder --win portable",
-    "build:installer": "electron-builder --win nsis",
-    "build:exe": "electron-builder --win portable"
+    "build:exe": "C:\\Windows\\Microsoft.NET\\Framework64\\v4.0.30319\\csc.exe /target:winexe /optimize+ /out:formGenerator-IskakFatoni.exe launcher\\Program.cs"
   },
   "repository": {
     "type": "git",
@@ -21,36 +16,5 @@
   "bugs": {
     "url": "https://github.com/iskakfatoni/formGenerator-IskakFatoni/issues"
   },
-  "homepage": "https://github.com/iskakfatoni/formGenerator-IskakFatoni#readme",
-  "build": {
-    "appId": "com.iskakfatoni.formgenerator",
-    "productName": "formGenerator-IskakFatoni",
-    "directories": {
-      "output": "dist"
-    },
-    "files": [
-      "index.html",
-      "form.html",
-      "css/**/*",
-      "js/**/*",
-      "electron/**/*",
-      "package.json"
-    ],
-    "win": {
-      "target": [
-        "portable",
-        "nsis"
-      ]
-    },
-    "nsis": {
-      "oneClick": false,
-      "allowToChangeInstallationDirectory": true,
-      "createDesktopShortcut": true,
-      "createStartMenuShortcut": true
-    }
-  },
-  "devDependencies": {
-    "electron": "^44.0.0",
-    "electron-builder": "^26.15.3"
-  }
+  "homepage": "https://github.com/iskakfatoni/formGenerator-IskakFatoni#readme"
 }
