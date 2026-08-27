@@ -149,21 +149,53 @@ class FormBuilder {
     // Collect branches
     const branchPorts = [];
 
-    // Choice / Dropdown branches
+    // Choice / Dropdown branches (Intelligently group large option lists for compact & simple boxes)
     sectionQuestions.forEach(q => {
       if ((q.type === 'choice' || q.type === 'dropdown') && q.options && q.options.length > 0) {
+        const branchedOptions = [];
         q.options.forEach((opt, optIdx) => {
           const optText = typeof opt === 'object' ? opt.text : opt;
           const optTarget = typeof opt === 'object' ? opt.nextSectionId : 'next';
           if (optTarget && optTarget !== 'next' && optTarget !== 'inherit') {
-            branchPorts.push({
-              id: 'gport-opt-' + sec.id + '-' + q.id + '-' + optIdx,
-              label: 'Pilih: ' + optText,
-              targetId: optTarget,
-              type: 'cyan'
-            });
+            branchedOptions.push({ optText, optTarget, optIdx });
           }
         });
+
+        if (branchedOptions.length > 0) {
+          if (branchedOptions.length <= 4) {
+            // Small option lists (e.g. Sekolah, Kelas): show specific option names
+            branchedOptions.forEach(bo => {
+              branchPorts.push({
+                id: 'gport-opt-' + sec.id + '-' + q.id + '-' + bo.optIdx,
+                label: 'Opsi: ' + bo.optText,
+                targetId: bo.optTarget,
+                type: 'cyan'
+              });
+            });
+          } else {
+            // Large dropdown lists (e.g. 36 student names): group by target section to keep cards compact & simple!
+            const targetGroups = new Map();
+            branchedOptions.forEach(bo => {
+              if (!targetGroups.has(bo.optTarget)) {
+                targetGroups.set(bo.optTarget, []);
+              }
+              targetGroups.get(bo.optTarget).push(bo.optText);
+            });
+
+            targetGroups.forEach((items, targetId) => {
+              const summaryLabel = (items.length === q.options.length)
+                ? ('📋 ' + items.length + ' Pilihan (' + q.title + ')')
+                : ('📋 ' + items.length + ' Opsi (' + items[0] + ' dkk)');
+
+              branchPorts.push({
+                id: 'gport-optgroup-' + sec.id + '-' + q.id + '-' + targetId.replace(/[^a-zA-Z0-9_-]/g, '_'),
+                label: summaryLabel,
+                targetId: targetId,
+                type: 'cyan'
+              });
+            });
+          }
+        }
       }
     });
 
