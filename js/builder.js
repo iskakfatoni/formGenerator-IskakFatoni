@@ -6,6 +6,66 @@
 
 class FormBuilder {
 
+  harvestDomValues() {
+    // 1. Harvest sections DOM values
+    document.querySelectorAll('.section-card[data-section-id]').forEach(secCard => {
+      const secId = secCard.dataset.sectionId;
+      const sec = this.sections.find(s => s.id === secId);
+      if (sec) {
+        const titleInput = secCard.querySelector('.input-section-title');
+        const descInput = secCard.querySelector('.input-section-desc');
+        const nextSelect = secCard.querySelector('.select-section-next');
+        if (titleInput) sec.title = titleInput.value;
+        if (descInput) sec.description = descInput.value;
+        if (nextSelect) sec.nextSectionId = nextSelect.value;
+      }
+    });
+
+    // 2. Harvest questions DOM values
+    document.querySelectorAll('.question-card[data-question-id]').forEach(qCard => {
+      const qId = qCard.dataset.questionId;
+      const q = this.questions.find(item => item.id === qId);
+      if (q) {
+        const titleInput = qCard.querySelector('.input-q-title');
+        const descInput = qCard.querySelector('.input-q-description');
+        const reqCheck = qCard.querySelector('.check-q-required');
+        const pointsInput = qCard.querySelector('.input-q-points');
+        const correctTextInput = qCard.querySelector('.input-q-correct-text');
+
+        if (titleInput) q.title = titleInput.value;
+        if (descInput) q.description = descInput.value;
+        if (reqCheck) q.required = reqCheck.checked;
+        if (pointsInput) q.points = parseFloat(pointsInput.value) || 0;
+        if (correctTextInput) q.correctAnswer = correctTextInput.value.trim();
+
+        // Harvest options text & branch
+        const optRows = qCard.querySelectorAll('.option-row');
+        if (optRows.length > 0) {
+          optRows.forEach((row, idx) => {
+            const textInput = row.querySelector('.input-option-text');
+            const branchSelect = row.querySelector('.select-opt-branch');
+            const optText = textInput ? textInput.value : '';
+            const nextSec = branchSelect ? branchSelect.value : 'next';
+
+            if (q.options && q.options[idx]) {
+              if (typeof q.options[idx] === 'object') {
+                q.options[idx].text = optText;
+                if (branchSelect) q.options[idx].nextSectionId = nextSec;
+              } else {
+                if (branchSelect && nextSec !== 'next' && nextSec !== 'inherit') {
+                  q.options[idx] = { text: optText, nextSectionId: nextSec };
+                } else {
+                  q.options[idx] = optText;
+                }
+              }
+            }
+          });
+        }
+      }
+    });
+  }
+
+
   renderFlowchartDiagram() {
     const nodesLayer = document.getElementById('flowchart-nodes-layer');
     const svgLayer = document.getElementById('flowchart-svg-layer');
@@ -1773,9 +1833,18 @@ class FormBuilder {
 
     // Attach local card event listeners
     const titleInput = card.querySelector('.input-q-title');
-    titleInput.addEventListener('input', (e) => {
-      q.title = e.target.value;
-    });
+    if (titleInput) {
+      titleInput.addEventListener('input', (e) => {
+        q.title = e.target.value;
+      });
+    }
+
+    const descInput = card.querySelector('.input-q-description');
+    if (descInput) {
+      descInput.addEventListener('input', (e) => {
+        q.description = e.target.value;
+      });
+    }
 
     // Question Image Upload
     const btnQImage = card.querySelector('.btn-q-image');
@@ -2204,6 +2273,7 @@ class FormBuilder {
   }
 
   async saveCurrentForm() {
+    this.harvestDomValues();
     const title = (this.titleInput ? this.titleInput.value.trim() : '') || 'Formulir Tanpa Judul';
     const description = this.descInput ? this.descInput.value.trim() : '';
 
