@@ -6,6 +6,29 @@
 
 class FormBuilder {
 
+  triggerAutoSave(silent = true) {
+    if (this._autoSaveTimer) {
+      clearTimeout(this._autoSaveTimer);
+    }
+    this._autoSaveTimer = setTimeout(async () => {
+      if (!this.currentForm) return;
+      if (this.statusBadge) {
+        this.statusBadge.textContent = 'Menyimpan...';
+        this.statusBadge.style.color = '#38bdf8';
+      }
+      try {
+        await this.saveCurrentForm(silent);
+        if (this.statusBadge) {
+          this.statusBadge.textContent = 'Tersimpan Otomatis';
+          this.statusBadge.style.color = '#34d399';
+        }
+      } catch (e) {
+        console.warn('Auto-save error:', e);
+      }
+    }, 450);
+  }
+
+
   harvestDomValues() {
     // 1. Harvest sections DOM values
     document.querySelectorAll('.section-card[data-section-id]').forEach(secCard => {
@@ -607,6 +630,25 @@ class FormBuilder {
 
   bindEvents() {
 
+    // Auto-save on browser tab close / refresh
+    window.addEventListener('beforeunload', () => {
+      if (this.currentForm) {
+        this.harvestDomValues();
+        try {
+          const formData = {
+            ...this.currentForm,
+            title: (this.titleInput ? this.titleInput.value.trim() : '') || 'Formulir Tanpa Judul',
+            description: this.descInput ? this.descInput.value.trim() : '',
+            sections: this.sections,
+            questions: this.questions,
+            isPublished: (this.currentForm.isPublished !== false)
+          };
+          localStorage.setItem('formcraft_autosave_backup', JSON.stringify(formData));
+        } catch (e) {}
+      }
+    });
+
+
     
     // Graph Zoom, Pan & Fullscreen Controls
     const graphViewport = document.getElementById('flowchart-graph-viewport');
@@ -1006,6 +1048,7 @@ class FormBuilder {
     if (panelSettings) panelSettings.classList.toggle('active', tab === 'settings');
     if (panelFlowchart) panelFlowchart.classList.toggle('active', tab === 'flowchart');
 
+    this.triggerAutoSave(true);
     if (tab === 'flowchart') {
       this.renderFlowchartDiagram();
     }
@@ -2272,7 +2315,7 @@ class FormBuilder {
     }, 60);
   }
 
-  async saveCurrentForm() {
+  async saveCurrentForm(silent = false) {
     this.harvestDomValues();
     const title = (this.titleInput ? this.titleInput.value.trim() : '') || 'Formulir Tanpa Judul';
     const description = this.descInput ? this.descInput.value.trim() : '';
@@ -2306,7 +2349,7 @@ class FormBuilder {
       this.currentForm = saved;
       if (this.statusBadge) this.statusBadge.textContent = 'Tersimpan';
       if (this.responsesTabLink) this.responsesTabLink.style.display = 'inline-flex';
-      if (window.app && typeof window.app.showToast === 'function') {
+      if (!silent && window.app && typeof window.app.showToast === 'function') {
         window.app.showToast('Formulir berhasil disimpan!', 'success');
       }
       return saved;

@@ -331,6 +331,15 @@ class AuthManager {
   }
 
   async logout() {
+    // Auto-save form if currently open in builder before logging out
+    if (window.app && window.app.builder && window.app.builder.currentForm) {
+      try {
+        await window.app.builder.saveCurrentForm(true);
+      } catch (e) {
+        console.warn('Auto-save on logout warning:', e);
+      }
+    }
+
     if (this.auth) {
       try {
         await this.auth.signOut();
