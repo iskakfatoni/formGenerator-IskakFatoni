@@ -12,20 +12,15 @@ class FormBuilder {
     }
     this._autoSaveTimer = setTimeout(async () => {
       if (!this.currentForm) return;
-      if (this.statusBadge) {
-        this.statusBadge.textContent = 'Menyimpan...';
-        this.statusBadge.style.color = '#38bdf8';
-      }
       try {
-        await this.saveCurrentForm(silent);
-        if (this.statusBadge) {
-          this.statusBadge.textContent = 'Tersimpan Otomatis';
-          this.statusBadge.style.color = '#34d399';
+        await this.saveCurrentForm(true);
+        if (window.app && typeof window.app.showToast === 'function') {
+          window.app.showToast('Perubahan tersimpan otomatis', 'info');
         }
       } catch (e) {
         console.warn('Auto-save error:', e);
       }
-    }, 450);
+    }, 600);
   }
 
 
@@ -589,7 +584,7 @@ class FormBuilder {
     this.descInput = document.getElementById('form-desc-input');
     this.accentStripe = document.getElementById('form-accent-stripe');
     this.questionsContainer = document.getElementById('questions-container');
-    this.statusBadge = document.getElementById('builder-status-badge');
+    // status badge removed
     this.responseCountBadge = document.getElementById('builder-response-count');
     this.responsesTabLink = document.getElementById('tab-btn-responses-link');
 
@@ -1098,7 +1093,7 @@ class FormBuilder {
         }
       ];
       this.renderForm();
-      if (this.statusBadge) this.statusBadge.textContent = 'Formulir Baru';
+      
       if (this.responsesTabLink) this.responsesTabLink.style.display = 'none';
       return;
     }
@@ -1131,7 +1126,7 @@ class FormBuilder {
         
         this.restoreFoldingState(formId);
         this.renderForm();
-        if (this.statusBadge) this.statusBadge.textContent = 'Edit Formulir';
+        
         if (this.responsesTabLink) this.responsesTabLink.style.display = 'inline-flex';
         if (this.responseCountBadge) this.responseCountBadge.textContent = form.responseCount || 0;
       } else {
@@ -2399,7 +2394,7 @@ class FormBuilder {
     try {
       const saved = await window.formStorage.saveForm(formData);
       this.currentForm = saved;
-      if (this.statusBadge) this.statusBadge.textContent = 'Tersimpan';
+      
       if (this.responsesTabLink) this.responsesTabLink.style.display = 'inline-flex';
       if (!silent && window.app && typeof window.app.showToast === 'function') {
         window.app.showToast('Formulir berhasil disimpan!', 'success');
@@ -2624,7 +2619,7 @@ class FormBuilder {
     this.questions = this.currentForm.questions;
     this.renderForm();
 
-    if (this.statusBadge) this.statusBadge.textContent = 'Template Pendataan No WhatsApp';
+    
     if (this.responsesTabLink) this.responsesTabLink.style.display = 'none';
 
     if (window.app && typeof window.app.showToast === 'function') {
@@ -2753,7 +2748,7 @@ class FormBuilder {
     this.questions = this.currentForm.questions;
     this.renderForm();
 
-    if (this.statusBadge) this.statusBadge.textContent = 'Template Biodata Siswa';
+    
     if (this.responsesTabLink) this.responsesTabLink.style.display = 'none';
 
     if (window.app && typeof window.app.showToast === 'function') {
