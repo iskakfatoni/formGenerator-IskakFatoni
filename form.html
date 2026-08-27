@@ -243,6 +243,10 @@
             <i data-lucide="sliders"></i>
             <span>Pengaturan & Tema</span>
           </button>
+          <button class="builder-tab" id="tab-btn-flowchart">
+            <i data-lucide="git-merge"></i>
+            <span>Peta Alur (Diagram)</span>
+          </button>
           <button class="builder-tab" id="tab-btn-responses-link" style="display:none;">
             <i data-lucide="bar-chart-2"></i>
             <span>Respon (<span id="builder-response-count">0</span>)</span>
@@ -538,6 +542,33 @@
           </div>
         </div>
       </div>
+    
+        <!-- Panel 3: Visual Flowchart / Diagram -->
+        <div id="builder-panel-flowchart" class="builder-panel">
+          <div class="flowchart-header-card glass-card">
+            <div class="flowchart-header-left">
+              <div class="flowchart-icon-badge">
+                <i data-lucide="git-merge"></i>
+              </div>
+              <div>
+                <h2 class="flowchart-title">Diagram Peta Alur Formulir (*Form Flowchart*)</h2>
+                <p class="flowchart-subtitle">Visualisasi interaktif jalur percabangan dan navigasi antar bagian formulir Anda.</p>
+              </div>
+            </div>
+            <div class="flowchart-header-actions">
+              <button type="button" class="btn btn-secondary btn-sm" id="btn-refresh-flowchart">
+                <i data-lucide="refresh-cw"></i>
+                <span>Refresh Diagram</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Flowchart Canvas / Node Tree Container -->
+          <div id="flowchart-tree-container" class="flowchart-tree-container">
+            <!-- Rendered dynamically via JS -->
+          </div>
+        </div>
+
     </section>
 
     <!-- 3. RESPONDENT / FORM FILLER VIEW -->

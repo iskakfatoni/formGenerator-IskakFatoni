@@ -6,6 +6,161 @@
 
 class FormBuilder {
 
+  renderFlowchartDiagram() {
+    const container = document.getElementById('flowchart-tree-container');
+    if (!container) return;
+
+    container.innerHTML = '';
+    const totalSections = this.sections.length;
+
+    // 1. Start Node
+    const startNode = document.createElement('div');
+    startNode.className = 'flow-terminal-node start';
+    startNode.innerHTML = '<i data-lucide="play-circle"></i> <span>Responden Buka & Mulai Isi Formulir</span>';
+    container.appendChild(startNode);
+
+    // Arrow down
+    const startArrow = document.createElement('div');
+    startArrow.className = 'flow-arrow-down';
+    startArrow.innerHTML = '<div class="flow-arrow-line"></div><i data-lucide="chevron-down"></i>';
+    container.appendChild(startArrow);
+
+    // 2. Render each section as an interactive flowchart card
+    this.sections.forEach((sec, secIdx) => {
+      const sectionQuestions = this.questions.filter(q => q.sectionId === sec.id);
+      const card = document.createElement('div');
+      card.className = 'flow-section-card glass-card';
+
+      // Find outbound branches for this section
+      const branches = [];
+
+      // A. Option-level branching
+      sectionQuestions.forEach(q => {
+        if ((q.type === 'choice' || q.type === 'dropdown') && q.options && q.options.length > 0) {
+          q.options.forEach(opt => {
+            const optText = typeof opt === 'object' ? opt.text : opt;
+            const optTarget = typeof opt === 'object' ? opt.nextSectionId : 'next';
+            if (optTarget && optTarget !== 'next' && optTarget !== 'inherit') {
+              let targetTitle = 'Kirim Formulir';
+              if (optTarget !== 'submit') {
+                const targetSec = this.sections.find(s => s.id === optTarget);
+                targetTitle = targetSec ? ('Bagian: ' + (targetSec.title || 'Tanpa Judul')) : optTarget;
+              }
+              branches.push({
+                type: 'option',
+                condition: 'Pilih "' + optText + '" (' + q.title + ')',
+                targetTitle,
+                isSubmit: optTarget === 'submit'
+              });
+            }
+          });
+        }
+      });
+
+      // B. Section Global Flow
+      if (sec.nextSectionId && sec.nextSectionId !== 'next' && sec.nextSectionId !== 'inherit') {
+        let secTargetTitle = 'Kirim Formulir (Submit)';
+        if (sec.nextSectionId !== 'submit') {
+          const targetSec = this.sections.find(s => s.id === sec.nextSectionId);
+          secTargetTitle = targetSec ? ('Bagian: ' + (targetSec.title || 'Tanpa Judul')) : sec.nextSectionId;
+        }
+        branches.push({
+          type: 'global_sec',
+          condition: '⚡ Alur Bagian Global (Default Opsi)',
+          targetTitle: secTargetTitle,
+          isSubmit: sec.nextSectionId === 'submit'
+        });
+      } else if (secIdx < totalSections - 1 && branches.length === 0) {
+        // Normal sequential flow
+        const nextSec = this.sections[secIdx + 1];
+        branches.push({
+          type: 'sequential',
+          condition: 'Lanjut ke bagian berikutnya',
+          targetTitle: 'Bagian ' + (secIdx + 2) + ': ' + (nextSec ? nextSec.title : ''),
+          isSubmit: false
+        });
+      } else if (secIdx === totalSections - 1 && branches.length === 0) {
+        branches.push({
+          type: 'finish',
+          condition: 'Bagian Terakhir Formulir',
+          targetTitle: 'Kirim Formulir (Selesai)',
+          isSubmit: true
+        });
+      }
+
+      card.innerHTML = `
+        <div class="flow-sec-top">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span class="flow-sec-badge"><i data-lucide="layers"></i> Bagian ${secIdx + 1} dari ${totalSections}</span>
+            <h3 class="flow-sec-title">${this.escapeHtml(sec.title || 'Bagian Tanpa Judul')}</h3>
+          </div>
+          <button type="button" class="btn-jump-to-edit" data-sec-id="${sec.id}">
+            <i data-lucide="edit-3"></i>
+            <span>Edit</span>
+          </button>
+        </div>
+
+        <div class="flow-sec-questions-list">
+          ${sectionQuestions.length > 0 ? sectionQuestions.map((q, qIdx) => `
+            <div class="flow-sec-q-row">
+              <i data-lucide="help-circle"></i>
+              <span>${qIdx + 1}. ${this.escapeHtml(q.title || 'Pertanyaan')} (${this.getTypeMeta(q.type).name})</span>
+            </div>
+          `).join('') : '<div style="color:var(--text-muted);">Tidak ada pertanyaan pada bagian ini</div>'}
+        </div>
+
+        <div class="flow-branches-container">
+          ${branches.map(b => `
+            <div class="flow-branch-row">
+              <div class="flow-branch-condition">
+                <i data-lucide="corner-down-right"></i>
+                <span>${this.escapeHtml(b.condition)}</span>
+              </div>
+              <div class="flow-target-badge ${b.isSubmit ? 'submit-target' : ''}">
+                <i data-lucide="${b.isSubmit ? 'check-circle' : 'arrow-right'}"></i>
+                <span>➔ ${this.escapeHtml(b.targetTitle)}</span>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      `;
+
+      // Jump to edit section click
+      card.querySelector('.btn-jump-to-edit').addEventListener('click', () => {
+        this.switchTab('questions');
+        const targetEl = document.querySelector(`[data-section-id="${sec.id}"]`);
+        if (targetEl) {
+          targetEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      });
+
+      container.appendChild(card);
+
+      // Arrow down to next element unless last
+      if (secIdx < totalSections - 1) {
+        const arrow = document.createElement('div');
+        arrow.className = 'flow-arrow-down';
+        arrow.innerHTML = '<div class="flow-arrow-line"></div><i data-lucide="chevron-down"></i>';
+        container.appendChild(arrow);
+      }
+    });
+
+    // Arrow down to end terminal
+    const endArrow = document.createElement('div');
+    endArrow.className = 'flow-arrow-down';
+    endArrow.innerHTML = '<div class="flow-arrow-line"></div><i data-lucide="chevron-down"></i>';
+    container.appendChild(endArrow);
+
+    // 3. End Terminal Node
+    const endNode = document.createElement('div');
+    endNode.className = 'flow-terminal-node end';
+    endNode.innerHTML = '<i data-lucide="check-circle-2"></i> <span>Tanggapan Tersimpan & Rekap Masuk ke Excel</span>';
+    container.appendChild(endNode);
+
+    if (window.lucide) window.lucide.createIcons();
+  }
+
+
   updatePublishUI() {
     if (!this.btnTogglePublish) this.btnTogglePublish = document.getElementById('btn-toggle-publish');
     if (!this.publishLabel) this.publishLabel = document.getElementById('btn-publish-label');
@@ -226,6 +381,23 @@ class FormBuilder {
   }
 
   bindEvents() {
+
+    // Flowchart Tab & Refresh Click
+    const tabFlowchart = document.getElementById('tab-btn-flowchart');
+    if (tabFlowchart) {
+      tabFlowchart.addEventListener('click', () => this.switchTab('flowchart'));
+    }
+
+    const btnRefreshFlowchart = document.getElementById('btn-refresh-flowchart');
+    if (btnRefreshFlowchart) {
+      btnRefreshFlowchart.addEventListener('click', () => {
+        this.renderFlowchartDiagram();
+        if (window.app && typeof window.app.showToast === 'function') {
+          window.app.showToast('Diagram peta alur diperbarui!', 'info');
+        }
+      });
+    }
+
 
     // Publish / Draft Toggle Click
     if (this.btnTogglePublish) {
@@ -533,13 +705,21 @@ class FormBuilder {
   switchTab(tab) {
     const tabQuestions = document.getElementById('tab-btn-questions');
     const tabSettings = document.getElementById('tab-btn-settings');
+    const tabFlowchart = document.getElementById('tab-btn-flowchart');
     const panelQuestions = document.getElementById('builder-panel-questions');
     const panelSettings = document.getElementById('builder-panel-settings');
+    const panelFlowchart = document.getElementById('builder-panel-flowchart');
 
     if (tabQuestions) tabQuestions.classList.toggle('active', tab === 'questions');
     if (tabSettings) tabSettings.classList.toggle('active', tab === 'settings');
+    if (tabFlowchart) tabFlowchart.classList.toggle('active', tab === 'flowchart');
     if (panelQuestions) panelQuestions.classList.toggle('active', tab === 'questions');
     if (panelSettings) panelSettings.classList.toggle('active', tab === 'settings');
+    if (panelFlowchart) panelFlowchart.classList.toggle('active', tab === 'flowchart');
+
+    if (tab === 'flowchart') {
+      this.renderFlowchartDiagram();
+    }
   }
 
   setThemeColor(color) {
