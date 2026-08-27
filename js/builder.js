@@ -6,6 +6,79 @@
 
 class FormBuilder {
 
+  openPipingPicker(targetInput, secIdx) {
+    // Remove existing picker if open
+    document.querySelectorAll('.piping-picker-modal, .piping-picker-backdrop').forEach(el => el.remove());
+
+    const backdrop = document.createElement('div');
+    backdrop.className = 'piping-picker-backdrop';
+
+    const modal = document.createElement('div');
+    modal.className = 'piping-picker-modal';
+
+    // Collect preceding questions (or all questions in form)
+    const availableQuestions = this.questions.map((q, idx) => ({
+      index: idx + 1,
+      id: q.id,
+      title: q.title || ('Pertanyaan ' + (idx + 1)),
+      type: q.type
+    }));
+
+    modal.innerHTML = `
+      <div class="piping-picker-header">
+        <div class="piping-picker-title">
+          <i data-lucide="sparkles"></i>
+          <span>Pilih Jawaban yang Ingin Disisipkan</span>
+        </div>
+        <button type="button" class="btn-q-icon btn-close-piping" title="Tutup">
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+      <p style="font-size: 0.8rem; color: var(--text-secondary); margin: 0;">
+        Pilih pertanyaan di bawah untuk menyisipkan variabel <code>{{Judul}}</code>. Saat responden mengisi formulir, variabel ini akan otomatis digantikan dengan jawaban responden.
+      </p>
+      <div class="piping-questions-list">
+        ${availableQuestions.length > 0 ? availableQuestions.map(q => `
+          <div class="piping-q-item" data-tag="{{${this.escapeHtml(q.title)}}}">
+            <div class="piping-q-item-info">
+              <span class="piping-q-item-title">${q.index}. ${this.escapeHtml(q.title)}</span>
+              <span class="piping-q-item-tag">{{${this.escapeHtml(q.title)}}}</span>
+            </div>
+            <span class="piping-q-item-btn">+ Sisipkan</span>
+          </div>
+        `).join('') : '<div style="padding: 12px; text-align: center; color: var(--text-muted); font-size: 0.85rem;">Belum ada pertanyaan pada formulir ini.</div>'}
+      </div>
+    `;
+
+    document.body.appendChild(backdrop);
+    document.body.appendChild(modal);
+    if (window.lucide) window.lucide.createIcons();
+
+    const closeModal = () => {
+      backdrop.remove();
+      modal.remove();
+    };
+
+    backdrop.addEventListener('click', closeModal);
+    modal.querySelector('.btn-close-piping').addEventListener('click', closeModal);
+
+    modal.querySelectorAll('.piping-q-item').forEach(item => {
+      item.addEventListener('click', () => {
+        const tag = item.dataset.tag;
+        if (targetInput) {
+          const start = targetInput.selectionStart || targetInput.value.length;
+          const end = targetInput.selectionEnd || targetInput.value.length;
+          const oldVal = targetInput.value;
+          targetInput.value = oldVal.substring(0, start) + ' ' + tag + ' ' + oldVal.substring(end);
+          targetInput.dispatchEvent(new Event('input', { bubbles: true }));
+          targetInput.focus();
+        }
+        closeModal();
+      });
+    });
+  }
+
+
   saveFoldingState() {
     const formId = (this.currentForm && this.currentForm.id) ? this.currentForm.id : 'temp_current_form';
     const state = {
@@ -716,6 +789,13 @@ class FormBuilder {
       <div class="section-body">
         <input type="text" class="input-section-title" value="${this.escapeHtml(sec.title || '')}" placeholder="Judul Bagian/Halaman...">
         <textarea class="input-section-desc" placeholder="Deskripsi bagian ini (opsional)..." rows="1">${this.escapeHtml(sec.description || '')}</textarea>
+        <div class="section-piping-helper-bar">
+          <button type="button" class="btn-insert-piping" title="Sisipkan jawaban dari pertanyaan sebelumnya">
+            <i data-lucide="sparkles"></i>
+            <span>+ Ambil Jawaban Sebelumnya (Piping)</span>
+          </button>
+          <span class="piping-syntax-hint">Gunakan <code>{{Nama Pertanyaan}}</code> untuk memanggil jawaban responden secara dinamis</span>
+        </div>
       </div>
     `;
 
@@ -843,6 +923,16 @@ class FormBuilder {
         this.renderQuestions();
       });
     });
+
+    
+    const btnPiping = card.querySelector('.btn-insert-piping');
+    if (btnPiping) {
+      btnPiping.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const descEl = card.querySelector('.input-section-desc') || card.querySelector('.input-section-title');
+        this.openPipingPicker(descEl, secIdx);
+      });
+    }
 
     return card;
   }

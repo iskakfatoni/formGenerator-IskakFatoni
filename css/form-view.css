@@ -1431,3 +1431,10 @@ body.responder-mode .container {
   font-weight: 600;
   margin-top: 4px;
 }
+
+
+/* Piped dynamic answer in form view */
+.piped-val {
+  color: #38bdf8;
+  font-weight: 600;
+}

@@ -6,6 +6,61 @@
 
 class FormViewer {
 
+  interpolateText(text) {
+    if (!text || typeof text !== 'string') return text || '';
+    
+    // Replace {{...}} or @{...} tags with previous answers
+    return text.replace(/\{\{\s*(.*?)\s*\}\}/g, (match, tag) => {
+      const cleanTag = tag.trim().toLowerCase();
+      
+      // 1. Match by question ID directly
+      if (this.answers && this.answers[tag] !== undefined && this.answers[tag] !== null && this.answers[tag] !== '') {
+        const val = this.answers[tag];
+        const valStr = Array.isArray(val) ? val.join(', ') : (typeof val === 'object' && val.name ? val.name : String(val));
+        return '<span class="piped-val">' + this.escapeHtml(valStr) + '</span>';
+      }
+
+      // 2. Match by question title
+      if (this.currentForm && this.currentForm.questions) {
+        // Try exact match
+        let foundQ = this.currentForm.questions.find(q => q.title && q.title.trim().toLowerCase() === cleanTag);
+        
+        // Try partial match or index
+        if (!foundQ) {
+          foundQ = this.currentForm.questions.find(q => q.title && (
+            cleanTag.includes(q.title.trim().toLowerCase()) ||
+            q.title.trim().toLowerCase().includes(cleanTag)
+          ));
+        }
+
+        if (!foundQ) {
+          const numMatch = cleanTag.match(/\d+/);
+          if (numMatch) {
+            const idx = parseInt(numMatch[0]) - 1;
+            if (idx >= 0 && idx < this.currentForm.questions.length) {
+              foundQ = this.currentForm.questions[idx];
+            }
+          }
+        }
+
+        if (foundQ && this.answers && this.answers[foundQ.id] !== undefined && this.answers[foundQ.id] !== null && this.answers[foundQ.id] !== '') {
+          const val = this.answers[foundQ.id];
+          const valStr = Array.isArray(val) ? val.join(', ') : (typeof val === 'object' && val.name ? val.name : String(val));
+          return '<span class="piped-val">' + this.escapeHtml(valStr) + '</span>';
+        }
+      }
+
+      // 3. Match Email {{email}}
+      if (cleanTag === 'email' && this.respondentEmail) {
+        return '<span class="piped-val">' + this.escapeHtml(this.respondentEmail) + '</span>';
+      }
+
+      // Fallback: return empty string or keep tag if no answer yet
+      return '<span class="piped-val">...</span>';
+    });
+  }
+
+
   renderFormClosed(title, message) {
     if (this.formElement) this.formElement.classList.add('hidden');
     if (this.successCard) this.successCard.classList.add('hidden');
@@ -262,8 +317,8 @@ class FormViewer {
           <i data-lucide="layers"></i>
           <span>Bagian ${this.currentStep + 1} dari ${totalSteps}</span>
         </div>
-        <h2 class="live-sec-title">${this.escapeHtml(currentSec.title || `Bagian ${this.currentStep + 1}`)}</h2>
-        ${currentSec.description ? `<p class="live-sec-desc">${this.escapeHtml(currentSec.description)}</p>` : ''}
+        <h2 class="live-sec-title">${this.interpolateText(currentSec.title || `Bagian ${this.currentStep + 1}`)}</h2>
+        ${currentSec.description ? `<p class="live-sec-desc">${this.interpolateText(currentSec.description)}</p>` : ''}
       `;
       this.questionsContainer.appendChild(secHeaderCard);
     }
@@ -576,7 +631,7 @@ class FormViewer {
     card.innerHTML = `
       <div class="live-q-header">
         <label class="live-q-title">
-          ${this.escapeHtml(q.title || `Pertanyaan ${index + 1}`)}
+          ${this.interpolateText(q.title || `Pertanyaan ${index + 1}`)}
           ${q.required ? '<span class="live-q-required-mark">*</span>' : ''}
         </label>
       </div>
