@@ -1139,7 +1139,7 @@ class FormBuilder {
       ];
       this.renderForm();
       
-      if (this.responsesTabLink) this.responsesTabLink.style.display = 'none';
+      if (this.responsesTabLink) { this.responsesTabLink.style.display = 'inline-flex'; const cnt = document.getElementById('builder-response-count'); if (cnt) cnt.textContent = '0'; }
       return;
     }
 
@@ -2672,7 +2672,7 @@ class FormBuilder {
     this.renderForm();
 
     
-    if (this.responsesTabLink) this.responsesTabLink.style.display = 'none';
+    if (this.responsesTabLink) { this.responsesTabLink.style.display = 'inline-flex'; const cnt = document.getElementById('builder-response-count'); if (cnt) cnt.textContent = '0'; }
 
     if (window.app && typeof window.app.showToast === 'function') {
       window.app.showToast('Template Pendataan No WhatsApp aktif berhasil dimuat! Anda dapat langsung menyimpannya atau menyesuaikan pertanyaan.', 'success');
@@ -2801,7 +2801,7 @@ class FormBuilder {
     this.renderForm();
 
     
-    if (this.responsesTabLink) this.responsesTabLink.style.display = 'none';
+    if (this.responsesTabLink) { this.responsesTabLink.style.display = 'inline-flex'; const cnt = document.getElementById('builder-response-count'); if (cnt) cnt.textContent = '0'; }
 
     if (window.app && typeof window.app.showToast === 'function') {
       window.app.showToast('Template Biodata Siswa & GPS berhasil dimuat! Anda dapat menyesuaikan atau langsung menyimpannya.', 'success');

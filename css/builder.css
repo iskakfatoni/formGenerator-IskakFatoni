@@ -2365,3 +2365,43 @@ input:checked + .slider:before {
   margin: 0 4px;
   flex-shrink: 0;
 }
+
+
+/* Maximized Flowchart Viewport */
+#builder-panel-flowchart.active {
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+.flowchart-header-card {
+  width: 100% !important;
+  box-sizing: border-box;
+}
+
+.flowchart-graph-viewport {
+  width: 100% !important;
+  min-height: 78vh !important;
+  height: 78vh !important;
+  border-radius: var(--radius-lg);
+  box-sizing: border-box;
+}
+
+.flowchart-graph-canvas {
+  min-width: 3600px !important;
+  min-height: 2600px !important;
+}
+
+/* 8-Menu Toolbar Track Harmonized Spacing */
+.builder-toolbar-track {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  justify-content: space-between;
+  flex-wrap: nowrap;
+}
+
+.toolbar-btn {
+  flex: 1 1 auto;
+  text-align: center;
+}
