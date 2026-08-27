@@ -2900,3 +2900,15 @@ input:checked + .slider:before {
   background: rgba(16, 185, 129, 0.3) !important;
   color: #a7f3d0 !important;
 }
+
+
+/* Vertical Stage Divider Lines between Columns */
+.flowchart-stage-divider {
+  position: absolute !important;
+  top: 15px !important;
+  bottom: 40px !important;
+  width: 1px !important;
+  border-left: 1.5px dashed rgba(255, 255, 255, 0.12) !important;
+  pointer-events: none !important;
+  z-index: 4 !important;
+}

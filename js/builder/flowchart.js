@@ -1,6 +1,6 @@
 /**
  * FORMCRAFT - 2D Interactive Flowchart & Bezier Wiring Engine
- * With explicit Stage grouping (Mulai / Tahap 1, Tahap 2, Tahap 3, Selesai / Kirim).
+ * Left-to-Right Stage Columns (Mulai paling kiri -> Tahap 2 -> Tahap 3 -> Selesai paling kanan).
  */
 
 window.BuilderFlowchart = {
@@ -43,43 +43,61 @@ window.BuilderFlowchart = {
       return;
     }
 
-    // Grid layout configuration with Stage Columns
+    // 1. Calculate Left-to-Right Stages topologically (BFS from Start)
+    const { stageMap, maxStage } = this.calculateStages(sections, questions);
+    const totalColumns = maxStage + 2; // +1 for sections, +1 for Final Submit Column
+
+    // Layout configuration
     const cardWidth = 340;
     const colGap = 110;
     const rowGap = 55;
     const stageHeaderHeight = 65;
-    const cols = 3;
 
-    const colHeights = Array(cols).fill(stageHeaderHeight + 20);
+    const colHeights = Array(totalColumns).fill(stageHeaderHeight + 20);
 
-    // Stage Column Labels
-    const stageTitles = [
-      { num: 1, icon: 'play', title: 'Mulai / Tahap 1: Awal Formulir', pillClass: 'stage-pill-1' },
-      { num: 2, icon: 'git-branch', title: 'Tahap 2: Percabangan & Data', pillClass: 'stage-pill-2' },
-      { num: 3, icon: 'layers', title: 'Tahap 3: Lanjutan & Kontak', pillClass: 'stage-pill-3' }
-    ];
+    // Dynamic Stage Column Titles
+    const getStageTitleInfo = (colIndex) => {
+      if (colIndex === 0) {
+        return { num: 1, icon: 'play', title: 'Mulai / Tahap 1: Awal Formulir', pillClass: 'stage-pill-1' };
+      } else if (colIndex === totalColumns - 1) {
+        return { num: colIndex + 1, icon: 'check-circle-2', title: 'Tahap Selesai: Kirim Formulir', pillClass: 'stage-pill-finish' };
+      } else if (colIndex === 1) {
+        return { num: 2, icon: 'git-branch', title: 'Tahap 2: Percabangan & Pilihan', pillClass: 'stage-pill-2' };
+      } else {
+        return { num: colIndex + 1, icon: 'layers', title: `Tahap ${colIndex + 1}: Data Lanjutan`, pillClass: 'stage-pill-3' };
+      }
+    };
 
-    // 1. Render Stage Column Header Lanes across top of canvas
-    for (let c = 0; c < cols; c++) {
+    // 2. Render Stage Column Header Lanes across top of canvas
+    for (let c = 0; c < totalColumns; c++) {
+      const info = getStageTitleInfo(c);
       const stageHeader = document.createElement('div');
       stageHeader.className = 'flowchart-stage-header';
       stageHeader.style.left = `${50 + c * (cardWidth + colGap)}px`;
       stageHeader.style.width = `${cardWidth}px`;
       stageHeader.innerHTML = `
-        <div class="stage-header-pill ${stageTitles[c].pillClass}">
-          <i data-lucide="${stageTitles[c].icon}"></i>
-          <span>${stageTitles[c].title}</span>
+        <div class="stage-header-pill ${info.pillClass}">
+          <i data-lucide="${info.icon}"></i>
+          <span>${info.title}</span>
         </div>
       `;
       nodesLayer.appendChild(stageHeader);
+
+      // Render Vertical Divider between columns (except before col 0)
+      if (c > 0) {
+        const divider = document.createElement('div');
+        divider.className = 'flowchart-stage-divider';
+        divider.style.left = `${50 + c * (cardWidth + colGap) - colGap / 2}px`;
+        nodesLayer.appendChild(divider);
+      }
     }
 
-    // 2. Render Section Nodes grouped into stages
+    // 3. Render Section Nodes placed in their respective Stage Columns
     sections.forEach((sec, idx) => {
-      const col = idx % cols;
-      const stageNum = col + 1;
-      const posX = 50 + col * (cardWidth + colGap);
-      const posY = colHeights[col];
+      const stageIndex = stageMap[sec.id] || 0;
+      const stageNum = stageIndex + 1;
+      const posX = 50 + stageIndex * (cardWidth + colGap);
+      const posY = colHeights[stageIndex];
 
       const nodeEl = this.createSectionNode(sec, idx, sections, questions, builderInstance, posX, posY, stageNum);
       nodesLayer.appendChild(nodeEl);
@@ -89,13 +107,13 @@ window.BuilderFlowchart = {
       const branchCount = uniqueTargets.length;
 
       const estimatedHeight = 160 + (branchCount * 38);
-      colHeights[col] += estimatedHeight + rowGap;
+      colHeights[stageIndex] += estimatedHeight + rowGap;
     });
 
-    // 3. Render Submit Terminal Node (Tahap Selesai / Kirim)
-    const submitCol = (sections.length) % cols;
+    // 4. Render Submit Terminal Node in the Final Column (Paling Kanan)
+    const submitCol = totalColumns - 1;
     const submitPosX = 50 + submitCol * (cardWidth + colGap);
-    const submitPosY = colHeights[submitCol] + 20;
+    const submitPosY = colHeights[submitCol];
 
     const submitTerminal = document.createElement('div');
     submitTerminal.className = 'graph-node-card end-terminal-node';
@@ -105,7 +123,7 @@ window.BuilderFlowchart = {
     submitTerminal.innerHTML = `
       <div class="graph-node-port-in green"></div>
       <div class="graph-node-top">
-        <span class="graph-node-badge stage-finish"><i data-lucide="check-circle-2"></i> Tahap Selesai / Kirim</span>
+        <span class="graph-node-badge stage-finish"><i data-lucide="check-circle-2"></i> Tahap Selesai</span>
       </div>
       <div class="graph-node-body">
         <h4 class="graph-node-title">🚀 Kirim & Simpan Formulir</h4>
@@ -116,13 +134,80 @@ window.BuilderFlowchart = {
 
     if (window.lucide) window.lucide.createIcons();
 
-    canvas.style.minHeight = `${submitPosY + 350}px`;
-    canvas.style.minWidth = `${50 + cols * (cardWidth + colGap) + 500}px`;
+    // Adjust canvas height and width to fit all stages from left to right
+    const maxColHeight = Math.max(...colHeights, 600);
+    canvas.style.minHeight = `${maxColHeight + 350}px`;
+    canvas.style.minWidth = `${50 + totalColumns * (cardWidth + colGap) + 400}px`;
 
-    // 4. Draw All Connecting Wires
+    // 5. Draw All Connecting Wires (Flowing from Left to Right)
     setTimeout(() => {
       this.drawWires(svgLayer, canvas, sections, questions);
     }, 80);
+  },
+
+  /**
+   * Topological Stage Calculation (Assigns Left-to-Right columns from Start -> Branches -> End)
+   */
+  calculateStages(sections, questions) {
+    const stageMap = {};
+    if (!sections || sections.length === 0) return { stageMap, maxStage: 0 };
+
+    const startSecId = sections[0].id;
+    stageMap[startSecId] = 0;
+
+    const queue = [startSecId];
+    const visited = new Set([startSecId]);
+
+    while (queue.length > 0) {
+      const currentId = queue.shift();
+      const currentStage = stageMap[currentId] || 0;
+      const currentSec = sections.find(s => s.id === currentId);
+      if (!currentSec) continue;
+
+      const outgoing = new Set();
+      // Branches from questions
+      const secQuestions = questions.filter(q => q.sectionId === currentId);
+      secQuestions.forEach(q => {
+        if (Array.isArray(q.options)) {
+          q.options.forEach(opt => {
+            const nextId = typeof opt === 'object' ? (opt.nextSectionId || '') : '';
+            if (nextId && nextId !== 'inherit' && nextId !== 'next' && nextId !== 'submit' && sections.some(s => s.id === nextId)) {
+              outgoing.add(nextId);
+            }
+          });
+        }
+      });
+
+      // Section default flow
+      if (currentSec.nextSectionId && currentSec.nextSectionId !== 'inherit' && currentSec.nextSectionId !== 'next' && currentSec.nextSectionId !== 'submit' && sections.some(s => s.id === currentSec.nextSectionId)) {
+        outgoing.add(currentSec.nextSectionId);
+      } else {
+        const curIdx = sections.findIndex(s => s.id === currentId);
+        if (curIdx >= 0 && curIdx < sections.length - 1) {
+          outgoing.add(sections[curIdx + 1].id);
+        }
+      }
+
+      outgoing.forEach(targetId => {
+        if (stageMap[targetId] === undefined || stageMap[targetId] < currentStage + 1) {
+          stageMap[targetId] = currentStage + 1;
+        }
+        if (!visited.has(targetId)) {
+          visited.add(targetId);
+          queue.push(targetId);
+        }
+      });
+    }
+
+    // Assign any unvisited sections sequentially based on index
+    sections.forEach((sec, idx) => {
+      if (stageMap[sec.id] === undefined) {
+        stageMap[sec.id] = Math.min(idx, 2);
+      }
+    });
+
+    const maxStage = Math.max(0, ...Object.values(stageMap));
+    return { stageMap, maxStage };
   },
 
   getSectionUniqueBranches(sec, secQuestions) {
