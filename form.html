@@ -787,12 +787,20 @@
       <div class="responses-table-card glass-card">
         <div class="table-header-controls">
           <div class="table-title">
-            <i data-lucide="table"></i>
-            <h3>Data Tanggapan Lengkap</h3>
+            <div class="table-title-icon-badge">
+              <i data-lucide="table-2"></i>
+            </div>
+            <div>
+              <h3 class="table-heading">Data Tanggapan Lengkap</h3>
+              <p class="table-subheading">Tabel rekapitulasi seluruh jawaban responden yang masuk</p>
+            </div>
           </div>
           <div class="table-actions">
-            <input type="text" id="resp-search-input" placeholder="Cari dalam jawaban..." class="input-search-sm">
-            <button class="btn btn-ghost btn-sm text-danger" id="btn-clear-all-responses" title="Hapus seluruh respon">
+            <div class="resp-search-box">
+              <i data-lucide="search" class="search-box-icon"></i>
+              <input type="text" id="resp-search-input" placeholder="Cari dalam jawaban..." class="input-resp-search">
+            </div>
+            <button type="button" class="btn btn-sm btn-clear-responses-danger" id="btn-clear-all-responses" title="Hapus seluruh respon">
               <i data-lucide="trash-2"></i>
               <span>Hapus Semua Respon</span>
             </button>

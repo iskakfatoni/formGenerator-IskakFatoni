@@ -5,10 +5,10 @@
 .responses-topbar {
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  padding: 16px 22px;
-  border-radius: var(--radius-lg);
-  margin-bottom: 24px;
+  gap: 14px;
+  padding: 12px 20px;
+  border-radius: var(--radius-md);
+  margin-bottom: 16px;
 }
 
 @media (min-width: 768px) {
@@ -22,22 +22,23 @@
 .responses-nav-left {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 12px;
 }
 
 .resp-form-name {
-  font-size: 1.35rem;
+  font-size: 1.2rem;
+  font-weight: 700;
   line-height: 1.2;
 }
 
 .resp-count-badge {
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   font-weight: 600;
   color: var(--primary);
   background: rgba(99, 102, 241, 0.12);
   padding: 2px 8px;
   border-radius: 9999px;
-  margin-top: 4px;
+  margin-top: 2px;
   display: inline-block;
 }
 
@@ -48,12 +49,12 @@
   gap: 8px;
 }
 
-/* Response Stats Row */
+/* Compact & Sleek Response Stats Row */
 .response-stats-row {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 16px;
-  margin-bottom: 24px;
+  gap: 12px;
+  margin-bottom: 16px;
 }
 
 @media (min-width: 640px) {
@@ -63,20 +64,26 @@
 }
 
 .stat-card {
-  padding: 20px 24px;
+  padding: 10px 16px;
   display: flex;
   align-items: center;
-  gap: 18px;
+  gap: 12px;
+  border-radius: var(--radius-md);
 }
 
 .stat-icon-circle {
-  width: 48px;
-  height: 48px;
-  border-radius: var(--radius-md);
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+}
+
+.stat-icon-circle i {
+  width: 18px;
+  height: 18px;
 }
 
 .accent-indigo {
@@ -96,22 +103,121 @@
 
 .stat-val {
   font-family: var(--font-display);
-  font-size: 1.55rem;
-  font-weight: 800;
+  font-size: 1.25rem;
+  font-weight: 700;
+  line-height: 1.2;
 }
 
 .stat-lbl {
-  font-size: 0.82rem;
+  font-size: 0.76rem;
   color: var(--text-secondary);
+  font-weight: 500;
 }
 
-/* Responses Table Card */
-/* ==========================================================================
-   FULL-WIDTH DETECTED SCREEN VIEW FOR DATA TANGGAPAN LENGKAP CARD
-   ========================================================================== */
-/* ==========================================================================
-   TRUE FULL-WIDTH RESPONSIVE RESPONSES TABLE CARD
-   ========================================================================== */
+/* Table Header Controls Styling */
+.table-header-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.table-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.table-title-icon-badge {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  background: rgba(99, 102, 241, 0.15);
+  color: var(--primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.table-heading {
+  font-size: 1.05rem;
+  font-weight: 700;
+  margin: 0;
+  color: var(--text-primary);
+}
+
+.table-subheading {
+  font-size: 0.76rem;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+.table-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.resp-search-box {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.search-box-icon {
+  position: absolute;
+  left: 10px;
+  width: 15px;
+  height: 15px;
+  color: var(--text-muted);
+  pointer-events: none;
+}
+
+.input-resp-search {
+  height: 36px;
+  padding: 0 12px 0 32px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  background: rgba(15, 23, 42, 0.6);
+  color: var(--text-primary);
+  font-size: 0.84rem;
+  outline: none;
+  min-width: 220px;
+  transition: all var(--transition-fast);
+}
+
+.input-resp-search:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+  background: rgba(15, 23, 42, 0.85);
+}
+
+.btn-clear-responses-danger {
+  height: 36px;
+  padding: 0 14px;
+  border-radius: 8px;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  background: rgba(239, 68, 68, 0.08);
+  color: #f87171;
+  font-size: 0.84rem;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.btn-clear-responses-danger:hover {
+  background: rgba(239, 68, 68, 0.2);
+  border-color: rgba(239, 68, 68, 0.5);
+  color: #ffffff;
+}
+
 /* ==========================================================================
    FULL SCREEN RESPONSIVE RESPONSES VIEWPORT
    ========================================================================== */
@@ -149,7 +255,7 @@ body.mode-responses .container,
   width: 100% !important;
   max-width: 100% !important;
   margin: 0 auto !important;
-  padding: 24px !important;
+  padding: 20px !important;
   box-sizing: border-box !important;
   border-radius: var(--radius-lg) !important;
 }
@@ -166,4 +272,41 @@ body.mode-responses .container,
 .modern-table {
   width: 100% !important;
   min-width: 900px;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.modern-table th {
+  background: var(--bg-surface);
+  color: var(--text-secondary);
+  font-weight: 600;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border-color);
+  font-size: 0.82rem;
+  white-space: nowrap;
+}
+
+.modern-table td {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border-color);
+  color: var(--text-primary);
+  font-size: 0.85rem;
+  vertical-align: middle;
+}
+
+.modern-table tbody tr:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.table-empty {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--text-muted);
+}
+
+.table-empty i {
+  width: 48px;
+  height: 48px;
+  margin-bottom: 12px;
+  opacity: 0.5;
 }
