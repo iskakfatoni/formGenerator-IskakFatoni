@@ -10,7 +10,7 @@ class GoogleDriveUploader {
     this.defaultGlobalScriptUrl = 'https://script.google.com/macros/s/AKfycbyXoRdg_Sgqhy9AZi2XbrF_uT_dP3xsJZk7Dylu3F9CKJ3Co-WSls86gOhxoCg3P_hT/exec';
 
     this.defaultScriptTemplate = `// =========================================================================
-// GOOGLE APPS SCRIPT WEBHOOK UNTUK FORM::IskakFatoni
+// GOOGLE APPS SCRIPT WEBHOOK UNTUK formGenerator-IskakFatoni
 // Simpan berkas dari form otomatis ke Folder Google Drive sesuai Nama Form
 // =========================================================================
 
@@ -75,7 +75,7 @@ function doPost(e) {
 function doGet(e) {
   return ContentService.createTextOutput(JSON.stringify({
     status: 'online',
-    service: 'FORM::IskakFatoni Google Drive Webhook Endpoint (Auto Folder Per Form)'
+    service: 'formGenerator-IskakFatoni Google Drive Webhook Endpoint (Auto Folder Per Form)'
   })).setMimeType(ContentService.MimeType.JSON);
 }
 `;

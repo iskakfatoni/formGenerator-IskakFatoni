@@ -1,4 +1,4 @@
-# FORM::IskakFatoni 🚀
+# formGenerator-IskakFatoni 🚀
 
 > **Aplikasi Pembuat Formulir Modern (Google Forms Clone) dengan Hosting di GitHub Pages, Database Firebase Cloud Firestore, dan Fitur Export ke Excel (.xlsx).**
 
@@ -41,7 +41,7 @@
 ## 📂 Struktur Berkas
 
 ```
-formcraft-app/
+formGenerator-IskakFatoni/
 ├── index.html                   # Halaman utama SPA
 ├── css/
 │   ├── main.css                 # Desain sistem, tema gelap/terang, modal, toast
@@ -66,7 +66,7 @@ formcraft-app/
 
 ## 🚀 Panduan Setup Firebase Firestore
 
-Untuk menghubungkan Firebase ke FORM::IskakFatoni:
+Untuk menghubungkan Firebase ke formGenerator-IskakFatoni:
 
 1. Buka [Firebase Console](https://console.firebase.google.com/) dan buat project baru.
 2. Buat database **Cloud Firestore** dalam mode *Test mode* atau atur Security Rules berikut:
@@ -96,24 +96,24 @@ service cloud.firestore {
    - `appId`
 
 4. **Masukkan Konfigurasi**:
-   - **Cara 1 (Visual via Web)**: Klik ikon database / badge di pojok kanan atas aplikasi FORM::IskakFatoni, lalu masukkan config Firebase Anda.
+   - **Cara 1 (Visual via Web)**: Klik ikon database / badge di pojok kanan atas aplikasi formGenerator-IskakFatoni, lalu masukkan config Firebase Anda.
    - **Cara 2 (Permanen di Kode)**: Edit variabel `DEFAULT_FIREBASE_CONFIG` di berkas `js/firebase-config.js`.
 
 ---
 
 ### 🌐 Link Publikasi & Repository
-- **Repository GitHub**: [https://github.com/iskakfatoni/form-IskakFatoni](https://github.com/iskakfatoni/form-IskakFatoni)
-- **Live Demo di GitHub Pages**: [https://iskakfatoni.github.io/form-IskakFatoni/](https://iskakfatoni.github.io/form-IskakFatoni/)
+- **Repository GitHub**: [https://github.com/iskakfatoni/formGenerator-IskakFatoni](https://github.com/iskakfatoni/formGenerator-IskakFatoni)
+- **Live Demo di GitHub Pages**: [https://iskakfatoni.github.io/formGenerator-IskakFatoni/](https://iskakfatoni.github.io/formGenerator-IskakFatoni/)
 
 ### Langkah Mengaktifkan GitHub Pages di Repository Ini:
-1. Buka repository [https://github.com/iskakfatoni/form-IskakFatoni](https://github.com/iskakfatoni/form-IskakFatoni).
+1. Buka repository [https://github.com/iskakfatoni/formGenerator-IskakFatoni](https://github.com/iskakfatoni/formGenerator-IskakFatoni).
 2. Klik menu **Settings** > **Pages** di sidebar kiri.
 3. Di bagian **Build and deployment**:
    - **Source**: Pilih **Deploy from a branch**.
    - **Branch**: Pilih `main` (atau `master`) dan folder `/ (root)`.
    - Klik **Save**.
 4. Dalam 1-2 menit, aplikasi Anda akan live di:
-   👉 **https://iskakfatoni.github.io/form-IskakFatoni/**
+   👉 **https://iskakfatoni.github.io/formGenerator-IskakFatoni/**
 
 ### Metode 2: Otomatis via GitHub Actions
 Berkas `.github/workflows/deploy.yml` sudah disediakan di proyek ini. Anda cukup memilih **Source: GitHub Actions** di menu **Settings > Pages**.

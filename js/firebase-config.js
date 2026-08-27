@@ -1,6 +1,7 @@
 /**
- * FORMCRAFT - Firebase Configuration & Initialization Module
- * Fixed cloud configuration for FORM::IskakFatoni.
+ * FORMCRAFT - Firebase Configuration
+ * Firebase Configuration File
+ * Fixed cloud configuration for formGenerator-IskakFatoni.
  */
 
 const FIREBASE_CONFIG = {

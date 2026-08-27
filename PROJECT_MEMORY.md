@@ -1,22 +1,22 @@
-# 🧠 FORM::IskakFatoni - Project Memory & Knowledge Base
+# 🧠 formGenerator-IskakFatoni - Project Memory & Knowledge Base
 
-> **Dokumen ini menyimpan seluruh konteks arsitektur, histori perkembangan, keputusan desain, dan status fitur proyek FORM::IskakFatoni.**
+> **Dokumen ini menyimpan seluruh konteks arsitektur, histori perkembangan, keputusan desain, dan status fitur proyek formGenerator-IskakFatoni.**
 
 ---
 
 ## 📌 Ringkasan Proyek
-* **Nama Proyek**: FORM::IskakFatoni (Multi-User Cloud Form Builder & Excel Export)
+* **Nama Proyek**: formGenerator-IskakFatoni (Multi-User Cloud Form Builder & Excel Export)
 * **Arsitektur**: Single Page Application (Vanilla JavaScript ES6+, Vanilla CSS Glassmorphism, Semantic HTML5)
 * **Backend / Database**: Google Firebase (Cloud Firestore, Firebase Authentication, & Firebase Storage) + Fallback LocalStorage & DataURL Compression
 * **Hosting**: GitHub Pages (dengan GitHub Actions deployment & automatic cache-busting)
-* **Repository**: [https://github.com/iskakfatoni/form-IskakFatoni](https://github.com/iskakfatoni/form-IskakFatoni)
+* **Repository**: [https://github.com/iskakfatoni/formGenerator-IskakFatoni](https://github.com/iskakfatoni/formGenerator-IskakFatoni)
 
 ---
 
 ## 🏗️ Struktur Arsitektur & Berkas Utama
 
 ```
-form-IskakFatoni/
+formGenerator-IskakFatoni/
 ├── index.html                   # Dashboard & Landing Page (List Form, Search, Filter, Multi-User Auth Modal)
 ├── form.html                    # Form Builder, Form Responder/Viewer, & Response Dashboard
 ├── css/
@@ -44,19 +44,19 @@ form-IskakFatoni/
 
 ## 🚀 Fitur yang Telah Diimplementasikan & Berfungsi Penuh
 
-### 1. Multi-User & Manajemen Akun ([auth.js](file:///c:/Users/iskak/Antigravity-Projetcs/form-IskakFatoni/js/auth.js) & [index.html](file:///c:/Users/iskak/Antigravity-Projetcs/form-IskakFatoni/index.html))
+### 1. Multi-User & Manajemen Akun ([auth.js](file:///c:/Users/iskak/Antigravity-Projetcs/formGenerator-IskakFatoni/js/auth.js) & [index.html](file:///c:/Users/iskak/Antigravity-Projetcs/formGenerator-IskakFatoni/index.html))
 - **Google Sign-In**: Masuk secara instan menggunakan akun Google apa pun.
 - **Email & Password Login / Register**: Tab interaktif untuk Masuk atau Mendaftar akun baru dengan validasi kata sandi.
 - **Isolasi Data Formulir (`ownerUid`)**: Setiap pengguna memiliki ruang kerja dan daftar formulir terpisah yang terproteksi secara aman di Firestore.
 - **Akses Super-Admin**: Akun pemilik (`iskakfatoni@gmail.com`) memiliki role admin dengan akses kompatibilitas ke formulir warisan (*legacy*).
 
-### 2. Dashboard & Landing Page ([index.html](file:///c:/Users/iskak/Antigravity-Projetcs/form-IskakFatoni/index.html))
+### 2. Dashboard & Landing Page ([index.html](file:///c:/Users/iskak/Antigravity-Projetcs/formGenerator-IskakFatoni/index.html))
 - Grid kartu form responsif dengan indikator status (*Active/Closed*), jumlah respons, tanggal dibuat.
 - Action bar cepat: **Edit Form**, **Isi Form**, **Lihat Respon**, **Salin Link**, **Duplikasi**, dan **Hapus**.
 - Fitur pencarian (*live search*) & filter berdasarkan status.
 - Portal autentikasi akun terintegrasi.
 
-### 3. Form Builder Canggih ([form.html](file:///c:/Users/iskak/Antigravity-Projetcs/form-IskakFatoni/form.html) & [builder.js](file:///c:/Users/iskak/Antigravity-Projetcs/form-IskakFatoni/js/builder.js))
+### 3. Form Builder Canggih ([form.html](file:///c:/Users/iskak/Antigravity-Projetcs/formGenerator-IskakFatoni/form.html) & [builder.js](file:///c:/Users/iskak/Antigravity-Projetcs/formGenerator-IskakFatoni/js/builder.js))
 - **Tipe Pertanyaan Lengkap**:
   - Teks Pendek, Paragraf, Angka.
   - Pilihan Ganda (Radio), Kotak Centang (Checkboxes), Dropdown.
@@ -78,7 +78,7 @@ form-IskakFatoni/
   - Kustomisasi pesan terima kasih & pesan form ditutup.
 - **Sistem Template**: Template bawaan seperti *Biodata Siswa*, *Survei Kepuasan*, *Pendaftaran Acara*.
 
-### 4. Pengisian Formulir / Responder ([form-view.js](file:///c:/Users/iskak/Antigravity-Projetcs/form-IskakFatoni/js/form-view.js))
+### 4. Pengisian Formulir / Responder ([form-view.js](file:///c:/Users/iskak/Antigravity-Projetcs/formGenerator-IskakFatoni/js/form-view.js))
 - Akses publik bebas tanpa wajib mendaftar akun.
 - Alur *Multi-Step Sections* dengan bilah progres (*Progress Bar*).
 - Validasi input realtime (wajib diisi, format email/angka, validasi tanda tangan & file).
@@ -88,7 +88,7 @@ form-IskakFatoni/
   - Generator QR Code otomatis untuk form link.
   - Tombol bagikan sekali klik ke WhatsApp dengan teks pesan kustom.
 
-### 5. Analisis Respons & Ekspor ([responses.js](file:///c:/Users/iskak/Antigravity-Projetcs/form-IskakFatoni/js/responses.js), [export-excel.js](file:///c:/Users/iskak/Antigravity-Projetcs/form-IskakFatoni/js/export-excel.js))
+### 5. Analisis Respons & Ekspor ([responses.js](file:///c:/Users/iskak/Antigravity-Projetcs/formGenerator-IskakFatoni/js/responses.js), [export-excel.js](file:///c:/Users/iskak/Antigravity-Projetcs/formGenerator-IskakFatoni/js/export-excel.js))
 - Tab ringkasan analitik dan tabel respons data lengkap.
 - Tampilan detail respon per individu (termasuk pratinjau gambar, tanda tangan, dan peta GPS).
 - Ekspor data lengkap ke **Microsoft Excel (.xlsx)** dan **CSV**.
