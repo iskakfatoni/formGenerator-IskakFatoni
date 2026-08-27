@@ -2440,3 +2440,101 @@ input:checked + .slider:before {
   min-width: 3800px !important;
   min-height: 2800px !important;
 }
+
+
+/* ==========================================================================
+   SEPARATED FLOWCHART HEADER & WIRING CANVAS CARDS
+   ========================================================================== */
+.flowchart-header-card {
+  width: 100% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 16px !important;
+  padding: 14px 20px !important;
+  margin-bottom: 16px !important;
+  border-radius: var(--radius-lg) !important;
+  background: var(--bg-surface) !important;
+  border: 1px solid var(--border-color) !important;
+  box-sizing: border-box !important;
+  flex-wrap: wrap !important;
+}
+
+.flowchart-header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.flowchart-icon-badge {
+  width: 38px;
+  height: 38px;
+  border-radius: var(--radius-md);
+  background: linear-gradient(135deg, rgba(6, 182, 212, 0.2), rgba(99, 102, 241, 0.2));
+  border: 1px solid rgba(6, 182, 212, 0.35);
+  color: #38bdf8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.flowchart-title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  margin: 0;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.flowchart-tag-sub {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #818cf8;
+  background: rgba(99, 102, 241, 0.15);
+  padding: 2px 8px;
+  border-radius: 9999px;
+  border: 1px solid rgba(99, 102, 241, 0.25);
+}
+
+.flowchart-subtitle {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  margin: 4px 0 0 0;
+}
+
+.flowchart-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Distinct Wiring Canvas Card */
+.flowchart-canvas-card {
+  width: 100% !important;
+  padding: 8px !important;
+  border-radius: var(--radius-lg) !important;
+  background: var(--bg-surface) !important;
+  border: 1px solid var(--border-color) !important;
+  box-sizing: border-box !important;
+  overflow: hidden !important;
+  box-shadow: var(--shadow-md) !important;
+}
+
+.flowchart-graph-viewport {
+  width: 100% !important;
+  height: 75vh !important;
+  min-height: 600px !important;
+  border-radius: var(--radius-md) !important;
+  overflow: hidden !important;
+  position: relative !important;
+  background: radial-gradient(circle at 50% 50%, rgba(15, 23, 42, 0.8) 0%, rgba(2, 6, 23, 0.95) 100%) !important;
+}
+
+.flowchart-graph-canvas {
+  min-width: 3800px !important;
+  min-height: 2800px !important;
+}
