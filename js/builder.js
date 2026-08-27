@@ -799,6 +799,40 @@ class FormBuilder {
       });
     });
 
+    
+    // Custom Color Picker input
+    const customColorInput = document.getElementById('theme-custom-color-input');
+    if (customColorInput) {
+      customColorInput.addEventListener('input', (e) => {
+        const color = e.target.value;
+        this.setThemeColor(color);
+        document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('active'));
+      });
+      customColorInput.addEventListener('change', () => {
+        this.triggerAutoSave(true);
+      });
+    }
+
+    // Section Theme Accent Select
+    const selectSecTheme = document.getElementById('select-section-theme-accent');
+    if (selectSecTheme) {
+      selectSecTheme.addEventListener('change', (e) => {
+        if (!this.currentForm) this.currentForm = {};
+        this.currentForm.sectionTheme = e.target.value;
+        this.triggerAutoSave(true);
+      });
+    }
+
+    // Font Theme Select
+    const selectFontTheme = document.getElementById('select-font-theme');
+    if (selectFontTheme) {
+      selectFontTheme.addEventListener('change', (e) => {
+        if (!this.currentForm) this.currentForm = {};
+        this.currentForm.fontFamily = e.target.value;
+        this.triggerAutoSave(true);
+      });
+    }
+
     // Color Swatches
     if (this.themeColorSwatches) {
       this.themeColorSwatches.forEach(swatch => {
@@ -2385,11 +2419,18 @@ class FormBuilder {
       themeColor = activeSwatch.dataset.color;
     }
 
+    const selectSecTheme = document.getElementById('select-section-theme-accent');
+    const selectFontTheme = document.getElementById('select-font-theme');
+    const sectionTheme = selectSecTheme ? selectSecTheme.value : (this.currentForm.sectionTheme || 'inherit');
+    const fontFamily = selectFontTheme ? selectFontTheme.value : (this.currentForm.fontFamily || "'Inter', sans-serif");
+
     const formData = {
       ...this.currentForm,
       title,
       description,
       themeColor,
+      sectionTheme,
+      fontFamily,
       bannerUrl: this.headerImgInput ? this.headerImgInput.value.trim() : '',
       submitMessage: this.submitMsgInput ? this.submitMsgInput.value.trim() : 'Terima kasih! Tanggapan Anda telah berhasil direkam.',
       collectEmail: this.collectEmailCheck ? this.collectEmailCheck.checked : false,

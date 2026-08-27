@@ -253,9 +253,25 @@ class FormViewer {
     this.titleEl.textContent = form.title || 'Formulir Tanpa Judul';
     this.descEl.textContent = form.description || '';
     
-    // Theme color
+    // Theme color & dynamic CSS variables
     const color = form.themeColor || '#6366f1';
     this.accentBar.style.background = color;
+    document.documentElement.style.setProperty('--primary', color);
+    document.documentElement.style.setProperty('--primary-color', color);
+
+    // Font Family
+    if (form.fontFamily) {
+      document.body.style.fontFamily = form.fontFamily;
+    } else {
+      document.body.style.fontFamily = '';
+    }
+
+    // Section Theme Accent
+    if (form.sectionTheme && form.sectionTheme !== 'inherit') {
+      document.documentElement.style.setProperty('--section-accent', form.sectionTheme);
+    } else {
+      document.documentElement.style.setProperty('--section-accent', color);
+    }
 
     // Header banner
     if (form.bannerUrl) {

@@ -330,34 +330,78 @@
           </div>
         </div>
 
-        <!-- Panel 2: Form Settings & Theme -->
-        <div id="builder-panel-settings" class="builder-panel">
+        <!-- Panel 2: Dedicated Theme Builder -->
+        <div id="builder-panel-theme" class="builder-panel">
           <div class="settings-grid">
+            
+            <!-- Card 1: Main Accent Color -->
             <div class="settings-card glass-card">
-              <h3><i data-lucide="palette"></i> Kustomisasi Tema & Tampilan</h3>
-              <p class="settings-subtitle">Atur warna aksen dan banner formulir agar sesuai identitas Anda.</p>
+              <h3><i data-lucide="palette"></i> Warna Aksen Utama Formulir</h3>
+              <p class="settings-subtitle">Warna utama untuk tombol, garis aksen header, radio button, dan elemen aktif.</p>
               
               <div class="setting-item">
-                <label>Warna Aksen Formulir</label>
+                <label>Pilihan Palet Warna Aksen</label>
                 <div class="color-palette-picker" id="theme-color-picker">
-                  <button class="color-swatch active" data-color="#6366f1" style="background: #6366f1;"></button>
-                  <button class="color-swatch" data-color="#ec4899" style="background: #ec4899;"></button>
-                  <button class="color-swatch" data-color="#06b6d4" style="background: #06b6d4;"></button>
-                  <button class="color-swatch" data-color="#10b981" style="background: #10b981;"></button>
-                  <button class="color-swatch" data-color="#f59e0b" style="background: #f59e0b;"></button>
-                  <button class="color-swatch" data-color="#8b5cf6" style="background: #8b5cf6;"></button>
+                  <button type="button" class="color-swatch active" data-color="#6366f1" style="background: #6366f1;" title="Indigo / Royal Blue"></button>
+                  <button type="button" class="color-swatch" data-color="#ec4899" style="background: #ec4899;" title="Rose Pink"></button>
+                  <button type="button" class="color-swatch" data-color="#06b6d4" style="background: #06b6d4;" title="Cyan Sky"></button>
+                  <button type="button" class="color-swatch" data-color="#10b981" style="background: #10b981;" title="Emerald Green"></button>
+                  <button type="button" class="color-swatch" data-color="#f59e0b" style="background: #f59e0b;" title="Amber Gold"></button>
+                  <button type="button" class="color-swatch" data-color="#8b5cf6" style="background: #8b5cf6;" title="Violet Purple"></button>
+                  <button type="button" class="color-swatch" data-color="#ef4444" style="background: #ef4444;" title="Crimson Red"></button>
+                  <button type="button" class="color-swatch" data-color="#0ea5e9" style="background: #0ea5e9;" title="Ocean Blue"></button>
+                  <button type="button" class="color-swatch" data-color="#14b8a6" style="background: #14b8a6;" title="Teal Green"></button>
                 </div>
               </div>
 
-              <!-- Full Banner Uploader Section in Settings -->
+              <div class="setting-sub-item" style="margin-top: 14px; display: flex; align-items: center; gap: 10px;">
+                <label for="theme-custom-color-input" style="font-size: 0.85rem; color: var(--text-secondary); margin: 0;">Pilih Warna Kustom Sendiri:</label>
+                <input type="color" id="theme-custom-color-input" value="#6366f1" class="input-color-picker" title="Klik untuk memilih warna bebas">
+              </div>
+            </div>
+
+            <!-- Card 2: Section & Question Customization -->
+            <div class="settings-card glass-card">
+              <h3><i data-lucide="layers"></i> Kustomisasi Warna Bagian & Pertanyaan</h3>
+              <p class="settings-subtitle">Atur gaya warna garis aksen kartu bagian (section) dan kartu pertanyaan.</p>
+              
               <div class="setting-item">
-                <label>Gambar Header Banner</label>
+                <label for="select-section-theme-accent">Warna Aksen Kartu Bagian (Section)</label>
+                <select id="select-section-theme-accent" class="select-styled" style="width: 100%;">
+                  <option value="inherit">Samakan dengan Warna Aksen Utama Formulir (Default)</option>
+                  <option value="#6366f1">Indigo Modern (#6366f1)</option>
+                  <option value="#10b981">Emerald Green (#10b981)</option>
+                  <option value="#06b6d4">Cyan Sky (#06b6d4)</option>
+                  <option value="#f59e0b">Amber Gold (#f59e0b)</option>
+                  <option value="#ec4899">Rose Pink (#ec4899)</option>
+                  <option value="#8b5cf6">Violet Purple (#8b5cf6)</option>
+                </select>
+              </div>
+
+              <div class="setting-item" style="margin-top: 14px;">
+                <label for="select-font-theme">Gaya Huruf / Tipografi (Font Family)</label>
+                <select id="select-font-theme" class="select-styled" style="width: 100%;">
+                  <option value="'Inter', sans-serif">Inter (Modern & Bersih - Bawaan)</option>
+                  <option value="'Outfit', sans-serif">Outfit (Elegan & Modern Headings)</option>
+                  <option value="'Roboto', sans-serif">Roboto (Standar Google)</option>
+                  <option value="Georgia, serif">Serif / Georgia (Klasik & Formal)</option>
+                  <option value="'Courier New', monospace">Monospace (Teknis / Kode)</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Card 3: Header Banner Uploader (Standard Google Form 4:1) -->
+            <div class="settings-card glass-card" style="grid-column: 1 / -1;">
+              <h3><i data-lucide="image"></i> Header Banner Formulir (Standar Google Form 4:1)</h3>
+              <p class="settings-subtitle">Gambar sampul di bagian atas formulir. Otomatis dikompresi & disesuaikan ke rasio 4:1.</p>
+              
+              <div class="setting-item">
                 <div class="banner-uploader-container">
                   <div id="banner-dropzone" class="banner-dropzone">
                     <i data-lucide="image-plus" class="banner-dropzone-icon"></i>
                     <div class="banner-dropzone-text">
                       <strong>Upload Gambar Banner Formulir</strong>
-                      <span>Disarankan rasio lanskap (~1600 x 400 px), otomatis dikompresi</span>
+                      <span>Format JPG, PNG, WEBP • Rasio Standar Google Form 4:1 (Misal: 1600x400 px)</span>
                     </div>
                     <button type="button" id="btn-browse-banner" class="btn btn-secondary btn-sm">
                       <i data-lucide="upload"></i>
@@ -383,13 +427,19 @@
                   </div>
                 </div>
 
-                <div class="setting-sub-item" style="margin-top: 10px;">
-                  <label for="form-header-img" style="font-size: 0.8rem; color: var(--text-muted);">Atau URL Gambar Banner:</label>
+                <div class="setting-sub-item" style="margin-top: 14px;">
+                  <label for="form-header-img" style="font-size: 0.82rem; color: var(--text-muted);">Atau Masukkan Tautan URL Gambar Banner:</label>
                   <input type="url" id="form-header-img" class="input-text input-sm" placeholder="https://example.com/banner.jpg">
                 </div>
               </div>
             </div>
 
+          </div>
+        </div>
+
+        <!-- Panel 3: Form Settings (General & Behavior) -->
+        <div id="builder-panel-settings" class="builder-panel">
+          <div class="settings-grid">
             <div class="settings-card glass-card">
               <h3><i data-lucide="shield-check"></i> Pengaturan Respon</h3>
               <p class="settings-subtitle">Atur batasan dan pesan konfirmasi untuk responden.</p>
