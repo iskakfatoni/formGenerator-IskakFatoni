@@ -1687,6 +1687,12 @@ class FormBuilder {
         </div>
       </div>
 
+      <!-- Question Description / Helper Text Row -->
+      <div class="q-description-wrap">
+        <i data-lucide="info" class="q-desc-icon"></i>
+        <input type="text" class="input-q-description" value="${this.escapeHtml(q.description || '')}" placeholder="Deskripsi / Petunjuk / Contoh format jawaban (Opsional)...">
+      </div>
+
       ${q.imageUrl ? `
         <div class="q-image-preview-card">
           <img src="${this.escapeHtml(q.imageUrl)}" alt="Gambar Soal" class="q-preview-img">

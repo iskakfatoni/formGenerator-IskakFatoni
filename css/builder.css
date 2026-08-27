@@ -2205,3 +2205,44 @@ input:checked + .slider:before {
   border-radius: 10px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
 }
+
+
+/* Question Description / Helper Text */
+.q-description-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+  background: rgba(15, 23, 42, 0.4);
+  border: 1px dashed rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  padding: 6px 12px;
+  transition: all var(--transition-fast);
+}
+
+.q-description-wrap:focus-within {
+  border-color: rgba(99, 102, 241, 0.5);
+  background: rgba(15, 23, 42, 0.7);
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.15);
+}
+
+.q-desc-icon {
+  width: 15px;
+  height: 15px;
+  color: #818cf8;
+  flex-shrink: 0;
+}
+
+.input-q-description {
+  width: 100%;
+  background: transparent;
+  border: none;
+  outline: none;
+  font-size: 0.84rem;
+  color: var(--text-primary);
+}
+
+.input-q-description::placeholder {
+  color: var(--text-muted);
+  font-style: italic;
+}

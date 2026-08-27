@@ -659,6 +659,9 @@ class FormViewer {
           ${this.interpolateText(q.title || `Pertanyaan ${index + 1}`)}
           ${q.required ? '<span class="live-q-required-mark">*</span>' : ''}
         </label>
+        ${q.description ? `
+          <div class="live-q-desc">${this.interpolateText(q.description)}</div>
+        ` : ''}
       </div>
       ${q.imageUrl ? `
         <div class="live-q-image-container">
