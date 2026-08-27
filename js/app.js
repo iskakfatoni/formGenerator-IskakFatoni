@@ -89,7 +89,6 @@ class App {
     const previewAdminBar = document.getElementById('preview-admin-bar');
     const navDashboard = document.getElementById('nav-dashboard');
     const navBuilder = document.getElementById('nav-builder');
-    const navBrandTag = document.getElementById('nav-brand-tag');
 
     // Update active nav link
     document.querySelectorAll('.nav-link').forEach(link => {
@@ -101,27 +100,22 @@ class App {
       sec.classList.remove('active');
     });
 
-    // Toggle clean CSS body mode classes
-    document.body.classList.remove('mode-dashboard', 'mode-builder', 'mode-responses', 'responder-mode');
-
     if (route === 'dashboard' || route === '') {
       // Auto-save form if currently open in builder
       if (this.builder && this.builder.currentForm) {
         try { this.builder.saveCurrentForm(true); } catch (e) {}
       }
-      document.body.classList.add('mode-dashboard');
       if (mainNav) mainNav.style.display = '';
       if (previewAdminBar) previewAdminBar.classList.add('hidden');
-      if (navBrandTag) navBrandTag.textContent = 'Workspace';
+      document.body.classList.remove('responder-mode');
 
       this.showSection('view-dashboard');
       if (navDashboard) navDashboard.classList.add('active');
       this.loadDashboard();
     } else if (route === 'builder') {
-      document.body.classList.add('mode-builder');
       if (mainNav) mainNav.style.display = '';
       if (previewAdminBar) previewAdminBar.classList.add('hidden');
-      if (navBrandTag) navBrandTag.textContent = 'Builder';
+      document.body.classList.remove('responder-mode');
 
       this.showSection('view-builder');
       if (navBuilder) navBuilder.classList.add('active');
@@ -157,10 +151,9 @@ class App {
       this.showSection('view-form');
       if (this.viewer) this.viewer.loadForm(param);
     } else if (route === 'responses') {
-      document.body.classList.add('mode-responses');
       if (mainNav) mainNav.style.display = '';
       if (previewAdminBar) previewAdminBar.classList.add('hidden');
-      if (navBrandTag) navBrandTag.textContent = 'Respon Data';
+      document.body.classList.remove('responder-mode');
 
       this.showSection('view-responses');
       if (this.responsesDashboard) {

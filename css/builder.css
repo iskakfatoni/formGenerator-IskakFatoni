@@ -2246,3 +2246,102 @@ input:checked + .slider:before {
   color: var(--text-muted);
   font-style: italic;
 }
+
+
+/* ==========================================================================
+   UNIFIED BUILDER TOOLBAR CARD (Above Banner/Header)
+   ========================================================================== */
+.builder-toolbar-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 16px;
+  margin-bottom: 20px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  position: sticky;
+  top: 70px;
+  z-index: 85;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.builder-toolbar-left,
+.builder-toolbar-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.builder-toolbar-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+}
+
+.builder-tabs-segmented {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(15, 23, 42, 0.45);
+  border: 1px solid var(--border-color);
+  padding: 4px;
+  border-radius: 10px;
+}
+
+.builder-tabs-segmented .builder-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  height: 34px;
+  border-radius: 8px;
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  white-space: nowrap;
+}
+
+.builder-tabs-segmented .builder-tab:hover {
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.builder-tabs-segmented .builder-tab.active {
+  background: var(--primary);
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.35);
+  font-weight: 600;
+}
+
+.builder-toolbar-card .btn {
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 14px;
+  font-size: 0.84rem;
+  font-weight: 500;
+  border-radius: 8px;
+  white-space: nowrap;
+}
+
+@media (max-width: 950px) {
+  .builder-toolbar-card {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .builder-toolbar-center {
+    order: 3;
+    width: 100%;
+    margin-top: 8px;
+  }
+}

@@ -56,82 +56,32 @@
     </div>
   </div>
 
-  <!-- Main Unified Top Navigation Header -->
+      <!-- Main Top Navigation -->
   <header id="main-nav" class="navbar glass">
     <div class="nav-container">
-      
-      <!-- Left: Brand Logo & Back Button for Builder -->
-      <div class="nav-left-group">
-        <button id="btn-builder-back" class="btn-back" onclick="window.location.hash = '#/dashboard'" title="Kembali ke Dashboard">
-          <i data-lucide="arrow-left"></i>
-        </button>
-        <div class="brand" onclick="window.location.hash = '#/dashboard'">
-          <div class="brand-icon">
-            <i data-lucide="sparkles"></i>
-          </div>
-          <div class="brand-text">
-            <span class="brand-name">formGenerator-IskakFatoni</span>
-            <span class="brand-tag" id="nav-brand-tag">Workspace</span>
-          </div>
+      <div class="brand" onclick="window.location.hash = '#/dashboard'">
+        <div class="brand-icon">
+          <i data-lucide="sparkles"></i>
+        </div>
+        <div class="brand-text">
+          <span class="brand-name">formGenerator-IskakFatoni</span>
+          <span class="brand-tag">Workspace</span>
         </div>
       </div>
 
-      <!-- Center A: Dashboard Nav Links (Visible in Dashboard Mode) -->
-      <nav class="nav-links" id="dashboard-nav-links">
+      <nav class="nav-links" id="nav-links">
         <a href="#/dashboard" class="nav-link active" id="nav-dashboard">
           <i data-lucide="layout-dashboard"></i>
           <span>Dashboard</span>
         </a>
         <a href="#/builder" class="nav-link" id="nav-builder">
           <i data-lucide="plus-circle"></i>
-          <span>Buat Form Baru</span>
+          <span>Buat Form</span>
         </a>
       </nav>
 
-      <!-- Center B: Form Builder Tabs (Visible in Builder Mode) -->
-      <div class="builder-tabs" id="builder-nav-tabs">
-        <button class="builder-tab active" id="tab-btn-questions">
-          <i data-lucide="help-circle"></i>
-          <span>Pertanyaan</span>
-        </button>
-        <button class="builder-tab" id="tab-btn-theme">
-          <i data-lucide="palette"></i>
-          <span>Theme Builder</span>
-        </button>
-        <button class="builder-tab" id="tab-btn-settings">
-          <i data-lucide="sliders"></i>
-          <span>Pengaturan</span>
-        </button>
-        <button class="builder-tab" id="tab-btn-flowchart">
-          <i data-lucide="git-merge"></i>
-          <span>Peta Alur</span>
-        </button>
-        <button class="builder-tab" id="tab-btn-responses-link" style="display:none;">
-          <i data-lucide="bar-chart-2"></i>
-          <span>Respon (<span id="builder-response-count">0</span>)</span>
-        </button>
-      </div>
-
-      <!-- Right: Action Buttons Group -->
       <div class="nav-actions">
-        
-        <!-- Builder Action Controls (Publish, Preview, Save) -->
-        <div class="builder-header-actions" id="builder-header-actions">
-          <button type="button" class="btn btn-sm btn-publish-toggle is-published" id="btn-toggle-publish" title="Status Publikasi Form">
-            <span class="publish-dot"></span>
-            <span id="btn-publish-label">Published</span>
-          </button>
-          <button class="btn btn-secondary btn-sm" id="btn-preview-form" title="Lihat Tampilan Responden">
-            <i data-lucide="eye"></i>
-            <span>Preview</span>
-          </button>
-          <button class="btn btn-primary btn-sm" id="btn-save-form" title="Simpan Formulir">
-            <i data-lucide="save"></i>
-            <span>Simpan</span>
-          </button>
-        </div>
-
-        <!-- Dashboard User Profile & Cloud Badge -->
+        <!-- Auth Status / User Profile Button -->
         <button id="nav-user-auth-pill" class="user-auth-pill logged-in" title="Klik untuk Keluar (Logout)">
           <span id="nav-user-auth-avatar" class="nav-avatar-icon">
             <i data-lucide="user-check"></i>
@@ -143,12 +93,10 @@
           <span class="pulse-dot"></span>
           <span id="db-status-text">Cloud Online</span>
         </div>
-        
         <button id="btn-theme-toggle" class="icon-btn" title="Ganti Tema (Gelap/Terang)">
           <i data-lucide="sun" id="theme-icon"></i>
         </button>
       </div>
-
     </div>
   </header>
 
@@ -246,7 +194,58 @@
 
     <!-- 2. FORM BUILDER VIEW -->
     <section id="view-builder" class="view-section">
-      <div class="builder-body-container" style="padding-top: 10px;">
+      
+      <!-- Unified Builder Toolbar Card (Di Atas Banner & Judul Form) -->
+      <div class="builder-toolbar-card glass-card">
+        <div class="builder-toolbar-left">
+          <button type="button" class="btn btn-secondary btn-sm" onclick="window.location.hash = '#/dashboard'" title="Kembali ke Dashboard">
+            <i data-lucide="arrow-left"></i>
+            <span>Dashboard</span>
+          </button>
+        </div>
+
+        <div class="builder-toolbar-center">
+          <div class="builder-tabs-segmented">
+            <button type="button" class="builder-tab active" id="tab-btn-questions">
+              <i data-lucide="help-circle"></i>
+              <span>Pertanyaan</span>
+            </button>
+            <button type="button" class="builder-tab" id="tab-btn-theme">
+              <i data-lucide="palette"></i>
+              <span>Theme Builder</span>
+            </button>
+            <button type="button" class="builder-tab" id="tab-btn-settings">
+              <i data-lucide="sliders"></i>
+              <span>Pengaturan</span>
+            </button>
+            <button type="button" class="builder-tab" id="tab-btn-flowchart">
+              <i data-lucide="git-merge"></i>
+              <span>Peta Alur</span>
+            </button>
+            <button type="button" class="builder-tab" id="tab-btn-responses-link" style="display:none;">
+              <i data-lucide="bar-chart-2"></i>
+              <span>Respon (<span id="builder-response-count">0</span>)</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="builder-toolbar-right">
+          <button type="button" class="btn btn-sm btn-publish-toggle is-published" id="btn-toggle-publish" title="Status Publikasi Form">
+            <span class="publish-dot"></span>
+            <span id="btn-publish-label">Published</span>
+          </button>
+          <button type="button" class="btn btn-secondary btn-sm" id="btn-preview-form" title="Lihat Tampilan Responden">
+            <i data-lucide="eye"></i>
+            <span>Preview</span>
+          </button>
+          <button type="button" class="btn btn-primary btn-sm" id="btn-save-form" title="Simpan Formulir">
+            <i data-lucide="save"></i>
+            <span>Simpan</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="builder-body-container">
         <!-- Panel 1: Questions Editor -->
         <div id="builder-panel-questions" class="builder-panel active">
           
