@@ -248,22 +248,40 @@ class FormBuilder {
     return card;
   }
 
+  getCanvasOffset(el, canvas) {
+    let x = 0;
+    let y = 0;
+    let curr = el;
+    while (curr && curr !== canvas && curr !== document.body) {
+      x += curr.offsetLeft;
+      y += curr.offsetTop;
+      curr = curr.offsetParent;
+    }
+    const w = el.offsetWidth || 0;
+    const h = el.offsetHeight || 0;
+    return {
+      left: x,
+      top: y,
+      right: x + w,
+      bottom: y + h,
+      centerX: x + w / 2,
+      centerY: y + h / 2
+    };
+  }
+
   drawGraphWires() {
     const svgLayer = document.getElementById('flowchart-svg-layer');
     const canvas = document.getElementById('flowchart-graph-canvas');
     if (!svgLayer || !canvas) return;
 
-    // Clear dynamic paths
+    // Clear dynamic wire paths
     svgLayer.querySelectorAll('path.flowchart-svg-wire').forEach(p => p.remove());
-
-    const canvasRect = canvas.getBoundingClientRect();
-    const zoom = this.graphZoom || 1;
 
     // 1. Draw Wire from Start Node to Section 1
     const startPort = document.getElementById('gport-start-out');
     const firstSecNode = this.sections.length > 0 ? document.getElementById('gnode-sec-' + this.sections[0].id) : null;
     if (startPort && firstSecNode) {
-      this.connectNodesWithBezier(svgLayer, startPort, firstSecNode, 'green', canvasRect, zoom);
+      this.connectNodesWithBezier(svgLayer, startPort, firstSecNode, 'green', canvas);
     }
 
     // 2. Draw Wire for all Branch Ports
@@ -280,21 +298,20 @@ class FormBuilder {
       if (targetNode) {
         const dot = portEl.querySelector('.graph-port-dot-out');
         const color = dot && dot.classList.contains('purple') ? 'purple' : (dot && dot.classList.contains('green') ? 'green' : 'cyan');
-        this.connectNodesWithBezier(svgLayer, portEl, targetNode, color, canvasRect, zoom);
+        this.connectNodesWithBezier(svgLayer, portEl, targetNode, color, canvas);
       }
     });
   }
 
-  connectNodesWithBezier(svgLayer, fromEl, toEl, colorType, canvasRect, zoom) {
-    const fromRect = fromEl.getBoundingClientRect();
-    const toRect = toEl.getBoundingClientRect();
+  connectNodesWithBezier(svgLayer, fromEl, toEl, colorType, canvas) {
+    const fromPos = this.getCanvasOffset(fromEl, canvas);
+    const toPos = this.getCanvasOffset(toEl, canvas);
 
-    // Calculate relative coordinates inside canvas
-    const x1 = (fromRect.right - canvasRect.left) / zoom;
-    const y1 = (fromRect.top + fromRect.height / 2 - canvasRect.top) / zoom;
+    const x1 = fromPos.right;
+    const y1 = fromPos.centerY;
 
-    const x2 = (toRect.left - canvasRect.left) / zoom;
-    const y2 = (toRect.top + toRect.height / 2 - canvasRect.top) / zoom;
+    const x2 = toPos.left;
+    const y2 = toPos.centerY;
 
     const dx = Math.max(40, (x2 - x1) * 0.45);
     const pathD = `M ${x1} ${y1} C ${x1 + dx} ${y1}, ${x2 - dx} ${y2}, ${x2} ${y2}`;
@@ -531,10 +548,11 @@ class FormBuilder {
   bindEvents() {
 
     
-    // Graph Zoom & Pan Controls
+    // Graph Zoom, Pan & Fullscreen Controls
     const graphViewport = document.getElementById('flowchart-graph-viewport');
     const graphCanvas = document.getElementById('flowchart-graph-canvas');
     const zoomLevelText = document.getElementById('graph-zoom-level');
+    const btnFullscreen = document.getElementById('btn-graph-fullscreen');
 
     this.graphZoom = 1;
     const updateZoom = (newZoom) => {
@@ -545,7 +563,6 @@ class FormBuilder {
       if (zoomLevelText) {
         zoomLevelText.textContent = Math.round(this.graphZoom * 100) + '%';
       }
-      this.drawGraphWires();
     };
 
     const btnZoomIn = document.getElementById('btn-graph-zoom-in');
@@ -556,6 +573,43 @@ class FormBuilder {
 
     const btnZoomReset = document.getElementById('btn-graph-zoom-reset');
     if (btnZoomReset) btnZoomReset.addEventListener('click', () => updateZoom(1.0));
+
+    // Full Screen Toggle Handler
+    if (btnFullscreen && graphViewport) {
+      const toggleFullscreen = () => {
+        const isFull = graphViewport.classList.toggle('is-fullscreen');
+        btnFullscreen.innerHTML = isFull ? '<i data-lucide="minimize"></i>' : '<i data-lucide="maximize"></i>';
+        btnFullscreen.title = isFull ? 'Keluar Layar Penuh (Esc)' : 'Layar Penuh (Full Screen)';
+        if (window.lucide) window.lucide.createIcons();
+
+        if (isFull) {
+          if (graphViewport.requestFullscreen) {
+            graphViewport.requestFullscreen().catch(() => {});
+          }
+        } else {
+          if (document.fullscreenElement && document.exitFullscreen) {
+            document.exitFullscreen().catch(() => {});
+          }
+        }
+      };
+
+      btnFullscreen.addEventListener('click', toggleFullscreen);
+
+      // Escape key listener to exit fullscreen
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && graphViewport.classList.contains('is-fullscreen')) {
+          toggleFullscreen();
+        }
+      });
+
+      document.addEventListener('fullscreenchange', () => {
+        if (!document.fullscreenElement && graphViewport.classList.contains('is-fullscreen')) {
+          graphViewport.classList.remove('is-fullscreen');
+          btnFullscreen.innerHTML = '<i data-lucide="maximize"></i>';
+          if (window.lucide) window.lucide.createIcons();
+        }
+      });
+    }
 
     // Flowchart Tab & Refresh Click
     const tabFlowchart = document.getElementById('tab-btn-flowchart');
