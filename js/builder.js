@@ -5,9 +5,31 @@
  */
 
 class FormBuilder {
+
+  getTypeMeta(type) {
+    const meta = {
+      text: { icon: 'type', label: 'Teks Singkat' },
+      paragraph: { icon: 'align-left', label: 'Paragraf' },
+      choice: { icon: 'circle-dot', label: 'Pilihan Ganda' },
+      checkbox: { icon: 'check-square', label: 'Kotak Centang' },
+      dropdown: { icon: 'chevron-down-circle', label: 'Dropdown' },
+      file_gdrive: { icon: 'hard-drive', label: 'Google Drive' },
+      file: { icon: 'camera', label: 'Upload Foto' },
+      location: { icon: 'map-pin', label: 'Lokasi GPS' },
+      signature: { icon: 'pen-tool', label: 'Tanda Tangan' },
+      rating: { icon: 'star', label: 'Rating Bintang' },
+      date: { icon: 'calendar', label: 'Tanggal' },
+      time: { icon: 'clock', label: 'Waktu' },
+      number: { icon: 'hash', label: 'Angka' }
+    };
+    return meta[type] || { icon: 'help-circle', label: 'Pertanyaan' };
+  }
+
   constructor() {
     this.currentForm = null;
     this.sections = [];
+    this.collapsedSections = new Set();
+    this.collapsedQuestions = new Set();
     this.questions = [];
     this.draggedQuestionId = null;
     this.initElements();
@@ -59,6 +81,38 @@ class FormBuilder {
   }
 
   bindEvents() {
+
+    // Toolbar Collapse / Expand All Buttons
+    const btnToggleAllQ = document.getElementById('btn-toggle-all-questions');
+    const txtToggleAllQ = document.getElementById('btn-toggle-all-q-text');
+    if (btnToggleAllQ) {
+      btnToggleAllQ.addEventListener('click', () => {
+        if (this.collapsedQuestions.size > 0) {
+          this.collapsedQuestions.clear();
+          if (txtToggleAllQ) txtToggleAllQ.textContent = 'Lipat Semua Soal';
+        } else {
+          this.questions.forEach(q => this.collapsedQuestions.add(q.id));
+          if (txtToggleAllQ) txtToggleAllQ.textContent = 'Buka Semua Soal';
+        }
+        this.renderQuestions();
+      });
+    }
+
+    const btnToggleAllSec = document.getElementById('btn-toggle-all-sections');
+    const txtToggleAllSec = document.getElementById('btn-toggle-all-sec-text');
+    if (btnToggleAllSec) {
+      btnToggleAllSec.addEventListener('click', () => {
+        if (this.collapsedSections.size > 0) {
+          this.collapsedSections.clear();
+          if (txtToggleAllSec) txtToggleAllSec.textContent = 'Lipat Semua Bagian';
+        } else {
+          this.sections.forEach(s => this.collapsedSections.add(s.id));
+          if (txtToggleAllSec) txtToggleAllSec.textContent = 'Buka Semua Bagian';
+        }
+        this.renderQuestions();
+      });
+    }
+
     // Add Question Main Button
     const btnAddQ = document.getElementById('btn-add-question');
     if (btnAddQ) {
@@ -535,21 +589,40 @@ class FormBuilder {
     this.questionsContainer.innerHTML = '';
     const totalSections = this.sections.length;
 
+    // Update Toolbar Summary Text
+    const summaryText = document.getElementById('builder-stats-count-text');
+    if (summaryText) {
+      summaryText.textContent = totalSections + ' Bagian • ' + this.questions.length + ' Pertanyaan';
+    }
+
+    const txtToggleAllQ = document.getElementById('btn-toggle-all-q-text');
+    if (txtToggleAllQ) {
+      txtToggleAllQ.textContent = this.collapsedQuestions.size > 0 ? 'Buka Semua Soal' : 'Lipat Semua Soal';
+    }
+
+    const txtToggleAllSec = document.getElementById('btn-toggle-all-sec-text');
+    if (txtToggleAllSec) {
+      txtToggleAllSec.textContent = this.collapsedSections.size > 0 ? 'Buka Semua Bagian' : 'Lipat Semua Bagian';
+    }
+
     this.sections.forEach((sec, secIdx) => {
-      // If there are multiple sections, render a section header card (for section 2 and above, or all if multi-section)
+      const sectionQuestions = this.questions.filter(q => q.sectionId === sec.id);
+      const isSecCollapsed = this.collapsedSections.has(sec.id);
+
+      // If there are multiple sections, render section header card
       if (totalSections > 1) {
-        const secCard = this.createSectionCardElement(sec, secIdx, totalSections);
+        const secCard = this.createSectionCardElement(sec, secIdx, totalSections, sectionQuestions.length, isSecCollapsed);
         this.questionsContainer.appendChild(secCard);
       }
 
-      // Render questions for this section
-      const sectionQuestions = this.questions.filter(q => q.sectionId === sec.id);
-      
-      sectionQuestions.forEach(q => {
-        const globalIndex = this.questions.findIndex(item => item.id === q.id);
-        const card = this.createQuestionCardElement(q, globalIndex, sectionQuestions.length);
-        this.questionsContainer.appendChild(card);
-      });
+      // Render questions for this section (if section is not collapsed)
+      if (!isSecCollapsed) {
+        sectionQuestions.forEach(q => {
+          const globalIndex = this.questions.findIndex(item => item.id === q.id);
+          const card = this.createQuestionCardElement(q, globalIndex, sectionQuestions.length);
+          this.questionsContainer.appendChild(card);
+        });
+      }
     });
 
     // Refresh icons
@@ -558,16 +631,27 @@ class FormBuilder {
     }
   }
 
-  createSectionCardElement(sec, secIdx, totalSections) {
+  createSectionCardElement(sec, secIdx, totalSections, questionCount, isCollapsed) {
     const card = document.createElement('div');
-    card.className = 'form-card section-card glass-card';
+    card.className = 'form-card section-card glass-card' + (isCollapsed ? ' is-collapsed' : '');
     card.dataset.sectionId = sec.id;
 
     card.innerHTML = `
       <div class="section-header-top">
-        <div class="section-tag-badge">
-          <i data-lucide="layers"></i>
-          <span>Bagian ${secIdx + 1} dari ${totalSections}</span>
+        <div style="display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0;">
+          <button type="button" class="btn-q-icon sec-toggle-collapse" title="${isCollapsed ? 'Buka Bagian Ini' : 'Lipat Bagian Ini'}">
+            <i data-lucide="${isCollapsed ? 'chevron-right' : 'chevron-down'}"></i>
+          </button>
+          <div class="section-tag-badge">
+            <i data-lucide="layers"></i>
+            <span>Bagian ${secIdx + 1} dari ${totalSections}</span>
+          </div>
+          ${isCollapsed ? `
+            <div class="sec-collapsed-preview" title="Klik untuk membuka bagian ini">
+              <span>${this.escapeHtml(sec.title || 'Bagian Tanpa Judul')}</span>
+              <span class="sec-count-badge">${questionCount} Pertanyaan</span>
+            </div>
+          ` : ''}
         </div>
         <div class="section-actions">
           ${secIdx > 0 ? `
@@ -591,16 +675,42 @@ class FormBuilder {
       </div>
     `;
 
+    // Toggle Section Collapse
+    const btnToggleCollapse = card.querySelector('.sec-toggle-collapse');
+    if (btnToggleCollapse) {
+      btnToggleCollapse.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (this.collapsedSections.has(sec.id)) {
+          this.collapsedSections.delete(sec.id);
+        } else {
+          this.collapsedSections.add(sec.id);
+        }
+        this.renderQuestions();
+      });
+    }
+
+    const previewRow = card.querySelector('.sec-collapsed-preview');
+    if (previewRow) {
+      previewRow.addEventListener('click', () => {
+        this.collapsedSections.delete(sec.id);
+        this.renderQuestions();
+      });
+    }
+
     // Bind section input events
     const titleInput = card.querySelector('.input-section-title');
-    titleInput.addEventListener('input', (e) => {
-      sec.title = e.target.value;
-    });
+    if (titleInput) {
+      titleInput.addEventListener('input', (e) => {
+        sec.title = e.target.value;
+      });
+    }
 
     const descInput = card.querySelector('.input-section-desc');
-    descInput.addEventListener('input', (e) => {
-      sec.description = e.target.value;
-    });
+    if (descInput) {
+      descInput.addEventListener('input', (e) => {
+        sec.description = e.target.value;
+      });
+    }
 
     // Move Section Up
     const btnMoveUp = card.querySelector('.sec-move-up');
@@ -626,31 +736,35 @@ class FormBuilder {
 
     // Delete Section
     const btnDelete = card.querySelector('.sec-delete');
-    btnDelete.addEventListener('click', () => {
-      if (this.sections.length <= 1) {
-        window.app.showToast('Formulir harus memiliki minimal satu bagian', 'error');
-        return;
-      }
-
-      const targetSecId = secIdx > 0 ? this.sections[secIdx - 1].id : this.sections[1].id;
-      // Reassign questions in this section to target section
-      this.questions.forEach(q => {
-        if (q.sectionId === sec.id) {
-          q.sectionId = targetSecId;
+    if (btnDelete) {
+      btnDelete.addEventListener('click', () => {
+        if (this.sections.length <= 1) {
+          window.app.showToast('Formulir harus memiliki minimal satu bagian', 'error');
+          return;
         }
-      });
 
-      this.sections.splice(secIdx, 1);
-      this.renderQuestions();
-      window.app.showToast('Bagian berhasil dihapus', 'info');
-    });
+        const targetSecId = secIdx > 0 ? this.sections[secIdx - 1].id : this.sections[1].id;
+        this.questions.forEach(q => {
+          if (q.sectionId === sec.id) {
+            q.sectionId = targetSecId;
+          }
+        });
+
+        this.sections.splice(secIdx, 1);
+        this.collapsedSections.delete(sec.id);
+        this.renderQuestions();
+        window.app.showToast('Bagian berhasil dihapus', 'info');
+      });
+    }
 
     return card;
   }
 
   createQuestionCardElement(q, globalIndex, totalQuestionsInSec) {
+    const isCollapsed = this.collapsedQuestions.has(q.id);
+    const typeMeta = this.getTypeMeta(q.type);
     const card = document.createElement('div');
-    card.className = 'form-card question-card glass-card';
+    card.className = 'form-card question-card glass-card' + (isCollapsed ? ' is-collapsed' : '');
     card.dataset.questionId = q.id;
     card.setAttribute('draggable', 'false');
 
@@ -810,6 +924,29 @@ class FormBuilder {
     }
 
     card.innerHTML = `
+      <!-- Collapsed Compact Strip (Google Forms style) -->
+      <div class="q-collapsed-strip">
+        <div class="q-collapsed-left">
+          <div class="q-collapsed-handle" title="Tahan & geser urutan"><i data-lucide="grip-vertical"></i></div>
+          <span class="q-collapsed-num">${globalIndex + 1}.</span>
+          <span class="q-collapsed-title">${this.escapeHtml(q.title || 'Pertanyaan Tanpa Judul')}</span>
+          ${q.required ? '<span class="q-collapsed-star" title="Wajib diisi">*</span>' : ''}
+          <span class="q-type-badge ${q.type}"><i data-lucide="${typeMeta.icon}"></i> ${typeMeta.label}</span>
+          ${(q.type === 'choice' || q.type === 'checkbox' || q.type === 'dropdown') ? `<span class="q-options-badge">${(q.options || []).length} opsi</span>` : ''}
+        </div>
+        <div class="q-collapsed-actions">
+          <button type="button" class="btn-q-icon q-toggle-collapse" title="Buka / Edit Pertanyaan">
+            <i data-lucide="chevron-down"></i>
+          </button>
+          <button type="button" class="btn-q-icon duplicate" title="Duplikat">
+            <i data-lucide="copy"></i>
+          </button>
+          <button type="button" class="btn-q-icon delete" title="Hapus">
+            <i data-lucide="trash-2"></i>
+          </button>
+        </div>
+      </div>
+
       <!-- Top Drag Handle -->
       <div class="card-drag-handle" title="Tahan & geser untuk mengubah urutan pertanyaan">
         <i data-lucide="grip-horizontal"></i>
@@ -824,6 +961,9 @@ class FormBuilder {
           <input type="file" class="input-q-image-file" accept="image/*" style="display:none;">
         </div>
         <div class="q-type-select-wrap">
+          <button type="button" class="btn-q-icon q-toggle-collapse" title="Lipat Pertanyaan Ini">
+            <i data-lucide="chevron-up"></i>
+          </button>
           <select class="select-q-type">
             <option value="text" ${q.type === 'text' ? 'selected' : ''}>Teks Singkat</option>
             <option value="paragraph" ${q.type === 'paragraph' ? 'selected' : ''}>Paragraf</option>
@@ -894,6 +1034,30 @@ class FormBuilder {
 
     // Attach Drag and Drop handlers
     this.attachDragEvents(card, q.id);
+
+    
+    // Question Collapse / Expand Events
+    card.querySelectorAll('.q-toggle-collapse').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (this.collapsedQuestions.has(q.id)) {
+          this.collapsedQuestions.delete(q.id);
+        } else {
+          this.collapsedQuestions.add(q.id);
+        }
+        this.renderQuestions();
+      });
+    });
+
+    // Clicking anywhere on collapsed card expands it
+    card.addEventListener('click', (e) => {
+      if (this.collapsedQuestions.has(q.id)) {
+        if (!e.target.closest('.delete') && !e.target.closest('.duplicate') && !e.target.closest('.card-drag-handle-mini')) {
+          this.collapsedQuestions.delete(q.id);
+          this.renderQuestions();
+        }
+      }
+    });
 
     // Attach local card event listeners
     const titleInput = card.querySelector('.input-q-title');

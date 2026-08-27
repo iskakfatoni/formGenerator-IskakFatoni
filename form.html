@@ -253,6 +253,27 @@
             </div>
           </div>
 
+          
+          <!-- Quick Structure Toolbar (Collapse / Expand All) -->
+          <div class="builder-structure-toolbar" id="builder-structure-toolbar">
+            <div class="toolbar-info">
+              <span class="summary-pill" id="builder-structure-summary">
+                <i data-lucide="layers"></i>
+                <span id="builder-stats-count-text">Memuat struktur formulir...</span>
+              </span>
+            </div>
+            <div class="toolbar-buttons">
+              <button type="button" class="btn-toolbar-toggle" id="btn-toggle-all-questions" title="Lipat atau buka seluruh pertanyaan">
+                <i data-lucide="chevrons-up-down"></i>
+                <span id="btn-toggle-all-q-text">Lipat Semua Soal</span>
+              </button>
+              <button type="button" class="btn-toolbar-toggle" id="btn-toggle-all-sections" title="Lipat atau buka seluruh bagian/halaman">
+                <i data-lucide="folder-tree"></i>
+                <span id="btn-toggle-all-sec-text">Lipat Semua Bagian</span>
+              </button>
+            </div>
+          </div>
+
           <!-- Dynamic Questions & Sections List Container -->
           <div id="questions-container" class="questions-list">
             <!-- Questions and Sections rendered via JS -->
