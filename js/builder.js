@@ -929,6 +929,13 @@ class FormBuilder {
         this.switchTab('questions');
       });
     }
+    const tabTheme = document.getElementById('tab-btn-theme');
+    if (tabTheme) {
+      tabTheme.addEventListener('click', () => {
+        this.switchTab('theme');
+      });
+    }
+
     const tabSettings = document.getElementById('tab-btn-settings');
     if (tabSettings) {
       tabSettings.addEventListener('click', () => {
@@ -1032,16 +1039,20 @@ class FormBuilder {
 
   switchTab(tab) {
     const tabQuestions = document.getElementById('tab-btn-questions');
+    const tabTheme = document.getElementById('tab-btn-theme');
     const tabSettings = document.getElementById('tab-btn-settings');
     const tabFlowchart = document.getElementById('tab-btn-flowchart');
     const panelQuestions = document.getElementById('builder-panel-questions');
+    const panelTheme = document.getElementById('builder-panel-theme');
     const panelSettings = document.getElementById('builder-panel-settings');
     const panelFlowchart = document.getElementById('builder-panel-flowchart');
 
     if (tabQuestions) tabQuestions.classList.toggle('active', tab === 'questions');
+    if (tabTheme) tabTheme.classList.toggle('active', tab === 'theme');
     if (tabSettings) tabSettings.classList.toggle('active', tab === 'settings');
     if (tabFlowchart) tabFlowchart.classList.toggle('active', tab === 'flowchart');
     if (panelQuestions) panelQuestions.classList.toggle('active', tab === 'questions');
+    if (panelTheme) panelTheme.classList.toggle('active', tab === 'theme');
     if (panelSettings) panelSettings.classList.toggle('active', tab === 'settings');
     if (panelFlowchart) panelFlowchart.classList.toggle('active', tab === 'flowchart');
 
