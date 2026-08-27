@@ -117,6 +117,8 @@ class App {
       if (this.builder) {
         if (param === 'template-biodata') {
           this.builder.loadStudentBioTemplate();
+        } else if (param === 'template-whatsapp-pendataan' || param === 'template-wa') {
+          this.builder.loadWhatsAppSurveyTemplate();
         } else {
           this.builder.loadForm(param);
         }
