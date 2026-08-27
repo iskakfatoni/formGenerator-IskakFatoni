@@ -10,20 +10,23 @@ class ResponsesDashboard {
     this.responses = [];
     this.filteredResponses = [];
 
-    // DOM Elements
-    this.titleEl = document.getElementById('responses-form-title');
-    this.subtitleEl = document.getElementById('responses-subtitle');
-    this.statTotal = document.getElementById('stat-resp-total');
-    this.statLatest = document.getElementById('stat-resp-latest');
-    this.statRate = document.getElementById('stat-resp-rate');
+    // DOM Elements with fallback support & null-safety
+    this.titleEl = document.getElementById('resp-page-title') || document.getElementById('responses-form-title');
+    this.subtitleEl = document.getElementById('resp-page-subtitle') || document.getElementById('responses-subtitle');
+    this.statTotal = document.getElementById('resp-stat-total') || document.getElementById('stat-resp-total');
+    this.statLatest = document.getElementById('resp-stat-latest') || document.getElementById('stat-resp-latest');
+    this.statRate = document.getElementById('resp-stat-rate') || document.getElementById('stat-resp-rate');
 
-    this.searchInput = document.getElementById('input-search-responses');
+    this.searchInput = document.getElementById('resp-search-input') || document.getElementById('input-search-responses');
     this.tableHead = document.getElementById('responses-table-head');
     this.tableBody = document.getElementById('responses-table-body');
-    this.emptyTable = document.getElementById('table-empty-state');
+    this.emptyTable = document.getElementById('responses-empty-table') || document.getElementById('table-empty-state');
 
     this.btnExportExcel = document.getElementById('btn-export-excel');
     this.btnExportCsv = document.getElementById('btn-export-csv');
+    this.btnClearAll = document.getElementById('btn-clear-all-responses');
+    this.btnShare = document.getElementById('btn-copy-form-share');
+    this.btnEditForm = document.getElementById('btn-edit-form-from-resp');
 
     this.initEvents();
   }
@@ -93,6 +96,48 @@ class ResponsesDashboard {
         this.exportToCsv();
       });
     }
+
+    if (this.btnClearAll) {
+      this.btnClearAll.addEventListener('click', async () => {
+        if (!this.currentForm || this.responses.length === 0) {
+          if (window.app) window.app.showToast('Tidak ada respon untuk dihapus', 'info');
+          return;
+        }
+        if (confirm('Apakah Anda yakin ingin menghapus seluruh data respon pada formulir ini? Tindakan ini tidak dapat dibatalkan.')) {
+          try {
+            for (const resp of this.responses) {
+              if (resp.id && window.formStorage) {
+                await window.formStorage.deleteResponse(resp.id);
+              }
+            }
+            this.responses = [];
+            this.filteredResponses = [];
+            this.renderStats();
+            this.renderTable();
+            if (window.app) window.app.showToast('Seluruh respon berhasil dibersihkan', 'success');
+          } catch(err) {
+            console.error('Clear responses error:', err);
+            if (window.app) window.app.showToast('Gagal menghapus respon: ' + err.message, 'error');
+          }
+        }
+      });
+    }
+
+    if (this.btnShare) {
+      this.btnShare.addEventListener('click', () => {
+        if (this.currentForm && window.app && typeof window.app.openShareModal === 'function') {
+          window.app.openShareModal(this.currentForm.id, this.currentForm.title);
+        }
+      });
+    }
+
+    if (this.btnEditForm) {
+      this.btnEditForm.addEventListener('click', () => {
+        if (this.currentForm && this.currentForm.id) {
+          window.location.hash = '#/builder/' + this.currentForm.id;
+        }
+      });
+    }
   }
 
   async loadResponses(formId) {
@@ -101,15 +146,25 @@ class ResponsesDashboard {
       return;
     }
 
+    // Refresh DOM element bindings when view opens
+    this.titleEl = document.getElementById('resp-page-title') || document.getElementById('responses-form-title');
+    this.subtitleEl = document.getElementById('resp-page-subtitle') || document.getElementById('responses-subtitle');
+    this.statTotal = document.getElementById('resp-stat-total') || document.getElementById('stat-resp-total');
+    this.statLatest = document.getElementById('resp-stat-latest') || document.getElementById('stat-resp-latest');
+    this.statRate = document.getElementById('resp-stat-rate') || document.getElementById('stat-resp-rate');
+    this.tableHead = document.getElementById('responses-table-head');
+    this.tableBody = document.getElementById('responses-table-body');
+    this.emptyTable = document.getElementById('responses-empty-table') || document.getElementById('table-empty-state');
+
     const form = await window.formStorage.getForm(formId);
     if (!form) {
-      window.app.showToast('Formulir tidak ditemukan', 'error');
+      if (window.app) window.app.showToast('Formulir tidak ditemukan', 'error');
       window.location.hash = '#/dashboard';
       return;
     }
 
     this.currentForm = form;
-    this.titleEl.textContent = form.title || 'Ringkasan Respon';
+    if (this.titleEl) this.titleEl.textContent = form.title || 'Ringkasan Respon';
 
     // Load responses
     this.responses = await window.formStorage.getResponsesByFormId(formId);
@@ -121,62 +176,75 @@ class ResponsesDashboard {
 
   renderStats() {
     const count = this.responses.length;
-    this.subtitleEl.textContent = `${count} Tanggapan`;
-    this.statTotal.textContent = count;
+    if (this.subtitleEl) this.subtitleEl.textContent = count + ' Tanggapan';
+    if (this.statTotal) this.statTotal.textContent = count;
 
     if (count > 0 && this.responses[0].submittedAt) {
       const date = new Date(this.responses[0].submittedAt);
-      this.statLatest.textContent = date.toLocaleDateString('id-ID', {
-        day: 'numeric',
-        month: 'short',
-        hour: '2-digit',
-        minute: '2-digit'
-      });
+      if (this.statLatest) {
+        this.statLatest.textContent = date.toLocaleDateString('id-ID', {
+          day: 'numeric',
+          month: 'short',
+          hour: '2-digit',
+          minute: '2-digit'
+        });
+      }
     } else {
-      this.statLatest.textContent = '-';
+      if (this.statLatest) this.statLatest.textContent = '-';
     }
 
-    this.statRate.textContent = this.currentForm.isActive !== false ? 'Aktif' : 'Nonaktif';
+    if (this.statRate) {
+      this.statRate.textContent = (this.currentForm && this.currentForm.isActive !== false) ? 'Aktif' : 'Nonaktif';
+    }
   }
 
   renderTable() {
     const form = this.currentForm;
+    if (!form) return;
+
+    if (!this.tableHead) this.tableHead = document.getElementById('responses-table-head');
+    if (!this.tableBody) this.tableBody = document.getElementById('responses-table-body');
+    if (!this.emptyTable) this.emptyTable = document.getElementById('responses-empty-table') || document.getElementById('table-empty-state');
+
     const questions = form.questions || [];
     const columns = this.getConsolidatedColumns(questions);
     const hasEmail = form.collectEmail || this.responses.some(r => !!r.respondentEmail || !!(r.answers && r.answers._respondent_email));
 
     // 1. Render Table Headers
-    let headHtml = `
-      <tr>
-        <th style="width: 50px;">#</th>
-        <th style="min-width: 150px;">Waktu Kirim</th>
-        ${hasEmail ? '<th style="min-width: 180px;">Email Responden</th>' : ''}
-    `;
+    let headHtml = '<tr><th style="width: 50px;">#</th><th style="min-width: 150px;">Waktu Kirim</th>' + (hasEmail ? '<th style="min-width: 180px;">Email Responden</th>' : '');
 
     columns.forEach(col => {
-      headHtml += `<th title="${this.escapeHtml(col.title)}">${this.escapeHtml(col.title)}</th>`;
+      headHtml += '<th title="' + this.escapeHtml(col.title) + '">' + this.escapeHtml(col.title) + '</th>';
     });
 
-    headHtml += `</tr>`;
-    this.tableHead.innerHTML = headHtml;
+    headHtml += '</tr>';
+    if (this.tableHead) {
+      this.tableHead.innerHTML = headHtml;
+    }
 
     // 2. Render Rows
     this.renderTableRows();
   }
 
   renderTableRows() {
-    const questions = this.currentForm.questions || [];
+    const form = this.currentForm;
+    if (!form) return;
+
+    if (!this.tableBody) this.tableBody = document.getElementById('responses-table-body');
+    if (!this.emptyTable) this.emptyTable = document.getElementById('responses-empty-table') || document.getElementById('table-empty-state');
+
+    const questions = form.questions || [];
     const columns = this.getConsolidatedColumns(questions);
     const count = this.filteredResponses.length;
-    const hasEmail = this.currentForm.collectEmail || this.responses.some(r => !!r.respondentEmail || !!(r.answers && r.answers._respondent_email));
+    const hasEmail = form.collectEmail || this.responses.some(r => !!r.respondentEmail || !!(r.answers && r.answers._respondent_email));
 
     if (count === 0) {
-      this.tableBody.innerHTML = '';
-      this.emptyTable.classList.remove('hidden');
+      if (this.tableBody) this.tableBody.innerHTML = '';
+      if (this.emptyTable) this.emptyTable.classList.remove('hidden');
       return;
     }
 
-    this.emptyTable.classList.add('hidden');
+    if (this.emptyTable) this.emptyTable.classList.add('hidden');
     let bodyHtml = '';
 
     this.filteredResponses.forEach((resp, index) => {
@@ -190,12 +258,7 @@ class ResponsesDashboard {
 
       const emailStr = resp.respondentEmail || (resp.answers && resp.answers._respondent_email) || '-';
 
-      bodyHtml += `
-        <tr>
-          <td><strong>${index + 1}</strong></td>
-          <td style="color: var(--text-secondary); font-size: 0.85rem;">${dateStr}</td>
-          ${hasEmail ? `<td style="font-weight: 500; color: #818cf8;">${this.escapeHtml(emailStr)}</td>` : ''}
-      `;
+      bodyHtml += '<tr><td><strong>' + (index + 1) + '</strong></td><td style="color: var(--text-secondary); font-size: 0.85rem;">' + dateStr + '</td>' + (hasEmail ? '<td style="font-weight: 500; color: #818cf8;">' + this.escapeHtml(emailStr) + '</td>' : '');
 
       columns.forEach(col => {
         let ans = null;
@@ -221,13 +284,8 @@ class ResponsesDashboard {
               try { locObj = JSON.parse(locObj); } catch(e){}
             }
             if (locObj && typeof locObj === 'object' && locObj.lat) {
-              const mapsUrl = locObj.mapsUrl || `https://www.google.com/maps?q=${locObj.lat},${locObj.lng}`;
-              displayVal = `
-                <a href="${mapsUrl}" target="_blank" class="table-gps-link" title="Buka Titik Rumah di Google Maps">
-                  <i data-lucide="map-pin"></i>
-                  <span>${locObj.lat.toFixed(5)}, ${locObj.lng.toFixed(5)}</span>
-                </a>
-              `;
+              const mapsUrl = locObj.mapsUrl || ('https://www.google.com/maps?q=' + locObj.lat + ',' + locObj.lng);
+              displayVal = '<a href="' + mapsUrl + '" target="_blank" class="table-gps-link" title="Buka Titik Rumah di Google Maps"><i data-lucide="map-pin"></i><span>' + locObj.lat.toFixed(5) + ', ' + locObj.lng.toFixed(5) + '</span></a>';
             } else {
               displayVal = this.escapeHtml(String(ans));
             }
@@ -240,43 +298,30 @@ class ResponsesDashboard {
             let name = typeof fileObj === 'object' ? (fileObj.name || fileObj.fileName || 'Berkas Google Drive') : String(fileObj);
             
             if (url) {
-              displayVal = `
-                <a href="${this.escapeHtml(url)}" target="_blank" class="btn btn-secondary btn-xs" style="color: #10b981; border-color: rgba(16, 185, 129, 0.3); font-weight: 500;" title="Buka berkas di Google Drive (${this.escapeHtml(name)})">
-                  <i data-lucide="hard-drive" style="width:13px; height:13px;"></i>
-                  <span>${this.escapeHtml(name.length > 20 ? name.substring(0, 18) + '...' : name)}</span>
-                </a>
-              `;
+              displayVal = '<a href="' + this.escapeHtml(url) + '" target="_blank" class="btn btn-secondary btn-xs" style="color: #10b981; border-color: rgba(16, 185, 129, 0.3); font-weight: 500;" title="Buka berkas di Google Drive (' + this.escapeHtml(name) + ')"><i data-lucide="hard-drive" style="width:13px; height:13px;"></i><span>' + this.escapeHtml(name.length > 20 ? name.substring(0, 18) + '...' : name) + '</span></a>';
             } else {
-              displayVal = `📁 ${this.escapeHtml(name)}`;
+              displayVal = '📁 ' + this.escapeHtml(name);
             }
           } else if (activeQ.type === 'file') {
-            displayVal = `
-              <a href="${this.escapeHtml(String(ans))}" target="_blank" class="btn btn-ghost btn-xs" style="color: var(--primary); text-decoration: underline;" title="Buka / Unduh Foto">
-                <i data-lucide="image" style="width:13px; height:13px;"></i>
-                <span>Lihat Foto</span>
-              </a>
-            `;
+            displayVal = '<a href="' + this.escapeHtml(String(ans)) + '" target="_blank" class="btn btn-ghost btn-xs" style="color: var(--primary); text-decoration: underline;" title="Buka / Unduh Foto"><i data-lucide="image" style="width:13px; height:13px;"></i><span>Lihat Foto</span></a>';
           } else if (activeQ.type === 'signature') {
-            displayVal = `
-              <a href="${this.escapeHtml(String(ans))}" target="_blank" class="btn btn-ghost btn-xs" style="color: var(--primary); text-decoration: underline;" title="Lihat Gambar Tanda Tangan">
-                <i data-lucide="pen-tool" style="width:13px; height:13px;"></i>
-                <span>Lihat TTD</span>
-              </a>
-            `;
+            displayVal = '<a href="' + this.escapeHtml(String(ans)) + '" target="_blank" class="btn btn-ghost btn-xs" style="color: var(--primary); text-decoration: underline;" title="Lihat Gambar Tanda Tangan"><i data-lucide="pen-tool" style="width:13px; height:13px;"></i><span>Lihat TTD</span></a>';
           } else if (activeQ.type === 'rating') {
-            displayVal = `⭐ ${ans} / 5`;
+            displayVal = '⭐ ' + ans + ' / 5';
           } else {
             displayVal = this.escapeHtml(String(ans));
           }
         }
 
-        bodyHtml += `<td title="${this.escapeHtml(typeof ans === 'object' ? JSON.stringify(ans) : String(ans || ''))}">${displayVal}</td>`;
+        bodyHtml += '<td title="' + this.escapeHtml(typeof ans === 'object' ? JSON.stringify(ans) : String(ans || '')) + '">' + displayVal + '</td>';
       });
 
-      bodyHtml += `</tr>`;
+      bodyHtml += '</tr>';
     });
 
-    this.tableBody.innerHTML = bodyHtml;
+    if (this.tableBody) {
+      this.tableBody.innerHTML = bodyHtml;
+    }
     if (window.lucide) {
       window.lucide.createIcons();
     }
@@ -296,7 +341,7 @@ class ResponsesDashboard {
     columns.forEach(col => headers.push(col.title));
 
     const rows = [];
-    rows.push(headers.map(h => `"${h.replace(/"/g, '""')}"`).join(','));
+    rows.push(headers.map(h => '"' + h.replace(/"/g, '""') + '"').join(','));
 
     this.responses.forEach((resp, idx) => {
       const row = [];
@@ -326,10 +371,11 @@ class ResponsesDashboard {
         }
       });
 
-      rows.push(row.map(v => `"${String(v).replace(/"/g, '""')}"`).join(','));
+      rows.push(row.map(v => '"' + String(v).replace(/"/g, '""') + '"').join(','));
     });
 
-    const csvContent = 'data:text/csv;charset=utf-8,\uFEFF' + rows.join('\n');
+    const csvContent = 'data:text/csv;charset=utf-8,﻿' + rows.join('
+');
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement('a');
     link.setAttribute('href', encodedUri);
