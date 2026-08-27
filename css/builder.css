@@ -941,9 +941,9 @@ input:checked + .slider:before {
   position: relative;
   width: calc(100% + 48px);
   margin: -28px -24px 20px -24px;
-  min-height: 150px;
-  max-height: 320px;
-  aspect-ratio: 16 / 6;
+  min-height: 120px;
+  max-height: 220px;
+  aspect-ratio: 4 / 1;
   overflow: hidden;
   border-bottom: 1px solid var(--border-color);
   background: var(--bg-secondary);
@@ -1036,9 +1036,9 @@ input:checked + .slider:before {
 
 .banner-preview-img-wrap {
   width: 100%;
-  min-height: 130px;
-  max-height: 240px;
-  aspect-ratio: 16 / 6;
+  min-height: 100px;
+  max-height: 200px;
+  aspect-ratio: 4 / 1;
   overflow: hidden;
   position: relative;
 }
