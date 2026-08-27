@@ -2184,3 +2184,61 @@ h1, h2, h3, h4, h5, h6 {
   font-size: 0.72rem;
   color: var(--text-muted);
 }
+
+
+/* Unified Header Navigation Styles */
+.nav-left-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.builder-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.navbar .builder-tabs {
+  display: flex;
+  gap: 4px;
+  background: rgba(15, 23, 42, 0.5);
+  padding: 3px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-color);
+}
+
+.navbar .builder-tab {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 0.84rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.navbar .builder-tab:hover {
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.navbar .builder-tab.active {
+  background: var(--primary);
+  color: #ffffff;
+  box-shadow: var(--shadow-sm);
+}
+
+@media (max-width: 900px) {
+  .navbar .builder-tab span {
+    display: none;
+  }
+  .navbar .builder-tab {
+    padding: 6px 10px;
+  }
+}
