@@ -2249,99 +2249,119 @@ input:checked + .slider:before {
 
 
 /* ==========================================================================
-   UNIFIED BUILDER TOOLBAR CARD (Above Banner/Header)
+   UNIFIED BUILDER TOOLBAR CARD (Single Harmonious Track)
    ========================================================================== */
 .builder-toolbar-card {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 10px 16px;
+  justify-content: center;
+  padding: 6px 10px;
   margin-bottom: 20px;
-  background: var(--bg-surface);
+  background: rgba(15, 23, 42, 0.65);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-sm);
   position: sticky;
   top: 70px;
   z-index: 85;
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  overflow-x: auto;
 }
 
-.builder-toolbar-left,
-.builder-toolbar-right {
+.builder-toolbar-track {
   display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.builder-toolbar-center {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex: 1;
-}
-
-.builder-tabs-segmented {
-  display: inline-flex;
   align-items: center;
   gap: 4px;
-  background: rgba(15, 23, 42, 0.45);
-  border: 1px solid var(--border-color);
-  padding: 4px;
-  border-radius: 10px;
+  width: 100%;
+  justify-content: space-between;
 }
 
-.builder-tabs-segmented .builder-tab {
+.toolbar-btn {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 6px;
-  padding: 6px 14px;
-  height: 34px;
+  height: 36px;
+  padding: 0 13px;
   border-radius: 8px;
   background: transparent;
-  border: none;
+  border: 1px solid transparent;
   color: var(--text-secondary);
   font-size: 0.85rem;
   font-weight: 500;
+  font-family: inherit;
   cursor: pointer;
   transition: all var(--transition-fast);
   white-space: nowrap;
 }
 
-.builder-tabs-segmented .builder-tab:hover {
+.toolbar-btn:hover {
   color: var(--text-primary);
-  background: rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.07);
+  border-color: rgba(255, 255, 255, 0.08);
 }
 
-.builder-tabs-segmented .builder-tab.active {
+.toolbar-btn i {
+  width: 16px;
+  height: 16px;
+}
+
+/* Active Tab */
+.toolbar-btn.builder-tab.active {
   background: var(--primary);
   color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.2);
   box-shadow: 0 2px 8px rgba(99, 102, 241, 0.35);
   font-weight: 600;
 }
 
-.builder-toolbar-card .btn {
-  height: 36px;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 0 14px;
-  font-size: 0.84rem;
-  font-weight: 500;
-  border-radius: 8px;
-  white-space: nowrap;
+/* Save Action Button */
+.toolbar-btn.btn-save-action {
+  background: var(--primary);
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.15);
+  font-weight: 600;
 }
 
-@media (max-width: 950px) {
-  .builder-toolbar-card {
-    flex-wrap: wrap;
-    justify-content: center;
-  }
-  .builder-toolbar-center {
-    order: 3;
-    width: 100%;
-    margin-top: 8px;
-  }
+.toolbar-btn.btn-save-action:hover {
+  background: var(--primary-hover);
+  box-shadow: 0 2px 8px var(--primary-glow);
+}
+
+/* Preview Action Button */
+.toolbar-btn.btn-preview-action {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: var(--border-color);
+  color: var(--text-primary);
+}
+
+.toolbar-btn.btn-preview-action:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+/* Published / Draft Toggle Button */
+.toolbar-btn.btn-publish-toggle {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: var(--border-color);
+}
+
+.toolbar-btn.btn-publish-toggle.is-published {
+  color: #34d399;
+  background: rgba(16, 185, 129, 0.12);
+  border-color: rgba(16, 185, 129, 0.25);
+}
+
+.toolbar-btn.btn-publish-toggle.is-draft {
+  color: #fbbf24;
+  background: rgba(245, 158, 11, 0.12);
+  border-color: rgba(245, 158, 11, 0.25);
+}
+
+.toolbar-divider {
+  width: 1px;
+  height: 22px;
+  background: rgba(255, 255, 255, 0.12);
+  margin: 0 4px;
+  flex-shrink: 0;
 }

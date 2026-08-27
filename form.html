@@ -195,53 +195,56 @@
     <!-- 2. FORM BUILDER VIEW -->
     <section id="view-builder" class="view-section">
       
-      <!-- Unified Builder Toolbar Card (Di Atas Banner & Judul Form) -->
+      <!-- Unified Builder Toolbar Card (Semua Tombol Menu & Aksi Disatukan & Diseragamkan) -->
       <div class="builder-toolbar-card glass-card">
-        <div class="builder-toolbar-left">
-          <button type="button" class="btn btn-secondary btn-sm" onclick="window.location.hash = '#/dashboard'" title="Kembali ke Dashboard">
+        <div class="builder-toolbar-track">
+          
+          <!-- 1. Back to Dashboard -->
+          <button type="button" class="toolbar-btn btn-back-dashboard" onclick="window.location.hash = '#/dashboard'" title="Kembali ke Dashboard">
             <i data-lucide="arrow-left"></i>
             <span>Dashboard</span>
           </button>
-        </div>
 
-        <div class="builder-toolbar-center">
-          <div class="builder-tabs-segmented">
-            <button type="button" class="builder-tab active" id="tab-btn-questions">
-              <i data-lucide="help-circle"></i>
-              <span>Pertanyaan</span>
-            </button>
-            <button type="button" class="builder-tab" id="tab-btn-theme">
-              <i data-lucide="palette"></i>
-              <span>Theme Builder</span>
-            </button>
-            <button type="button" class="builder-tab" id="tab-btn-settings">
-              <i data-lucide="sliders"></i>
-              <span>Pengaturan</span>
-            </button>
-            <button type="button" class="builder-tab" id="tab-btn-flowchart">
-              <i data-lucide="git-merge"></i>
-              <span>Peta Alur</span>
-            </button>
-            <button type="button" class="builder-tab" id="tab-btn-responses-link" style="display:none;">
-              <i data-lucide="bar-chart-2"></i>
-              <span>Respon (<span id="builder-response-count">0</span>)</span>
-            </button>
-          </div>
-        </div>
+          <div class="toolbar-divider"></div>
 
-        <div class="builder-toolbar-right">
-          <button type="button" class="btn btn-sm btn-publish-toggle is-published" id="btn-toggle-publish" title="Status Publikasi Form">
+          <!-- 2. The 5 Main Menu Tabs -->
+          <button type="button" class="toolbar-btn builder-tab active" id="tab-btn-questions">
+            <i data-lucide="help-circle"></i>
+            <span>Pertanyaan</span>
+          </button>
+          <button type="button" class="toolbar-btn builder-tab" id="tab-btn-theme">
+            <i data-lucide="palette"></i>
+            <span>Theme Builder</span>
+          </button>
+          <button type="button" class="toolbar-btn builder-tab" id="tab-btn-settings">
+            <i data-lucide="sliders"></i>
+            <span>Pengaturan</span>
+          </button>
+          <button type="button" class="toolbar-btn builder-tab" id="tab-btn-flowchart">
+            <i data-lucide="git-merge"></i>
+            <span>Peta Alur</span>
+          </button>
+          <button type="button" class="toolbar-btn builder-tab" id="tab-btn-responses-link" style="display:none;">
+            <i data-lucide="bar-chart-2"></i>
+            <span>Respon (<span id="builder-response-count">0</span>)</span>
+          </button>
+
+          <div class="toolbar-divider"></div>
+
+          <!-- 3. The 3 Form Action Controls (Published, Preview, Save) -->
+          <button type="button" class="toolbar-btn btn-publish-toggle is-published" id="btn-toggle-publish" title="Status Publikasi Form">
             <span class="publish-dot"></span>
             <span id="btn-publish-label">Published</span>
           </button>
-          <button type="button" class="btn btn-secondary btn-sm" id="btn-preview-form" title="Lihat Tampilan Responden">
+          <button type="button" class="toolbar-btn btn-preview-action" id="btn-preview-form" title="Lihat Tampilan Responden">
             <i data-lucide="eye"></i>
             <span>Preview</span>
           </button>
-          <button type="button" class="btn btn-primary btn-sm" id="btn-save-form" title="Simpan Formulir">
+          <button type="button" class="toolbar-btn btn-save-action" id="btn-save-form" title="Simpan Formulir">
             <i data-lucide="save"></i>
             <span>Simpan</span>
           </button>
+
         </div>
       </div>
 
