@@ -74,6 +74,10 @@ class FormStorage {
     return allLocal;
   }
 
+  async getForm(id) {
+    return this.getFormById(id);
+  }
+
   async getFormById(id) {
     if (this.isCloud) {
       try {
@@ -216,6 +220,20 @@ class FormStorage {
     return responses
       .filter(r => r.formId === formId)
       .sort((a, b) => new Date(b.submittedAt) - new Date(a.submittedAt));
+  }
+
+  async deleteResponse(responseId) {
+    if (this.isCloud) {
+      try {
+        await this.db.collection('responses').doc(responseId).delete();
+      } catch (err) {
+        console.error('Error delete response di Firestore:', err);
+      }
+    }
+    let responses = this.getLocalResponses();
+    responses = responses.filter(r => r.id !== responseId);
+    localStorage.setItem(this.LOCAL_RESPONSES_KEY, JSON.stringify(responses));
+    return true;
   }
 
   async clearResponsesByFormId(formId) {

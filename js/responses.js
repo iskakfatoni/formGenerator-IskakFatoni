@@ -105,9 +105,13 @@ class ResponsesDashboard {
         }
         if (confirm('Apakah Anda yakin ingin menghapus seluruh data respon pada formulir ini? Tindakan ini tidak dapat dibatalkan.')) {
           try {
-            for (const resp of this.responses) {
-              if (resp.id && window.formStorage) {
-                await window.formStorage.deleteResponse(resp.id);
+            if (window.formStorage && typeof window.formStorage.clearResponsesByFormId === 'function') {
+              await window.formStorage.clearResponsesByFormId(this.currentForm.id);
+            } else {
+              for (const resp of this.responses) {
+                if (resp.id && window.formStorage) {
+                  await window.formStorage.deleteResponse(resp.id);
+                }
               }
             }
             this.responses = [];
@@ -160,7 +164,7 @@ class ResponsesDashboard {
     this.tableBody = document.getElementById('responses-table-body');
     this.emptyTable = document.getElementById('responses-empty-table') || document.getElementById('table-empty-state');
 
-    const form = await window.formStorage.getForm(formId);
+    const form = window.formStorage.getFormById ? await window.formStorage.getFormById(formId) : await window.formStorage.getForm(formId);
     if (!form) {
       if (window.app) window.app.showToast('Formulir tidak ditemukan', 'error');
       window.location.hash = '#/dashboard';
