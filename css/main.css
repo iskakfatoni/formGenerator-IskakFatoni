@@ -2291,15 +2291,26 @@ body.responder-mode #main-nav {
 
 
 /* Maximize Screen Width for Responses & Flowchart Viewports */
-body.mode-responses .container,
-body:has(#builder-panel-flowchart.active) .container {
+body.mode-responses .container {
   max-width: 98vw !important;
   width: 98vw !important;
-  padding-left: 12px !important;
-  padding-right: 12px !important;
+  padding-left: 14px !important;
+  padding-right: 14px !important;
 }
 
 #view-responses {
   width: 100% !important;
   max-width: 100% !important;
+}
+
+.responses-table-card {
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+.response-stats-row,
+.responses-topbar {
+  max-width: 1200px;
+  margin-left: auto;
+  margin-right: auto;
 }

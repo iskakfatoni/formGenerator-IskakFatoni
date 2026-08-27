@@ -2255,9 +2255,11 @@ input:checked + .slider:before {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 6px 10px;
-  margin-bottom: 20px;
-  background: rgba(15, 23, 42, 0.65);
+  padding: 5px 8px;
+  margin: 0 auto 20px auto;
+  width: fit-content;
+  max-width: 100%;
+  background: rgba(15, 23, 42, 0.75);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-sm);
@@ -2402,6 +2404,37 @@ input:checked + .slider:before {
 }
 
 .toolbar-btn {
-  flex: 1 1 auto;
+  flex: 0 0 auto;
   text-align: center;
+  padding: 0 12px;
+}
+
+
+/* When Flowchart Panel is Active, expand its container width to full available screen */
+.builder-body-container:has(#builder-panel-flowchart.active) {
+  max-width: 98vw !important;
+  width: 100% !important;
+}
+
+#builder-panel-flowchart.active {
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+.flowchart-header-card {
+  width: 100% !important;
+  box-sizing: border-box;
+}
+
+.flowchart-graph-viewport {
+  width: 100% !important;
+  min-height: 78vh !important;
+  height: 78vh !important;
+  border-radius: var(--radius-lg);
+  box-sizing: border-box;
+}
+
+.flowchart-graph-canvas {
+  min-width: 3800px !important;
+  min-height: 2800px !important;
 }
