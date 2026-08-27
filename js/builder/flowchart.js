@@ -1,6 +1,6 @@
 /**
  * FORMCRAFT - 2D Interactive Flowchart & Bezier Wiring Engine
- * Streamlined 2D node graph with consolidated branch targets (no redundant option bloat).
+ * With explicit Stage grouping (Mulai / Tahap 1, Tahap 2, Tahap 3, Selesai / Kirim).
  */
 
 window.BuilderFlowchart = {
@@ -43,33 +43,56 @@ window.BuilderFlowchart = {
       return;
     }
 
-    // Grid layout with compact card height
+    // Grid layout configuration with Stage Columns
     const cardWidth = 340;
     const colGap = 110;
-    const rowGap = 50;
+    const rowGap = 55;
+    const stageHeaderHeight = 65;
     const cols = 3;
 
-    const colHeights = Array(cols).fill(40);
+    const colHeights = Array(cols).fill(stageHeaderHeight + 20);
 
-    // 1. Render Section Nodes
+    // Stage Column Labels
+    const stageTitles = [
+      { num: 1, icon: 'play', title: 'Mulai / Tahap 1: Awal Formulir', pillClass: 'stage-pill-1' },
+      { num: 2, icon: 'git-branch', title: 'Tahap 2: Percabangan & Data', pillClass: 'stage-pill-2' },
+      { num: 3, icon: 'layers', title: 'Tahap 3: Lanjutan & Kontak', pillClass: 'stage-pill-3' }
+    ];
+
+    // 1. Render Stage Column Header Lanes across top of canvas
+    for (let c = 0; c < cols; c++) {
+      const stageHeader = document.createElement('div');
+      stageHeader.className = 'flowchart-stage-header';
+      stageHeader.style.left = `${50 + c * (cardWidth + colGap)}px`;
+      stageHeader.style.width = `${cardWidth}px`;
+      stageHeader.innerHTML = `
+        <div class="stage-header-pill ${stageTitles[c].pillClass}">
+          <i data-lucide="${stageTitles[c].icon}"></i>
+          <span>${stageTitles[c].title}</span>
+        </div>
+      `;
+      nodesLayer.appendChild(stageHeader);
+    }
+
+    // 2. Render Section Nodes grouped into stages
     sections.forEach((sec, idx) => {
       const col = idx % cols;
+      const stageNum = col + 1;
       const posX = 50 + col * (cardWidth + colGap);
       const posY = colHeights[col];
 
-      const nodeEl = this.createSectionNode(sec, idx, sections, questions, builderInstance, posX, posY);
+      const nodeEl = this.createSectionNode(sec, idx, sections, questions, builderInstance, posX, posY, stageNum);
       nodesLayer.appendChild(nodeEl);
 
-      // Compact height estimation
       const secQuestions = questions.filter(q => q.sectionId === sec.id);
       const uniqueTargets = this.getSectionUniqueBranches(sec, secQuestions);
       const branchCount = uniqueTargets.length;
 
-      const estimatedHeight = 150 + (branchCount * 36);
+      const estimatedHeight = 160 + (branchCount * 38);
       colHeights[col] += estimatedHeight + rowGap;
     });
 
-    // 2. Render Submit Terminal Node
+    // 3. Render Submit Terminal Node (Tahap Selesai / Kirim)
     const submitCol = (sections.length) % cols;
     const submitPosX = 50 + submitCol * (cardWidth + colGap);
     const submitPosY = colHeights[submitCol] + 20;
@@ -82,7 +105,7 @@ window.BuilderFlowchart = {
     submitTerminal.innerHTML = `
       <div class="graph-node-port-in green"></div>
       <div class="graph-node-top">
-        <span class="graph-node-badge badge-green"><i data-lucide="check-circle-2"></i> Selesai</span>
+        <span class="graph-node-badge stage-finish"><i data-lucide="check-circle-2"></i> Tahap Selesai / Kirim</span>
       </div>
       <div class="graph-node-body">
         <h4 class="graph-node-title">🚀 Kirim & Simpan Formulir</h4>
@@ -96,15 +119,12 @@ window.BuilderFlowchart = {
     canvas.style.minHeight = `${submitPosY + 350}px`;
     canvas.style.minWidth = `${50 + cols * (cardWidth + colGap) + 500}px`;
 
-    // 3. Draw All Clean Wires
+    // 4. Draw All Connecting Wires
     setTimeout(() => {
       this.drawWires(svgLayer, canvas, sections, questions);
     }, 80);
   },
 
-  /**
-   * Extracts clean unique branch destinations for a section (consolidating multiple options)
-   */
   getSectionUniqueBranches(sec, secQuestions) {
     const branches = [];
     secQuestions.forEach(q => {
@@ -125,8 +145,7 @@ window.BuilderFlowchart = {
             questionTitle: q.title || 'Pilihan',
             targetId: targetId,
             optionCount: targetMap[targetId].length,
-            sampleText: targetMap[targetId][0],
-            allOptions: targetMap[targetId]
+            sampleText: targetMap[targetId][0]
           });
         });
       }
@@ -134,7 +153,7 @@ window.BuilderFlowchart = {
     return branches;
   },
 
-  createSectionNode(sec, secIdx, sections, questions, builderInstance, posX, posY) {
+  createSectionNode(sec, secIdx, sections, questions, builderInstance, posX, posY, stageNum) {
     const node = document.createElement('div');
     node.className = `graph-node-card ${secIdx === 0 ? 'start-node' : ''}`;
     node.id = `graph-node-${sec.id}`;
@@ -158,7 +177,6 @@ window.BuilderFlowchart = {
           targetLabel = targetSec ? `Bagian ${targetSecIdx + 1}: ${targetSec.title || 'Tanpa Judul'}` : b.targetId;
         }
 
-        // Consolidated clean label: if many options (e.g. > 1), show count summary instead of bloating card
         let displayText = '';
         if (b.optionCount > 1) {
           displayText = `${b.optionCount} Opsi Pilihan &rarr; <strong>${builderInstance.escapeHtml(targetLabel)}</strong>`;
@@ -202,10 +220,18 @@ window.BuilderFlowchart = {
       }
     }
 
+    let stageBadgeText = '';
+    let stageClass = `stage-${stageNum}`;
+    if (secIdx === 0) {
+      stageBadgeText = 'Mulai (Tahap 1)';
+    } else {
+      stageBadgeText = `Tahap ${stageNum} • Bagian ${secIdx + 1}`;
+    }
+
     node.innerHTML = `
       ${secIdx > 0 ? '<div class="graph-node-port-in"></div>' : ''}
       <div class="graph-node-top">
-        <span class="graph-node-badge">${secIdx === 0 ? 'Mulai (Bagian 1)' : `Bagian ${secIdx + 1}`}</span>
+        <span class="graph-node-badge ${stageClass}">${stageBadgeText}</span>
         <span class="graph-node-q-count"><i data-lucide="help-circle"></i> ${secQuestions.length} Soal</span>
       </div>
       <div class="graph-node-body">
@@ -234,7 +260,7 @@ window.BuilderFlowchart = {
       const secQuestions = questions.filter(q => q.sectionId === sec.id);
       const uniqueBranches = this.getSectionUniqueBranches(sec, secQuestions);
 
-      // 1. Draw 1 Clean Wire per Unique Branch Destination (Consolidated)
+      // 1. Option-Level Branch Wires (Cyan / Green)
       uniqueBranches.forEach((b) => {
         const fromPort = document.getElementById(`port-out-${sec.id}-${b.questionId}-${b.targetId}`);
         let toNode = null;
@@ -252,7 +278,7 @@ window.BuilderFlowchart = {
         }
       });
 
-      // 2. Section-Level Default Navigation Wire
+      // 2. Section Default Navigation Wire (Purple / Green)
       const fromDefault = document.getElementById(`port-default-${sec.id}`);
       const rawNext = sec.nextSectionId || 'next';
 

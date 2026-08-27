@@ -2835,3 +2835,68 @@ input:checked + .slider:before {
   background: #10b981 !important;
   box-shadow: 0 0 8px #10b981 !important;
 }
+
+
+/* Stage Column Lane Headers */
+.flowchart-stage-header {
+  position: absolute !important;
+  top: 15px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  z-index: 12 !important;
+  pointer-events: none !important;
+}
+
+.stage-header-pill {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  padding: 6px 16px !important;
+  border-radius: 9999px !important;
+  font-size: 0.78rem !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.5px !important;
+  backdrop-filter: blur(10px) !important;
+  -webkit-backdrop-filter: blur(10px) !important;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4) !important;
+}
+
+.stage-pill-1 {
+  background: rgba(16, 185, 129, 0.18) !important;
+  border: 1.5px solid rgba(16, 185, 129, 0.5) !important;
+  color: #34d399 !important;
+}
+
+.stage-pill-2 {
+  background: rgba(56, 189, 248, 0.18) !important;
+  border: 1.5px solid rgba(56, 189, 248, 0.5) !important;
+  color: #38bdf8 !important;
+}
+
+.stage-pill-3 {
+  background: rgba(168, 85, 247, 0.18) !important;
+  border: 1.5px solid rgba(168, 85, 247, 0.5) !important;
+  color: #c084fc !important;
+}
+
+/* Stage Badges inside Node Cards */
+.graph-node-badge.stage-1 {
+  background: rgba(16, 185, 129, 0.25) !important;
+  color: #6ee7b7 !important;
+}
+
+.graph-node-badge.stage-2 {
+  background: rgba(56, 189, 248, 0.25) !important;
+  color: #7dd3fc !important;
+}
+
+.graph-node-badge.stage-3 {
+  background: rgba(168, 85, 247, 0.25) !important;
+  color: #d8b4fe !important;
+}
+
+.graph-node-badge.stage-finish {
+  background: rgba(16, 185, 129, 0.3) !important;
+  color: #a7f3d0 !important;
+}
