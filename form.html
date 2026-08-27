@@ -197,52 +197,55 @@
       
       <!-- Unified Builder Toolbar Card (Semua Tombol Menu & Aksi Disatukan & Diseragamkan) -->
       <!-- Unified Builder Toolbar Card (8 Menu Builder Seragam Bersandingan) -->
+      <!-- Unified Builder Toolbar Card (Continuous Row) -->
       <div class="builder-toolbar-card glass-card">
         <div class="builder-toolbar-track">
           
-          <!-- 1. Pertanyaan -->
+          <!-- 1. [ ← Dashboard ] -->
+          <button type="button" class="toolbar-btn btn-back-dashboard" onclick="window.location.hash = '#/dashboard'" title="Kembali ke Dashboard">
+            <i data-lucide="arrow-left"></i>
+            <span>Dashboard</span>
+          </button>
+
+          <!-- 2. Pemisah Garis Vertikal Halus -->
+          <div class="toolbar-divider"></div>
+
+          <!-- 3. [ ❓ Pertanyaan ] [ 🎨 Theme Builder ] [ ⚙️ Pengaturan ] [ 🗺️ Peta Alur ] [ 📊 Respon ] [ 🟢 Published / 🟡 Draft ] [ 👁️ Preview ] [ 💾 Simpan ] -->
           <button type="button" class="toolbar-btn builder-tab active" id="tab-btn-questions" title="Editor Pertanyaan Formulir">
             <i data-lucide="help-circle"></i>
             <span>Pertanyaan</span>
           </button>
 
-          <!-- 2. Theme Builder -->
           <button type="button" class="toolbar-btn builder-tab" id="tab-btn-theme" title="Kustomisasi Tema, Warna, Font & Banner">
             <i data-lucide="palette"></i>
             <span>Theme Builder</span>
           </button>
 
-          <!-- 3. Pengaturan -->
           <button type="button" class="toolbar-btn builder-tab" id="tab-btn-settings" title="Pengaturan Respon, Kuis, dan Integrasi">
             <i data-lucide="sliders"></i>
             <span>Pengaturan</span>
           </button>
 
-          <!-- 4. Peta Alur -->
           <button type="button" class="toolbar-btn builder-tab" id="tab-btn-flowchart" title="Grafis Diagram 2D Peta Alur Percabangan">
             <i data-lucide="git-merge"></i>
             <span>Peta Alur</span>
           </button>
 
-          <!-- 5. Respon -->
           <button type="button" class="toolbar-btn builder-tab" id="tab-btn-responses-link" title="Lihat Data Respon Tanggapan & Rekap">
             <i data-lucide="bar-chart-2"></i>
             <span>Respon (<span id="builder-response-count">0</span>)</span>
           </button>
 
-          <!-- 6. Published / Draft -->
           <button type="button" class="toolbar-btn btn-publish-toggle is-published" id="btn-toggle-publish" title="Klik untuk mengubah status Publikasi Form">
             <span class="publish-dot"></span>
             <span id="btn-publish-label">Published</span>
           </button>
 
-          <!-- 7. Preview -->
           <button type="button" class="toolbar-btn btn-preview-action" id="btn-preview-form" title="Lihat Tampilan Formulir Responden">
             <i data-lucide="eye"></i>
             <span>Preview</span>
           </button>
 
-          <!-- 8. Simpan -->
           <button type="button" class="toolbar-btn btn-save-action" id="btn-save-form" title="Simpan Perubahan Formulir">
             <i data-lucide="save"></i>
             <span>Simpan</span>

@@ -2252,31 +2252,33 @@ input:checked + .slider:before {
    UNIFIED BUILDER TOOLBAR CARD (Single Harmonious Track)
    ========================================================================== */
 .builder-toolbar-card {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 5px 8px;
-  margin: 0 auto 20px auto;
-  width: fit-content;
-  max-width: 100%;
-  background: rgba(15, 23, 42, 0.75);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-sm);
-  position: sticky;
-  top: 70px;
-  z-index: 85;
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  overflow-x: auto;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 5px 8px !important;
+  margin: 0 auto 20px auto !important;
+  width: fit-content !important;
+  max-width: fit-content !important;
+  background: rgba(15, 23, 42, 0.75) !important;
+  border: 1px solid var(--border-color) !important;
+  border-radius: var(--radius-md) !important;
+  box-shadow: var(--shadow-sm) !important;
+  position: sticky !important;
+  top: 70px !important;
+  z-index: 85 !important;
+  backdrop-filter: blur(14px) !important;
+  -webkit-backdrop-filter: blur(14px) !important;
+  overflow-x: auto !important;
 }
 
 .builder-toolbar-track {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  width: 100%;
-  justify-content: space-between;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 4px !important;
+  width: auto !important;
+  flex-shrink: 0 !important;
+  justify-content: center !important;
+  flex-wrap: nowrap !important;
 }
 
 .toolbar-btn {
