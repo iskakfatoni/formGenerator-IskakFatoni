@@ -1495,3 +1495,137 @@ body.responder-mode .container {
     flex-direction: column;
   }
 }
+
+
+/* Modern Interactive Date Picker */
+.live-date-picker-container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+}
+
+.date-input-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-md);
+  padding: 4px 8px;
+  transition: all var(--transition-fast);
+}
+
+.date-input-wrap:focus-within {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+}
+
+.date-icon-box {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  color: var(--primary-color);
+  cursor: pointer;
+  border-radius: 6px;
+  transition: background var(--transition-fast);
+}
+
+.date-icon-box:hover {
+  background: rgba(99, 102, 241, 0.12);
+}
+
+.date-icon-box i {
+  width: 20px;
+  height: 20px;
+}
+
+.date-native-input {
+  flex: 1;
+  border: none !important;
+  background: transparent !important;
+  padding: 8px 4px !important;
+  font-size: 0.95rem;
+  color: var(--text-primary);
+  outline: none;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.date-native-input::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  filter: invert(0.8);
+  opacity: 0.7;
+}
+
+.btn-date-quick-today {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: rgba(99, 102, 241, 0.15);
+  border: 1px solid rgba(99, 102, 241, 0.3);
+  border-radius: 8px;
+  color: #818cf8;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  white-space: nowrap;
+}
+
+.btn-date-quick-today:hover {
+  background: var(--primary-color);
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+
+.btn-date-quick-today i {
+  width: 14px;
+  height: 14px;
+}
+
+.btn-date-clear {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  background: rgba(244, 63, 94, 0.12);
+  border: none;
+  border-radius: 6px;
+  color: #f43f5e;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.btn-date-clear:hover {
+  background: #f43f5e;
+  color: #ffffff;
+}
+
+.btn-date-clear i {
+  width: 14px;
+  height: 14px;
+}
+
+.date-formatted-preview {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba(16, 185, 129, 0.25);
+  border-radius: 8px;
+  color: #34d399;
+  font-size: 0.86rem;
+  font-weight: 500;
+  width: fit-content;
+}
+
+.date-formatted-preview i {
+  width: 16px;
+  height: 16px;
+}

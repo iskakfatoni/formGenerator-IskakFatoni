@@ -1727,7 +1727,13 @@ class FormBuilder {
     } else if (q.type === 'paragraph') {
       optionsHtml = `<div class="text-preview-box">Teks jawaban panjang / paragraf responden...</div>`;
     } else if (q.type === 'date') {
-      optionsHtml = `<div class="text-preview-box">Pilihan Tanggal (DD/MM/YYYY)...</div>`;
+      optionsHtml = `
+        <div class="date-preview-builder-box" style="display: flex; align-items: center; gap: 10px; padding: 10px 14px; background: rgba(15, 23, 42, 0.4); border: 1px dashed rgba(255,255,255,0.15); border-radius: 10px;">
+          <i data-lucide="calendar" style="color: #6366f1; width: 20px; height: 20px;"></i>
+          <span style="font-size: 0.88rem; color: var(--text-secondary); flex: 1;">📅 Interactive Date Picker (Popup Kalender & Tombol "Hari Ini")</span>
+          <span style="font-size: 0.75rem; background: rgba(99, 102, 241, 0.2); color: #818cf8; padding: 3px 8px; border-radius: 6px;">Otomatis Format Indonesia</span>
+        </div>
+      `;
     } else if (q.type === 'time') {
       optionsHtml = `<div class="text-preview-box">Pilihan Waktu (HH:MM)...</div>`;
     } else if (q.type === 'number') {

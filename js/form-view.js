@@ -497,7 +497,25 @@ class FormViewer {
       `;
     } else if (q.type === 'date') {
       inputHtml = `
-        <input type="date" class="live-input-text" name="${qName}">
+        <div class="live-date-picker-container" data-question-id="${q.id}">
+          <div class="date-input-wrap">
+            <div class="date-icon-box" title="Buka Kalender">
+              <i data-lucide="calendar"></i>
+            </div>
+            <input type="date" class="live-input-text date-native-input" name="${qName}">
+            <button type="button" class="btn-date-quick-today" title="Pilih Tanggal Hari Ini">
+              <i data-lucide="calendar-check-2"></i>
+              <span>Hari Ini</span>
+            </button>
+            <button type="button" class="btn-date-clear hidden" title="Hapus Pilihan Tanggal">
+              <i data-lucide="x"></i>
+            </button>
+          </div>
+          <div class="date-formatted-preview hidden">
+            <i data-lucide="check-circle-2"></i>
+            <span class="date-formatted-text">-</span>
+          </div>
+        </div>
       `;
     } else if (q.type === 'location') {
       inputHtml = `
