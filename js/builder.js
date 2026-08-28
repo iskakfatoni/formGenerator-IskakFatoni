@@ -1087,7 +1087,7 @@ class FormBuilder {
         </div>
       </div>
 
-      ${totalSections > 1 && secIdx < totalSections - 1 ? `
+      ${totalSections > 1 ? `
         <div class="section-flow-row ${isCollapsed ? 'is-in-collapsed-sec' : ''}">
           <div class="section-flow-label">
             <i data-lucide="corner-down-right"></i>
@@ -1095,10 +1095,11 @@ class FormBuilder {
           </div>
           <select class="select-section-flow select-styled">
             <option value="next" ${(!sec.nextSectionId || sec.nextSectionId === 'next') ? 'selected' : ''}>Lanjut ke bagian berikutnya (Default)</option>
-            ${this.sections.map((s, sIdx) => `
+            ${this.sections.map((s, sIdx) => s.id !== sec.id ? `
               <option value="${s.id}" ${sec.nextSectionId === s.id ? 'selected' : ''}>Buka Bagian ${sIdx + 1}: ${this.escapeHtml(s.title || 'Tanpa Judul')}</option>
-            `).join('')}
+            ` : '').join('')}
             <option value="submit" ${sec.nextSectionId === 'submit' ? 'selected' : ''}>Kirim formulir (Submit Langsung)</option>
+            <option value="disabled" ${sec.nextSectionId === 'disabled' ? 'selected' : ''}>🚫 Matikan Alur (Nonaktifkan Alur Lanjutan)</option>
           </select>
         </div>
       ` : ''}
@@ -1312,7 +1313,8 @@ class FormBuilder {
                       ${this.sections.map((s, sIdx) => `
                         <option value="${s.id}" ${optNext === s.id ? 'selected' : ''}>Buka Bagian ${sIdx + 1}: ${this.escapeHtml(s.title || 'Tanpa Judul')}</option>
                       `).join('')}
-                      <option value="submit" ${optNext === 'submit' ? 'selected' : ''}>Kirim formulir</option>
+                      <option value="submit" ${optNext === 'submit' ? 'selected' : ''}>Kirim formulir (Submit)</option>
+                      <option value="disabled" ${optNext === 'disabled' ? 'selected' : ''}>🚫 Matikan Alur (Nonaktifkan)</option>
                     </select>
                   </div>
                 ` : ''}

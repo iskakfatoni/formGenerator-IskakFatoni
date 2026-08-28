@@ -167,7 +167,7 @@ window.BuilderFlowchart = {
         if (Array.isArray(q.options)) {
           q.options.forEach(opt => {
             const nextId = typeof opt === 'object' ? (opt.nextSectionId || '') : '';
-            if (nextId && nextId !== 'inherit' && nextId !== 'next' && nextId !== 'submit' && sections.some(s => s.id === nextId)) {
+            if (nextId && nextId !== 'inherit' && nextId !== 'next' && nextId !== 'submit' && nextId !== 'disabled' && sections.some(s => s.id === nextId)) {
               explicitBranchMap[sec.id].add(nextId);
               branchTargetSet.add(nextId);
             }
@@ -187,9 +187,9 @@ window.BuilderFlowchart = {
       });
 
       // Add section-level explicit nextSectionId
-      if (sec.nextSectionId && sec.nextSectionId !== 'inherit' && sec.nextSectionId !== 'next' && sec.nextSectionId !== 'submit' && sections.some(s => s.id === sec.nextSectionId)) {
+      if (sec.nextSectionId && sec.nextSectionId !== 'inherit' && sec.nextSectionId !== 'next' && sec.nextSectionId !== 'submit' && sec.nextSectionId !== 'disabled' && sections.some(s => s.id === sec.nextSectionId)) {
         graph[sec.id].add(sec.nextSectionId);
-      } else if (sec.nextSectionId !== 'submit') {
+      } else if (sec.nextSectionId !== 'submit' && sec.nextSectionId !== 'disabled') {
         // Fallback sequential flow: only add next section in array IF next section is NOT an explicit branch target from elsewhere
         if (idx < sections.length - 1) {
           const nextSec = sections[idx + 1];
@@ -283,8 +283,13 @@ window.BuilderFlowchart = {
       branchHtml = `<div class="node-branches-list">`;
       uniqueBranches.forEach((b) => {
         let targetLabel = '';
-        if (b.targetId === 'submit') {
+        let dotColor = 'cyan';
+        if (b.targetId === 'disabled') {
+          targetLabel = '🚫 Alur Dimatikan';
+          dotColor = 'red';
+        } else if (b.targetId === 'submit') {
           targetLabel = 'Kirim Formulir';
+          dotColor = 'green';
         } else {
           const targetSec = sections.find(s => s.id === b.targetId);
           const targetSecIdx = sections.findIndex(s => s.id === b.targetId);
@@ -299,9 +304,9 @@ window.BuilderFlowchart = {
         }
 
         branchHtml += `
-          <div class="branch-opt-row" id="port-out-${sec.id}-${b.questionId}-${b.targetId}">
+          <div class="branch-opt-row ${b.targetId === 'disabled' ? 'branch-disabled-row' : ''}" id="port-out-${sec.id}-${b.questionId}-${b.targetId}">
             <span class="opt-label-text">${displayText}</span>
-            <span class="graph-port-dot-out ${b.targetId === 'submit' ? 'green' : 'cyan'}"></span>
+            <span class="graph-port-dot-out ${dotColor}"></span>
           </div>
         `;
       });
@@ -312,8 +317,13 @@ window.BuilderFlowchart = {
     const rawNext = sec.nextSectionId || 'next';
     let defaultNextLabel = '';
     let portColor = 'purple';
+    let isFlowDisabled = false;
 
-    if (rawNext === 'submit') {
+    if (rawNext === 'disabled') {
+      defaultNextLabel = '🚫 Alur Dimatikan (Berhenti / Nonaktif)';
+      portColor = 'red';
+      isFlowDisabled = true;
+    } else if (rawNext === 'submit') {
       defaultNextLabel = 'Kirim / Selesai Formulir';
       portColor = 'green';
     } else if (rawNext !== 'next' && rawNext !== 'inherit') {
@@ -352,8 +362,8 @@ window.BuilderFlowchart = {
         <h4 class="graph-node-title">${builderInstance.escapeHtml(sec.title || `Bagian ${secIdx + 1}`)}</h4>
         ${sec.description ? `<p class="graph-node-desc">${builderInstance.escapeHtml(sec.description)}</p>` : ''}
         ${branchHtml}
-        <div class="node-default-flow" id="port-default-${sec.id}">
-          <i data-lucide="corner-down-right"></i>
+        <div class="node-default-flow ${isFlowDisabled ? 'disabled' : ''}" id="port-default-${sec.id}">
+          <i data-lucide="${isFlowDisabled ? 'slash' : 'corner-down-right'}"></i>
           <span>${builderInstance.escapeHtml(defaultNextLabel)}</span>
           <span class="graph-port-dot-out ${portColor}"></span>
         </div>
@@ -376,6 +386,8 @@ window.BuilderFlowchart = {
 
       // 1. Option-Level Branch Wires (Cyan / Green)
       uniqueBranches.forEach((b) => {
+        if (b.targetId === 'disabled') return; // Do not draw wire for disabled branch
+
         const fromPort = document.getElementById(`port-out-${sec.id}-${b.questionId}-${b.targetId}`);
         let toNode = null;
         let wireColor = 'cyan';
@@ -396,7 +408,7 @@ window.BuilderFlowchart = {
       const fromDefault = document.getElementById(`port-default-${sec.id}`);
       const rawNext = sec.nextSectionId || 'next';
 
-      if (fromDefault) {
+      if (fromDefault && rawNext !== 'disabled') {
         if (rawNext === 'submit') {
           const submitNode = document.getElementById('graph-node-submit');
           if (submitNode) {

@@ -2808,6 +2808,22 @@ input:checked + .slider:before {
   box-shadow: 0 0 6px #10b981 !important;
 }
 
+.graph-port-dot-out.red {
+  background: #ef4444 !important;
+  box-shadow: 0 0 6px #ef4444 !important;
+}
+
+.node-default-flow.disabled {
+  background: rgba(239, 68, 68, 0.08) !important;
+  border-color: rgba(239, 68, 68, 0.3) !important;
+  color: #fca5a5 !important;
+}
+
+.branch-opt-row.branch-disabled-row {
+  background: rgba(239, 68, 68, 0.08) !important;
+  border-color: rgba(239, 68, 68, 0.25) !important;
+}
+
 .flowchart-empty-state {
   display: flex !important;
   align-items: center !important;
