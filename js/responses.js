@@ -325,9 +325,25 @@ class ResponsesDashboard {
               displayVal = '📁 ' + this.escapeHtml(name);
             }
           } else if (activeQ.type === 'file') {
-            displayVal = '<a href="' + this.escapeHtml(String(ans)) + '" target="_blank" class="btn btn-ghost btn-xs" style="color: var(--primary); text-decoration: underline;" title="Buka / Unduh Foto"><i data-lucide="image" style="width:13px; height:13px;"></i><span>Lihat Foto</span></a>';
+            const rawUrl = String(ans);
+            const previewSrc = this.escapeHtml(rawUrl);
+            const qTitle = this.escapeHtml(activeQ.title || 'Foto Lampiran');
+            displayVal = '<div class="table-img-cell" style="display: inline-flex; align-items: center; gap: 8px;">' +
+              '<img src="' + previewSrc + '" style="width: 36px; height: 36px; object-fit: cover; border-radius: 6px; border: 1px solid var(--border-color); cursor: pointer; background: rgba(0,0,0,0.1); flex-shrink: 0;" class="table-thumb-preview" data-src="' + previewSrc + '" data-title="' + qTitle + '" title="Klik untuk perbesar foto">' +
+              '<button type="button" class="btn btn-secondary btn-xs btn-open-img-lightbox" data-src="' + previewSrc + '" data-title="' + qTitle + '" style="white-space: nowrap; gap: 4px; padding: 4px 8px; font-size: 0.78rem;">' +
+                '<i data-lucide="eye" style="width:13px; height:13px;"></i><span>Lihat Foto</span>' +
+              '</button>' +
+            '</div>';
           } else if (activeQ.type === 'signature') {
-            displayVal = '<a href="' + this.escapeHtml(String(ans)) + '" target="_blank" class="btn btn-ghost btn-xs" style="color: var(--primary); text-decoration: underline;" title="Lihat Gambar Tanda Tangan"><i data-lucide="pen-tool" style="width:13px; height:13px;"></i><span>Lihat TTD</span></a>';
+            const rawUrl = String(ans);
+            const previewSrc = this.escapeHtml(rawUrl);
+            const qTitle = this.escapeHtml(activeQ.title || 'Tanda Tangan');
+            displayVal = '<div class="table-img-cell" style="display: inline-flex; align-items: center; gap: 8px;">' +
+              '<img src="' + previewSrc + '" style="width: 50px; height: 28px; object-fit: contain; background: #ffffff; border-radius: 4px; border: 1px solid var(--border-color); cursor: pointer; flex-shrink: 0;" class="table-thumb-preview" data-src="' + previewSrc + '" data-title="' + qTitle + '" title="Klik untuk perbesar tanda tangan">' +
+              '<button type="button" class="btn btn-ghost btn-xs btn-open-img-lightbox" data-src="' + previewSrc + '" data-title="' + qTitle + '" style="white-space: nowrap; gap: 4px; padding: 4px 8px; font-size: 0.78rem; color: var(--primary);">' +
+                '<i data-lucide="pen-tool" style="width:13px; height:13px;"></i><span>Lihat TTD</span>' +
+              '</button>' +
+            '</div>';
           } else if (activeQ.type === 'rating') {
             displayVal = '⭐ ' + ans + ' / 5';
           } else {
@@ -343,9 +359,90 @@ class ResponsesDashboard {
 
     if (this.tableBody) {
       this.tableBody.innerHTML = bodyHtml;
+
+      // Bind Lightbox click events to avoid Chrome data: URL top-level block
+      this.tableBody.querySelectorAll('.btn-open-img-lightbox, .table-thumb-preview').forEach(el => {
+        el.addEventListener('click', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          const src = el.getAttribute('data-src');
+          const title = el.getAttribute('data-title') || 'Pratinjau Foto';
+          if (src) {
+            this.showImageModal(src, title);
+          }
+        });
+      });
     }
+
     if (window.lucide) {
       window.lucide.createIcons();
+    }
+  }
+
+  showImageModal(imgSrc, title = 'Pratinjau Foto') {
+    // Remove existing modal if any
+    const existing = document.getElementById('modal-image-preview-global');
+    if (existing) existing.remove();
+
+    const isDataUrl = typeof imgSrc === 'string' && imgSrc.startsWith('data:image/');
+    const isGdrive = typeof imgSrc === 'string' && imgSrc.includes('drive.google.com');
+
+    const modal = document.createElement('div');
+    modal.id = 'modal-image-preview-global';
+    modal.className = 'modal-overlay';
+    modal.style.zIndex = '99999';
+    modal.innerHTML = `
+      <div class="modal-card glass-card" style="max-width: 600px; width: 92%; padding: 20px; text-align: center;">
+        <div class="modal-header" style="margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between;">
+          <div class="modal-title" style="font-size: 1.1rem; font-weight: 600; display: flex; align-items: center; gap: 8px;">
+            <i data-lucide="image" style="width: 18px; height: 18px; color: var(--primary);"></i>
+            <span>${this.escapeHtml(title)}</span>
+          </div>
+          <button type="button" class="btn-close-modal btn-close-img-modal" style="background: none; border: none; font-size: 1.4rem; cursor: pointer; color: var(--text-muted);">✕</button>
+        </div>
+        <div style="background: rgba(0,0,0,0.25); border-radius: 12px; padding: 10px; margin-bottom: 16px; max-height: 65vh; display: flex; align-items: center; justify-content: center; overflow: hidden; border: 1px solid var(--border-color);">
+          <img src="${this.escapeHtml(imgSrc)}" alt="Pratinjau Foto" style="max-width: 100%; max-height: 55vh; object-fit: contain; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+        </div>
+        <div style="display: flex; gap: 10px; justify-content: flex-end; flex-wrap: wrap;">
+          <button type="button" class="btn btn-secondary btn-sm btn-download-img">
+            <i data-lucide="download"></i>
+            <span>Unduh Foto</span>
+          </button>
+          ${isGdrive ? `
+            <a href="${this.escapeHtml(imgSrc)}" target="_blank" class="btn btn-secondary btn-sm" style="color:#10b981;">
+              <i data-lucide="external-link"></i>
+              <span>Buka di Google Drive</span>
+            </a>
+          ` : ''}
+          <button type="button" class="btn btn-primary btn-sm btn-close-img-modal">
+            <span>Tutup</span>
+          </button>
+        </div>
+      </div>
+    `;
+
+    document.body.appendChild(modal);
+    if (window.lucide) window.lucide.createIcons();
+
+    // Close logic
+    const closeModal = () => modal.remove();
+    modal.querySelectorAll('.btn-close-img-modal').forEach(btn => btn.addEventListener('click', closeModal));
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) closeModal();
+    });
+
+    // Download logic
+    const btnDownload = modal.querySelector('.btn-download-img');
+    if (btnDownload) {
+      btnDownload.addEventListener('click', () => {
+        const link = document.createElement('a');
+        link.href = imgSrc;
+        const ext = isDataUrl && imgSrc.includes('webp') ? 'webp' : 'jpg';
+        link.download = `foto_respon_${Date.now()}.${ext}`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      });
     }
   }
 
