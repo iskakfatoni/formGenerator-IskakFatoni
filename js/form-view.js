@@ -1457,9 +1457,18 @@ class FormViewer {
         if (input) input.value = savedVal;
       }
     });
+
+    // Restore respondent email on step 0 if enabled
+    if (this.currentForm && this.currentForm.collectEmail && this.currentStep === 0) {
+      const emailInput = document.getElementById('live-respondent-email');
+      const savedEmail = this.respondentEmail || (this.answers ? this.answers._respondent_email : '');
+      if (emailInput && savedEmail) {
+        emailInput.value = savedEmail;
+      }
+    }
   }
 
-  collectCurrentStepAnswers() {
+  collectCurrentStepAnswers(strict = true) {
     let isValid = true;
     let firstErrorElement = null;
     const currentSec = this.sections[this.currentStep] || this.sections[0];
@@ -1476,10 +1485,12 @@ class FormViewer {
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
       if (!emailVal || !emailRegex.test(emailVal)) {
-        isValid = false;
-        if (emailCard) {
-          emailCard.classList.add('has-error');
-          if (!firstErrorElement) firstErrorElement = emailCard;
+        if (strict) {
+          isValid = false;
+          if (emailCard) {
+            emailCard.classList.add('has-error');
+            if (!firstErrorElement) firstErrorElement = emailCard;
+          }
         }
       } else {
         if (emailCard) emailCard.classList.remove('has-error');
@@ -1511,32 +1522,36 @@ class FormViewer {
         val = input ? input.value.trim() : '';
       }
 
-      // Validate required
-      let isEmpty = false;
-      if (q.required) {
-        if (q.type === 'location' && (!val || !val.lat)) {
-          isEmpty = true;
-        } else if (q.type === 'checkbox' && (!val || val.length === 0)) {
-          isEmpty = true;
-        } else if ((q.type === 'file' || q.type === 'signature' || q.type === 'rating') && !val) {
-          isEmpty = true;
-        } else if (!val || val === '') {
-          isEmpty = true;
+      // Validate required only when strict is true
+      if (strict) {
+        let isEmpty = false;
+        if (q.required) {
+          if (q.type === 'location' && (!val || !val.lat)) {
+            isEmpty = true;
+          } else if (q.type === 'checkbox' && (!val || val.length === 0)) {
+            isEmpty = true;
+          } else if ((q.type === 'file' || q.type === 'signature' || q.type === 'rating') && !val) {
+            isEmpty = true;
+          } else if (!val || val === '') {
+            isEmpty = true;
+          }
+        }
+
+        if (isEmpty) {
+          isValid = false;
+          qCard.classList.add('has-error');
+          if (!firstErrorElement) firstErrorElement = qCard;
+        } else {
+          qCard.classList.remove('has-error');
         }
       }
 
-      if (isEmpty) {
-        isValid = false;
-        qCard.classList.add('has-error');
-        if (!firstErrorElement) firstErrorElement = qCard;
-      } else {
-        qCard.classList.remove('has-error');
+      if (val !== undefined && val !== null && val !== '') {
+        this.answers[q.id] = val;
       }
-
-      this.answers[q.id] = val;
     });
 
-    if (!isValid && firstErrorElement) {
+    if (strict && !isValid && firstErrorElement) {
       firstErrorElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
       if (firstErrorElement.id === 'live-email-card') {
         window.app.showToast('Harap masukkan alamat email yang valid', 'error');
@@ -1552,7 +1567,7 @@ class FormViewer {
   }
 
   handleNextStep() {
-    if (!this.collectCurrentStepAnswers()) return;
+    if (!this.collectCurrentStepAnswers(true)) return;
 
     const currentSec = this.sections[this.currentStep] || this.sections[0];
     const isMultiStep = this.sections.length > 1;
@@ -1604,7 +1619,6 @@ class FormViewer {
     }
 
     // 3. If answer flow is still default, check Section-Level Global Navigation (currentSec.nextSectionId)
-    // (Jika alur global sudah diatur pada bagian ini, otomatis diarahkan ke section target tersebut)
     if (branchAction === 'next' && currentSec && currentSec.nextSectionId) {
       const secTarget = String(currentSec.nextSectionId).trim();
       if (secTarget !== '' && secTarget !== 'next' && secTarget !== 'inherit' && secTarget !== 'disabled') {
@@ -1631,6 +1645,7 @@ class FormViewer {
       if (!this.historyStack) this.historyStack = [0];
       this.historyStack.push(nextStepIndex);
       this.currentStep = nextStepIndex;
+      this.saveDraft();
       this.renderCurrentStep();
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } else {
@@ -1641,40 +1656,19 @@ class FormViewer {
 
   handlePrevStep() {
     // Save current step data without strict required validation when navigating back
-    const currentSec = this.sections[this.currentStep] || this.sections[0];
-    const isMultiStep = this.sections.length > 1;
-    const stepQuestions = isMultiStep 
-      ? (this.currentForm.questions || []).filter(q => q.sectionId === currentSec.id)
-      : (this.currentForm.questions || []);
-
-    stepQuestions.forEach(q => {
-      const qCard = this.questionsContainer.querySelector(`[data-question-id="${q.id}"]`);
-      if (!qCard) return;
-      const qName = `q_${q.id}`;
-      if (q.type === 'choice') {
-        const checked = qCard.querySelector(`input[name="${qName}"]:checked`);
-        if (checked) this.answers[q.id] = checked.value;
-      } else if (q.type === 'checkbox') {
-        const checkedList = qCard.querySelectorAll(`input[name="${qName}"]:checked`);
-        this.answers[q.id] = Array.from(checkedList).map(el => el.value);
-      } else if (q.type !== 'rating') {
-        const input = qCard.querySelector(`[name="${qName}"]`);
-        if (input) this.answers[q.id] = input.value.trim();
-      }
-    });
+    this.collectCurrentStepAnswers(false);
 
     if (!this.historyStack) this.historyStack = [0];
 
     if (this.historyStack.length > 1) {
       this.historyStack.pop();
       this.currentStep = this.historyStack[this.historyStack.length - 1];
-      this.renderCurrentStep();
-      window.scrollTo({ top: 0, behavior: 'smooth' });
     } else if (this.currentStep > 0) {
       this.currentStep--;
-      this.renderCurrentStep();
-      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
+    this.saveDraft();
+    this.renderCurrentStep();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   async handleSubmit() {
