@@ -220,11 +220,13 @@ class ResponsesDashboard {
 
     // 1. Render Table Headers
     const isQuiz = form.isQuizMode === true;
-    let headHtml = '<tr><th style="width: 50px;">#</th><th style="min-width: 150px;">Waktu Kirim</th>' + (isQuiz ? '<th style="min-width: 130px; color: #818cf8;"><i data-lucide="award"></i> Nilai Kuis</th>' : '') + (hasEmail ? '<th style="min-width: 180px;">Email Responden</th>' : '');
+    let headHtml = '<tr><th style="width: 50px;">#</th><th style="min-width: 140px;">Waktu Kirim</th>' + (isQuiz ? '<th style="min-width: 130px; color: #818cf8;"><i data-lucide="award"></i> Nilai Kuis</th>' : '') + (hasEmail ? '<th style="min-width: 180px;">Email Responden</th>' : '');
 
     columns.forEach(col => {
       headHtml += '<th title="' + this.escapeHtml(col.title) + '">' + this.escapeHtml(col.title) + '</th>';
     });
+
+    headHtml += '<th style="min-width: 110px; text-align: center; position: sticky; right: 0; background: var(--bg-secondary); z-index: 2;"><i data-lucide="printer"></i> Aksi</th>';
 
     headHtml += '</tr>';
     if (this.tableHead) {
@@ -354,6 +356,13 @@ class ResponsesDashboard {
         bodyHtml += '<td title="' + this.escapeHtml(typeof ans === 'object' ? JSON.stringify(ans) : String(ans || '')) + '">' + displayVal + '</td>';
       });
 
+      // Action Cell for Print PDF Receipt
+      bodyHtml += '<td style="text-align: center; position: sticky; right: 0; background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(8px); z-index: 1;">' +
+        '<button type="button" class="btn btn-secondary btn-xs btn-print-pdf-receipt" data-index="' + index + '" title="Cetak PDF Lembar Bukti Pengisian Responden" style="white-space: nowrap; gap: 4px; padding: 4px 8px; font-size: 0.78rem; border-color: rgba(99, 102, 241, 0.4);">' +
+          '<i data-lucide="printer" style="width:13px; height:13px; color: #818cf8;"></i><span>Cetak PDF</span>' +
+        '</button>' +
+      '</td>';
+
       bodyHtml += '</tr>';
     });
 
@@ -372,10 +381,214 @@ class ResponsesDashboard {
           }
         });
       });
+
+      // Bind Print PDF Receipt buttons
+      this.tableBody.querySelectorAll('.btn-print-pdf-receipt').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          const idx = parseInt(btn.getAttribute('data-index'), 10);
+          if (!isNaN(idx) && this.filteredResponses[idx]) {
+            this.printSubmissionReceipt(this.filteredResponses[idx]);
+          }
+        });
+      });
     }
 
     if (window.lucide) {
       window.lucide.createIcons();
+    }
+  }
+
+  printSubmissionReceipt(resp) {
+    if (!this.currentForm || !resp) return;
+
+    const receiptNo = 'REG-' + (resp.id ? resp.id.replace('resp_', '').slice(-6) : Date.now().toString().slice(-6)).toUpperCase();
+    const today = resp.submittedAt ? new Date(resp.submittedAt).toLocaleDateString('id-ID', {
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    }) : new Date().toLocaleDateString('id-ID', { dateStyle: 'full', timeStyle: 'short' });
+
+    const questions = this.currentForm.questions || [];
+    const columns = this.getConsolidatedColumns(questions);
+
+    let rowsHtml = '';
+    let photoHtml = '';
+    let signatureHtml = '';
+    let gpsHtml = '';
+
+    columns.forEach(col => {
+      let val = null;
+      let activeQ = col.questions[0];
+
+      for (const q of col.questions) {
+        const v = resp.answers ? resp.answers[q.id] : null;
+        if (v !== null && v !== undefined && v !== '') {
+          val = v;
+          activeQ = q;
+          break;
+        }
+      }
+
+      if (val === undefined || val === null || val === '') return;
+
+      if (activeQ.type === 'file' && typeof val === 'string') {
+        photoHtml += `
+          <div style="margin-top: 10px; text-align: center;">
+            <div style="font-size: 11px; font-weight: 600; color: #64748b; margin-bottom: 4px;">${this.escapeHtml(col.title)}</div>
+            <img src="${this.escapeHtml(val)}" style="width: 120px; height: 150px; object-fit: cover; border: 1px solid #cbd5e1; border-radius: 4px;">
+          </div>
+        `;
+      } else if (activeQ.type === 'signature' && typeof val === 'string') {
+        const respondentName = resp.respondentEmail || (resp.answers && resp.answers._respondent_email) || 'Wali Siswa / Responden';
+        signatureHtml = `
+          <div style="text-align: center; width: 200px;">
+            <div style="font-size: 12px; margin-bottom: 4px; color: #475569;">Tanda Tangan Pengisi:</div>
+            <img src="${this.escapeHtml(val)}" style="max-width: 180px; max-height: 70px; border-bottom: 1px solid #0f172a;">
+            <div style="font-size: 11px; color: #64748b; margin-top: 4px;">( ${this.escapeHtml(respondentName)} )</div>
+          </div>
+        `;
+      } else if (activeQ.type === 'location') {
+        let locObj = val;
+        if (typeof locObj === 'string' && locObj.startsWith('{')) {
+          try { locObj = JSON.parse(locObj); } catch(e){}
+        }
+        if (locObj && typeof locObj === 'object' && locObj.lat) {
+          gpsHtml = `
+            <tr>
+              <td style="padding: 8px 12px; border: 1px solid #e2e8f0; font-weight: 600; width: 35%; background: #f8fafc;">${this.escapeHtml(col.title)}</td>
+              <td style="padding: 8px 12px; border: 1px solid #e2e8f0;">
+                <div><strong>Koordinat GPS:</strong> ${locObj.lat.toFixed(6)}, ${locObj.lng.toFixed(6)}</div>
+                <div style="font-size: 12px; color: #10b981;">Akurasi Satelit: ± ${Math.round(locObj.accuracy || 0)} meter</div>
+                <div style="font-size: 11px; color: #3b82f6; margin-top: 2px;">Tautan Peta: https://www.google.com/maps?q=${locObj.lat},${locObj.lng}</div>
+              </td>
+            </tr>
+          `;
+        }
+      } else if (activeQ.type === 'file_gdrive') {
+        let fileObj = val;
+        if (typeof fileObj === 'string' && fileObj.startsWith('{')) {
+          try { fileObj = JSON.parse(fileObj); } catch(e){}
+        }
+        let url = typeof fileObj === 'object' ? (fileObj.url || fileObj.viewUrl || '') : (String(fileObj).startsWith('http') ? fileObj : '');
+        let name = typeof fileObj === 'object' ? (fileObj.name || fileObj.fileName || 'Lihat Dokumen di Google Drive') : fileObj;
+        
+        rowsHtml += `
+          <tr>
+            <td style="padding: 8px 12px; border: 1px solid #e2e8f0; font-weight: 600; width: 35%; background: #f8fafc;">${this.escapeHtml(col.title)}</td>
+            <td style="padding: 8px 12px; border: 1px solid #e2e8f0;">
+              <div>📁 <strong>${this.escapeHtml(name)}</strong></div>
+              ${url ? `<div style="font-size: 11px; color: #2563eb; margin-top: 2px; word-break: break-all;">Link Google Drive: ${this.escapeHtml(url)}</div>` : ''}
+            </td>
+          </tr>
+        `;
+      } else {
+        let display = '';
+        if (Array.isArray(val)) {
+          display = val.join(', ');
+        } else {
+          display = String(val);
+        }
+        rowsHtml += `
+          <tr>
+            <td style="padding: 8px 12px; border: 1px solid #e2e8f0; font-weight: 600; width: 35%; background: #f8fafc;">${this.escapeHtml(col.title)}</td>
+            <td style="padding: 8px 12px; border: 1px solid #e2e8f0;">${this.escapeHtml(display)}</td>
+          </tr>
+        `;
+      }
+    });
+
+    const isQuiz = this.currentForm.isQuizMode === true;
+    let quizScoreBanner = '';
+    if (isQuiz && resp.answers && resp.answers._quiz_score !== undefined) {
+      const score = resp.answers._quiz_score;
+      const total = resp.answers._quiz_total || 100;
+      const pct = resp.answers._quiz_percentage || Math.round((score / total) * 100);
+      quizScoreBanner = `
+        <div style="background: #eef2ff; border: 1px solid #c7d2fe; padding: 10px 16px; border-radius: 6px; margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center;">
+          <span style="font-weight: 600; color: #4338ca;">HASIL EVALUASI / SKOR KUIS:</span>
+          <span style="font-size: 16px; font-weight: 700; color: #4338ca;">${score} / ${total} (${pct}%)</span>
+        </div>
+      `;
+    }
+
+    const receiptHtml = `
+      <!DOCTYPE html>
+      <html lang="id">
+      <head>
+        <meta charset="UTF-8">
+        <title>Bukti Pengisian - ${this.escapeHtml(this.currentForm.title)}</title>
+        <style>
+          @page { size: A4 portrait; margin: 15mm; }
+          body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: #0f172a; margin: 0; padding: 10px; font-size: 13px; }
+          .receipt-box { border: 2px solid #0f172a; padding: 20px; border-radius: 8px; max-width: 800px; margin: auto; }
+          .header-table { width: 100%; border-bottom: 2px solid #0f172a; padding-bottom: 12px; margin-bottom: 16px; }
+          .title-area { text-align: center; }
+          .title-area h2 { margin: 0 0 4px 0; font-size: 18px; text-transform: uppercase; }
+          .title-area p { margin: 0; font-size: 12px; color: #475569; }
+          .meta-bar { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 14px; background: #f1f5f9; padding: 8px 12px; border-radius: 4px; }
+          table.data-table { width: 100%; border-collapse: collapse; margin-bottom: 16px; font-size: 12.5px; }
+          .footer-section { display: flex; justify-content: space-between; align-items: flex-end; margin-top: 24px; padding-top: 12px; }
+          .stamp-box { border: 1px dashed #94a3b8; padding: 8px 16px; font-size: 11px; color: #64748b; border-radius: 4px; }
+        </style>
+      </head>
+      <body>
+        <div class="receipt-box">
+          <div class="header-table">
+            <div class="title-area">
+              <h2>${this.escapeHtml(this.currentForm.title || 'LEMBAR BUKTI PENGISIAN FORMULIR')}</h2>
+              <p>Sistem Formulir Online & Perekaman Data Resmi • FormCraft</p>
+            </div>
+          </div>
+
+          <div class="meta-bar">
+            <div><strong>No. Registrasi:</strong> ${receiptNo}</div>
+            <div><strong>Waktu Pengisian:</strong> ${today}</div>
+            <div><strong>Status:</strong> <span style="color: #059669; font-weight: bold;">TERVERIFIKASI SISTEM</span></div>
+          </div>
+
+          ${quizScoreBanner}
+
+          <div style="display: flex; gap: 20px; align-items: flex-start;">
+            <div style="flex: 1;">
+              <table class="data-table">
+                <tbody>
+                  ${rowsHtml}
+                  ${gpsHtml}
+                </tbody>
+              </table>
+            </div>
+            ${photoHtml ? `<div style="width: 130px; flex-shrink: 0;">${photoHtml}</div>` : ''}
+          </div>
+
+          <div class="footer-section">
+            <div class="stamp-box">
+              <strong>Tanda Bukti Sah Elektronik</strong><br>
+              Dokumen ini dicetak otomatis dan diakui secara sah oleh pihak sekolah/penyelenggara.
+            </div>
+            ${signatureHtml}
+          </div>
+        </div>
+        <script>
+          window.onload = () => {
+            setTimeout(() => {
+              window.print();
+            }, 300);
+          };
+        <\/script>
+      </body>
+      </html>
+    `;
+
+    const printWindow = window.open('', '_blank');
+    if (printWindow) {
+      printWindow.document.open();
+      printWindow.document.write(receiptHtml);
+      printWindow.document.close();
     }
   }
 
