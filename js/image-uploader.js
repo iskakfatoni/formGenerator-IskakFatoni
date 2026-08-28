@@ -22,7 +22,10 @@ class ImageUploaderEngine {
     const quality = options.quality || this.DEFAULT_QUALITY;
 
     return new Promise((resolve, reject) => {
-      if (!file || !file.type.startsWith('image/')) {
+      const isImage = (file && file.type && file.type.startsWith('image/')) || 
+        (file && file.name && /\.(jpg|jpeg|png|webp|bmp|heic|heif|gif)$/i.test(file.name));
+
+      if (!file || !isImage) {
         reject(new Error('File yang dipilih bukan gambar yang valid.'));
         return;
       }

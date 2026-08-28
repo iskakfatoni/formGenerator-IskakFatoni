@@ -667,36 +667,36 @@ class FormViewer {
       let actionButtonsHtml = '';
       if (source === 'camera') {
         actionButtonsHtml = `
-          <div class="file-dropzone-box" id="dropzone-${q.id}">
+          <label class="file-dropzone-box" id="dropzone-${q.id}" style="cursor:pointer;">
             <i data-lucide="camera" class="file-dropzone-icon" style="color:#38bdf8;"></i>
             <div class="file-dropzone-label">Buka Kamera & Ambil Foto Langsung</div>
             <div class="file-dropzone-sub">Kamera HP akan langsung terbuka otomatis</div>
             <input type="file" class="input-file-element" accept="image/*" capture="environment" style="display:none;">
-          </div>
+          </label>
         `;
       } else if (source === 'gallery') {
         actionButtonsHtml = `
-          <div class="file-dropzone-box" id="dropzone-${q.id}">
+          <label class="file-dropzone-box" id="dropzone-${q.id}" style="cursor:pointer;">
             <i data-lucide="image" class="file-dropzone-icon" style="color:#a855f7;"></i>
             <div class="file-dropzone-label">Pilih Foto dari Galeri / Berkas</div>
             <div class="file-dropzone-sub">Format JPG, PNG, WEBP (Otomatis dikompresi)</div>
             <input type="file" class="input-file-element" accept="image/*" style="display:none;">
-          </div>
+          </label>
         `;
       } else {
         // Dual Buttons (Camera and Gallery)
         actionButtonsHtml = `
           <div class="file-dual-actions-box" id="dropzone-${q.id}">
-            <button type="button" class="btn-file-dual-btn btn-action-camera" title="Ambil foto langsung dengan kamera">
+            <label class="btn-file-dual-btn btn-action-camera" style="cursor:pointer;" title="Ambil foto langsung dengan kamera">
               <i data-lucide="camera"></i>
               <span>Ambil dari Kamera</span>
               <input type="file" class="input-camera-trigger" accept="image/*" capture="environment" style="display:none;">
-            </button>
-            <button type="button" class="btn-file-dual-btn btn-action-gallery" title="Pilih foto dari galeri HP atau komputer">
+            </label>
+            <label class="btn-file-dual-btn btn-action-gallery" style="cursor:pointer;" title="Pilih foto dari galeri HP atau komputer">
               <i data-lucide="image"></i>
               <span>Pilih dari Galeri</span>
               <input type="file" class="input-gallery-trigger" accept="image/*" style="display:none;">
-            </button>
+            </label>
           </div>
           <div style="text-align:center; font-size:0.75rem; color:var(--text-muted); margin-top:6px;">Format JPG, PNG, WEBP (Otomatis dikompresi)</div>
         `;
@@ -894,7 +894,10 @@ class FormViewer {
 
       const handleFileUpload = async (file) => {
         if (!file) return;
-        if (!file.type.startsWith('image/')) {
+        const isImage = (file.type && file.type.startsWith('image/')) || 
+          (file.name && /\.(jpg|jpeg|png|webp|bmp|heic|heif|gif)$/i.test(file.name));
+
+        if (!isImage) {
           if (window.app && typeof window.app.showToast === 'function') {
             window.app.showToast('Harap pilih file gambar (JPG, PNG, WEBP)', 'error');
           }
@@ -944,8 +947,7 @@ class FormViewer {
       };
 
       // 1. Single Dropzone Box (Camera-only or Gallery-only)
-      if (dropzoneSingle && fileInputSingle) {
-        dropzoneSingle.addEventListener('click', () => fileInputSingle.click());
+      if (fileInputSingle) {
         fileInputSingle.addEventListener('change', (e) => {
           if (e.target.files && e.target.files[0]) {
             handleFileUpload(e.target.files[0]);
@@ -953,12 +955,8 @@ class FormViewer {
         });
       }
 
-      // 2. Dual Actions Box (Camera Button + Gallery Button)
-      if (btnCamera && cameraTrigger) {
-        btnCamera.addEventListener('click', (e) => {
-          e.preventDefault();
-          cameraTrigger.click();
-        });
+      // 2. Dual Actions Box (Camera Trigger + Gallery Trigger)
+      if (cameraTrigger) {
         cameraTrigger.addEventListener('change', (e) => {
           if (e.target.files && e.target.files[0]) {
             handleFileUpload(e.target.files[0]);
@@ -966,11 +964,7 @@ class FormViewer {
         });
       }
 
-      if (btnGallery && galleryTrigger) {
-        btnGallery.addEventListener('click', (e) => {
-          e.preventDefault();
-          galleryTrigger.click();
-        });
+      if (galleryTrigger) {
         galleryTrigger.addEventListener('change', (e) => {
           if (e.target.files && e.target.files[0]) {
             handleFileUpload(e.target.files[0]);

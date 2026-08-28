@@ -171,12 +171,16 @@ class FormStorage {
     if (this.isCloud) {
       try {
         await this.db.collection('responses').doc(responseId).set(responseRecord);
-        // Increment responseCount on form doc
-        const formRef = this.db.collection('forms').doc(formId);
-        await formRef.update({
-          responseCount: firebase.firestore.FieldValue.increment(1),
-          lastResponseAt: timestamp
-        });
+        // Increment responseCount on form doc (non-blocking for public responders)
+        try {
+          const formRef = this.db.collection('forms').doc(formId);
+          await formRef.update({
+            responseCount: firebase.firestore.FieldValue.increment(1),
+            lastResponseAt: timestamp
+          });
+        } catch (updateCountErr) {
+          console.warn('Notice: Form counter update skipped for public submission:', updateCountErr.message);
+        }
       } catch (err) {
         console.error('Gagal mengirim respon ke Firestore:', err);
       }
