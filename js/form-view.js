@@ -142,7 +142,20 @@ class FormViewer {
         e.preventDefault();
         this.handleSubmit();
       });
+
+      // Auto-save draft whenever respondent enters or modifies any answer
+      this.formElement.addEventListener('input', () => {
+        this.saveDraft();
+      });
+      this.formElement.addEventListener('change', () => {
+        this.saveDraft();
+      });
     }
+
+    // Auto-save draft on browser tab reload / close
+    window.addEventListener('beforeunload', () => {
+      this.saveDraft();
+    });
 
     if (this.btnNextStep) {
       this.btnNextStep.addEventListener('click', () => {
@@ -182,6 +195,50 @@ class FormViewer {
     }
   }
 
+  saveDraft() {
+    if (!this.currentForm || !this.currentForm.id) return;
+    try {
+      this.collectCurrentStepAnswers(false); // harvest available values without blocking on validation errors
+      const draftData = {
+        answers: this.answers || {},
+        respondentEmail: this.respondentEmail || '',
+        currentStep: this.currentStep || 0,
+        historyStack: this.historyStack || [0],
+        timestamp: Date.now()
+      };
+      localStorage.setItem('formcraft_draft_' + this.currentForm.id, JSON.stringify(draftData));
+    } catch (e) {
+      console.warn('Gagal menyimpan draf pengisian lokal:', e);
+    }
+  }
+
+  loadDraft() {
+    if (!this.currentForm || !this.currentForm.id) return false;
+    try {
+      const raw = localStorage.getItem('formcraft_draft_' + this.currentForm.id);
+      if (raw) {
+        const draft = JSON.parse(raw);
+        if (draft && draft.answers && Object.keys(draft.answers).length > 0) {
+          this.answers = draft.answers || {};
+          this.respondentEmail = draft.respondentEmail || '';
+          this.currentStep = (draft.currentStep !== undefined && draft.currentStep < this.sections.length) ? draft.currentStep : 0;
+          this.historyStack = Array.isArray(draft.historyStack) ? draft.historyStack : [0];
+          return true;
+        }
+      }
+    } catch (e) {
+      console.warn('Gagal memuat draf pengisian lokal:', e);
+    }
+    return false;
+  }
+
+  clearDraft() {
+    if (!this.currentForm || !this.currentForm.id) return;
+    try {
+      localStorage.removeItem('formcraft_draft_' + this.currentForm.id);
+    } catch (e) {}
+  }
+
   async loadForm(formId) {
     this.answers = {};
     this.currentStep = 0;
@@ -209,7 +266,6 @@ class FormViewer {
     const closedNotice = document.getElementById('form-closed-notice-wrap');
     if (closedNotice) closedNotice.classList.add('hidden');
 
-    
     // Check if form is published (Draft Protection)
     if (form.isPublished === false) {
       this.renderFormClosed('Formulir Belum Dipublikasikan (Draft)', 'Formulir ini saat ini masih dalam tahap penyusunan (Draft) oleh pembuatnya dan belum dibuka untuk pengisian umum.');
@@ -231,7 +287,6 @@ class FormViewer {
       return;
     }
 
-
     // Standardize sections
     if (!form.sections || form.sections.length === 0) {
       this.sections = [{ id: 'sec_1', title: form.title || 'Bagian 1', description: form.description || '' }];
@@ -245,7 +300,14 @@ class FormViewer {
       if (!q.sectionId) q.sectionId = firstSecId;
     });
 
+    // Check & restore draft from previous session / refresh
+    const hasRestored = this.loadDraft();
+
     this.renderForm();
+
+    if (hasRestored && window.app && typeof window.app.showToast === 'function') {
+      window.app.showToast('Melanjutkan draf jawaban yang telah Anda isi sebelumnya', 'info');
+    }
   }
 
   formatImageUrl(url) {
@@ -1376,6 +1438,20 @@ class FormViewer {
           const sVal = parseInt(s.dataset.value, 10);
           s.classList.toggle('active', sVal <= savedVal);
         });
+      } else if (q.type === 'dropdown') {
+        const sel = qCard.querySelector(`select[name="${qName}"]`);
+        const triggerText = qCard.querySelector('.searchable-select-trigger .trigger-text');
+        const optItems = qCard.querySelectorAll('.searchable-option-item');
+        if (sel) sel.value = savedVal;
+        if (triggerText && savedVal) {
+          triggerText.textContent = savedVal;
+          triggerText.classList.remove('is-placeholder');
+        }
+        if (optItems && savedVal) {
+          optItems.forEach(item => {
+            item.classList.toggle('is-selected', item.dataset.value === savedVal);
+          });
+        }
       } else {
         const input = qCard.querySelector(`[name="${qName}"]`);
         if (input) input.value = savedVal;
@@ -1730,7 +1806,8 @@ class FormViewer {
       // 2. Submit to Firebase / Storage
       await window.formStorage.submitResponse(this.currentForm.id, this.answers, this.respondentEmail);
       
-      // Clear pending files
+      // Clear draft storage and pending files
+      this.clearDraft();
       this.pendingGdriveFiles = {};
 
       // Show success screen
@@ -1748,6 +1825,7 @@ class FormViewer {
   }
 
   resetAnswers() {
+    this.clearDraft();
     this.formElement.reset();
     this.answers = {};
     this.respondentEmail = '';
