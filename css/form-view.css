@@ -34,14 +34,16 @@
 .live-banner-img {
   width: calc(100% + 56px);
   margin: -32px -28px 24px -28px;
-  min-height: 120px;
-  max-height: 220px;
+  height: clamp(140px, 22vw, 240px);
+  min-height: 140px;
+  max-height: 260px;
   aspect-ratio: 4 / 1;
   background-size: cover;
   background-position: center center;
   background-repeat: no-repeat;
   border-top-left-radius: var(--radius-lg);
   border-top-right-radius: var(--radius-lg);
+  display: block;
   transition: all var(--transition-normal);
 }
 

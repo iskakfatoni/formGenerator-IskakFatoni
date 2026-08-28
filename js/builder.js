@@ -899,8 +899,28 @@ class FormBuilder {
     this.renderQuestions();
   }
 
+  formatImageUrl(url) {
+    if (!url || typeof url !== 'string') return '';
+    const trimmed = url.trim();
+    if (!trimmed) return '';
+    if (trimmed.startsWith('data:image/')) return trimmed;
+
+    // Convert Google Drive view URL to direct high-res image thumbnail URL
+    const gdriveFileMatch = trimmed.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+    if (gdriveFileMatch && gdriveFileMatch[1]) {
+      return `https://drive.google.com/thumbnail?id=${gdriveFileMatch[1]}&sz=w1600`;
+    }
+    const gdriveIdMatch = trimmed.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+    if (gdriveIdMatch && gdriveIdMatch[1] && trimmed.includes('drive.google.com')) {
+      return `https://drive.google.com/thumbnail?id=${gdriveIdMatch[1]}&sz=w1600`;
+    }
+
+    return trimmed;
+  }
+
   updateBannerUI() {
-    const bannerUrl = (this.currentForm && this.currentForm.bannerUrl) ? this.currentForm.bannerUrl.trim() : '';
+    const rawBannerUrl = (this.currentForm && this.currentForm.bannerUrl) ? this.currentForm.bannerUrl.trim() : '';
+    const bannerUrl = this.formatImageUrl(rawBannerUrl);
 
     // 1. Settings Tab Banner UI
     if (this.bannerDropzone && this.bannerPreviewBox && this.bannerPreviewImg) {
@@ -930,7 +950,7 @@ class FormBuilder {
 
     // 3. Sync text input
     if (this.headerImgInput) {
-      this.headerImgInput.value = bannerUrl;
+      this.headerImgInput.value = rawBannerUrl;
     }
 
     if (window.lucide) {
@@ -964,11 +984,15 @@ class FormBuilder {
       if (!this.currentForm) {
         this.currentForm = {};
       }
-      this.currentForm.bannerUrl = result.url;
+      this.currentForm.bannerUrl = result.url || result.previewUrl;
+      if (this.headerImgInput) {
+        this.headerImgInput.value = this.currentForm.bannerUrl;
+      }
       this.updateBannerUI();
+      await this.saveCurrentForm(true);
 
       if (window.app && typeof window.app.showToast === 'function') {
-        window.app.showToast('Gambar banner berhasil diunggah!', 'success');
+        window.app.showToast('Gambar banner berhasil diunggah & disimpan!', 'success');
       }
     } catch (err) {
       console.error('Error upload banner:', err);
@@ -978,14 +1002,18 @@ class FormBuilder {
     }
   }
 
-  removeBanner() {
+  async removeBanner() {
     if (this.currentForm) {
       this.currentForm.bannerUrl = '';
+    }
+    if (this.headerImgInput) {
+      this.headerImgInput.value = '';
     }
     this.updateBannerUI();
     if (this.inputBannerFile) {
       this.inputBannerFile.value = '';
     }
+    await this.saveCurrentForm(true);
     if (window.app && typeof window.app.showToast === 'function') {
       window.app.showToast('Gambar banner telah dihapus', 'info');
     }
@@ -2119,7 +2147,9 @@ class FormBuilder {
       themeColor,
       sectionTheme,
       fontFamily,
-      bannerUrl: this.headerImgInput ? this.headerImgInput.value.trim() : '',
+      bannerUrl: (this.headerImgInput && this.headerImgInput.value.trim()) 
+        ? this.headerImgInput.value.trim() 
+        : ((this.currentForm && this.currentForm.bannerUrl) ? this.currentForm.bannerUrl.trim() : ''),
       submitMessage: this.submitMsgInput ? this.submitMsgInput.value.trim() : 'Terima kasih! Tanggapan Anda telah berhasil direkam.',
       collectEmail: this.collectEmailCheck ? this.collectEmailCheck.checked : false,
       allowMultiple: this.allowMultipleCheck ? this.allowMultipleCheck.checked : true,

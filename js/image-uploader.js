@@ -136,10 +136,16 @@ class ImageUploaderEngine {
           questionTitle: options.questionTitle || 'Foto'
         });
 
-        if (gdriveRes && gdriveRes.url) {
-          console.log(`[ImageEngine] Foto terunggah ke Google Drive: ${gdriveRes.url}`);
+        if (gdriveRes && (gdriveRes.url || gdriveRes.fileId)) {
+          // Convert Google Drive view URL to direct high-res image thumbnail URL for browser display
+          const displayUrl = gdriveRes.fileId 
+            ? `https://drive.google.com/thumbnail?id=${gdriveRes.fileId}&sz=w1600` 
+            : (compressed.dataUrl || gdriveRes.url);
+
+          console.log(`[ImageEngine] Foto terunggah ke Google Drive: ${displayUrl}`);
           return {
-            url: gdriveRes.url,
+            url: (options.context === 'banner') ? (compressed.dataUrl || displayUrl) : displayUrl,
+            viewUrl: gdriveRes.url,
             downloadUrl: gdriveRes.downloadUrl,
             previewUrl: compressed.dataUrl,
             size: compressed.compressedSize,

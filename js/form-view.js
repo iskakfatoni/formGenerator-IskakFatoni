@@ -248,6 +248,25 @@ class FormViewer {
     this.renderForm();
   }
 
+  formatImageUrl(url) {
+    if (!url || typeof url !== 'string') return '';
+    const trimmed = url.trim();
+    if (!trimmed) return '';
+    if (trimmed.startsWith('data:image/')) return trimmed;
+
+    // Convert Google Drive view URL to direct high-res image thumbnail URL
+    const gdriveFileMatch = trimmed.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+    if (gdriveFileMatch && gdriveFileMatch[1]) {
+      return `https://drive.google.com/thumbnail?id=${gdriveFileMatch[1]}&sz=w1600`;
+    }
+    const gdriveIdMatch = trimmed.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+    if (gdriveIdMatch && gdriveIdMatch[1] && trimmed.includes('drive.google.com')) {
+      return `https://drive.google.com/thumbnail?id=${gdriveIdMatch[1]}&sz=w1600`;
+    }
+
+    return trimmed;
+  }
+
   renderForm() {
     const form = this.currentForm;
     this.titleEl.textContent = form.title || 'Formulir Tanpa Judul';
@@ -275,10 +294,13 @@ class FormViewer {
 
     // Header banner
     if (form.bannerUrl) {
-      this.bannerEl.style.backgroundImage = `url('${form.bannerUrl}')`;
+      const bannerSrc = this.formatImageUrl(form.bannerUrl);
+      this.bannerEl.style.backgroundImage = `url('${bannerSrc}')`;
       this.bannerEl.classList.remove('hidden');
+      this.bannerEl.style.display = 'block';
     } else {
       this.bannerEl.classList.add('hidden');
+      this.bannerEl.style.display = 'none';
     }
 
     
