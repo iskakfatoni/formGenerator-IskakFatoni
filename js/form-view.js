@@ -577,7 +577,7 @@ class FormViewer {
           <div class="searchable-dropdown-menu">
             <div class="searchable-search-box">
               <i data-lucide="search"></i>
-              <input type="text" class="searchable-search-input" placeholder="Ketik 2-3 huruf untuk mencari...">
+              <input type="text" class="searchable-search-input" placeholder="Cari nama / opsi (opsional)..." autocomplete="off" autocorrect="off" spellcheck="false">
             </div>
             <div class="searchable-options-list">
               ${options.map((opt, optIdx) => {
@@ -1297,10 +1297,8 @@ class FormViewer {
             searchInput.value = '';
             optionItems.forEach(item => item.style.display = '');
             if (emptyHint) emptyHint.classList.add('hidden');
-            setTimeout(() => {
-              searchInput.focus();
-              wrap.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-            }, 60);
+            // Menghindari auto-focus agar keyboard HP tidak otomatis muncul menutupi daftar opsi
+            wrap.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
           }
         });
 
