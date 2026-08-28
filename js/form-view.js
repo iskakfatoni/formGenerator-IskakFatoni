@@ -879,67 +879,117 @@ class FormViewer {
 
     // File / Photo Upload Handler
     if (q.type === 'file') {
-      const dropzone = card.querySelector('.file-dropzone-box');
-      const fileInput = card.querySelector('.input-file-element');
+      const dropzoneSingle = card.querySelector('.file-dropzone-box');
+      const dualBox = card.querySelector('.file-dual-actions-box');
+      const fileInputSingle = card.querySelector('.input-file-element');
+      const cameraTrigger = card.querySelector('.input-camera-trigger');
+      const galleryTrigger = card.querySelector('.input-gallery-trigger');
+      const btnCamera = card.querySelector('.btn-action-camera');
+      const btnGallery = card.querySelector('.btn-action-gallery');
       const previewCard = card.querySelector('.file-preview-card');
       const thumbImg = card.querySelector('.file-thumb-img');
       const metaSize = card.querySelector('.file-meta-size');
       const btnRemove = card.querySelector('.btn-remove-file');
       const hiddenInput = card.querySelector('.input-file-hidden');
 
-      if (dropzone && fileInput) {
-        dropzone.addEventListener('click', () => fileInput.click());
-        fileInput.addEventListener('change', async (e) => {
-          if (e.target.files && e.target.files[0]) {
-            const file = e.target.files[0];
-            if (window.app && typeof window.app.showToast === 'function') {
-              window.app.showToast('Mengompresi & mengunggah foto...', 'info');
-            }
-            try {
-              const formId = this.currentForm ? this.currentForm.id : 'form_upload';
-              const formTitle = this.currentForm ? (this.currentForm.title || 'Formulir') : 'Formulir';
-              const scriptUrl = this.currentForm ? this.currentForm.gdriveScriptUrl : '';
-              const folderId = this.currentForm ? this.currentForm.gdriveFolderId : '';
+      const handleFileUpload = async (file) => {
+        if (!file) return;
+        if (!file.type.startsWith('image/')) {
+          if (window.app && typeof window.app.showToast === 'function') {
+            window.app.showToast('Harap pilih file gambar (JPG, PNG, WEBP)', 'error');
+          }
+          return;
+        }
 
-              const result = await window.imageUploader.processAndUpload(file, {
-                formId,
-                formTitle,
-                scriptUrl,
-                folderId,
-                questionTitle: q.title || 'Foto',
-                context: 'submission',
-                maxWidth: 1200,
-                quality: 0.85
-              });
-              this.answers[q.id] = result.url;
-              hiddenInput.value = result.url;
-              thumbImg.src = result.previewUrl || result.url;
-              metaSize.textContent = `${(result.size / 1024).toFixed(0)} KB (Tersimpan)`;
-              previewCard.classList.remove('hidden');
-              dropzone.classList.add('hidden');
-              card.classList.remove('has-error');
-              if (window.app && typeof window.app.showToast === 'function') {
-                window.app.showToast('Foto berhasil dilampirkan!', 'success');
-              }
-              if (window.lucide) window.lucide.createIcons();
-            } catch (uploadErr) {
-              console.error(uploadErr);
-              if (window.app && typeof window.app.showToast === 'function') {
-                window.app.showToast('Gagal memproses foto: ' + uploadErr.message, 'error');
-              }
-            }
+        if (window.app && typeof window.app.showToast === 'function') {
+          window.app.showToast('Mengompresi & melampirkan foto...', 'info');
+        }
+
+        try {
+          const formId = this.currentForm ? this.currentForm.id : 'form_upload';
+          const formTitle = this.currentForm ? (this.currentForm.title || 'Formulir') : 'Formulir';
+          const scriptUrl = this.currentForm ? this.currentForm.gdriveScriptUrl : '';
+          const folderId = this.currentForm ? this.currentForm.gdriveFolderId : '';
+
+          const result = await window.imageUploader.processAndUpload(file, {
+            formId,
+            formTitle,
+            scriptUrl,
+            folderId,
+            questionTitle: q.title || 'Foto',
+            context: 'submission',
+            maxWidth: 1200,
+            quality: 0.85
+          });
+
+          this.answers[q.id] = result.url;
+          if (hiddenInput) hiddenInput.value = result.url;
+          if (thumbImg) thumbImg.src = result.previewUrl || result.url;
+          if (metaSize) metaSize.textContent = `${(result.size / 1024).toFixed(0)} KB (Tersimpan)`;
+          if (previewCard) previewCard.classList.remove('hidden');
+          if (dropzoneSingle) dropzoneSingle.classList.add('hidden');
+          if (dualBox) dualBox.classList.add('hidden');
+          card.classList.remove('has-error');
+
+          if (window.app && typeof window.app.showToast === 'function') {
+            window.app.showToast('Foto berhasil dilampirkan!', 'success');
+          }
+          if (window.lucide) window.lucide.createIcons();
+        } catch (uploadErr) {
+          console.error('Error proses foto:', uploadErr);
+          if (window.app && typeof window.app.showToast === 'function') {
+            window.app.showToast('Gagal memproses foto: ' + uploadErr.message, 'error');
+          }
+        }
+      };
+
+      // 1. Single Dropzone Box (Camera-only or Gallery-only)
+      if (dropzoneSingle && fileInputSingle) {
+        dropzoneSingle.addEventListener('click', () => fileInputSingle.click());
+        fileInputSingle.addEventListener('change', (e) => {
+          if (e.target.files && e.target.files[0]) {
+            handleFileUpload(e.target.files[0]);
           }
         });
       }
 
+      // 2. Dual Actions Box (Camera Button + Gallery Button)
+      if (btnCamera && cameraTrigger) {
+        btnCamera.addEventListener('click', (e) => {
+          e.preventDefault();
+          cameraTrigger.click();
+        });
+        cameraTrigger.addEventListener('change', (e) => {
+          if (e.target.files && e.target.files[0]) {
+            handleFileUpload(e.target.files[0]);
+          }
+        });
+      }
+
+      if (btnGallery && galleryTrigger) {
+        btnGallery.addEventListener('click', (e) => {
+          e.preventDefault();
+          galleryTrigger.click();
+        });
+        galleryTrigger.addEventListener('change', (e) => {
+          if (e.target.files && e.target.files[0]) {
+            handleFileUpload(e.target.files[0]);
+          }
+        });
+      }
+
+      // Remove photo button
       if (btnRemove) {
         btnRemove.addEventListener('click', () => {
           delete this.answers[q.id];
-          hiddenInput.value = '';
-          if (fileInput) fileInput.value = '';
-          thumbImg.src = '';
-          previewCard.classList.add('hidden');
-          dropzone.classList.remove('hidden');
+          if (hiddenInput) hiddenInput.value = '';
+          if (fileInputSingle) fileInputSingle.value = '';
+          if (cameraTrigger) cameraTrigger.value = '';
+          if (galleryTrigger) galleryTrigger.value = '';
+          if (thumbImg) thumbImg.src = '';
+          if (previewCard) previewCard.classList.add('hidden');
+          if (dropzoneSingle) dropzoneSingle.classList.remove('hidden');
+          if (dualBox) dualBox.classList.remove('hidden');
         });
       }
     }
@@ -1292,6 +1342,7 @@ class FormViewer {
       } else if (q.type === 'file') {
         const previewCard = qCard.querySelector('.file-preview-card');
         const dropzone = qCard.querySelector('.file-dropzone-box');
+        const dualBox = qCard.querySelector('.file-dual-actions-box');
         const thumbImg = qCard.querySelector('.file-thumb-img');
         const hiddenInput = qCard.querySelector('.input-file-hidden');
         if (savedVal && typeof savedVal === 'string') {
@@ -1299,6 +1350,7 @@ class FormViewer {
           if (hiddenInput) hiddenInput.value = savedVal;
           if (previewCard) previewCard.classList.remove('hidden');
           if (dropzone) dropzone.classList.add('hidden');
+          if (dualBox) dualBox.classList.add('hidden');
         }
       } else if (q.type === 'signature') {
         const canvas = qCard.querySelector('.signature-canvas');

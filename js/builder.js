@@ -1745,6 +1745,15 @@ class FormBuilder {
       this.renderQuestions();
     });
 
+    // Photo / Camera Source Selector Listener
+    const selectPhotoSource = card.querySelector('.select-photo-source');
+    if (selectPhotoSource) {
+      selectPhotoSource.addEventListener('change', (e) => {
+        q.photoSource = e.target.value;
+        this.renderQuestions();
+      });
+    }
+
     // Google Drive Question Configuration Listeners
     const selectGdriveAllowed = card.querySelector('.select-gdrive-allowed');
     if (selectGdriveAllowed) {
