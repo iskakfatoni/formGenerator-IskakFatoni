@@ -295,10 +295,11 @@ class FormViewer {
     // Header banner
     if (form.bannerUrl) {
       const bannerSrc = this.formatImageUrl(form.bannerUrl);
-      this.bannerEl.style.backgroundImage = `url('${bannerSrc}')`;
+      this.bannerEl.innerHTML = `<img src="${bannerSrc}" alt="Banner Formulir" class="live-banner-actual-img" loading="eager">`;
       this.bannerEl.classList.remove('hidden');
       this.bannerEl.style.display = 'block';
     } else {
+      this.bannerEl.innerHTML = '';
       this.bannerEl.classList.add('hidden');
       this.bannerEl.style.display = 'none';
     }
