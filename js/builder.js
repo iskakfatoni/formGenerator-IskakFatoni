@@ -65,17 +65,17 @@ class FormBuilder {
             const textInput = row.querySelector('.input-option-text');
             const branchSelect = row.querySelector('.select-opt-branch');
             const optText = textInput ? textInput.value : '';
-            const nextSec = branchSelect ? branchSelect.value : 'next';
+            const nextSec = branchSelect ? branchSelect.value : 'disabled';
 
             if (q.options && q.options[idx]) {
               if (typeof q.options[idx] === 'object') {
                 q.options[idx].text = optText;
                 if (branchSelect) q.options[idx].nextSectionId = nextSec;
               } else {
-                if (branchSelect && nextSec !== 'next' && nextSec !== 'inherit') {
+                if (branchSelect && nextSec !== 'disabled' && nextSec !== 'next' && nextSec !== 'inherit') {
                   q.options[idx] = { text: optText, nextSectionId: nextSec };
                 } else {
-                  q.options[idx] = optText;
+                  q.options[idx] = { text: optText, nextSectionId: 'disabled' };
                 }
               }
             }
@@ -1306,15 +1306,14 @@ class FormBuilder {
                 ` : ''}
                 
                 ${canBranch ? `
-                  <div class="opt-branch-wrap" title="Aksi lanjut setelah opsi ini dipilih">
+                  <div class="opt-branch-wrap" title="Aksi lanjut setelah opsi ini dipilih (Default: Nonaktif / Ikuti Alur Bagian)">
                     <i data-lucide="corner-down-right" class="branch-icon"></i>
                     <select class="select-opt-branch">
-                      <option value="next" ${(!optNext || optNext === 'next' || optNext === 'inherit') ? 'selected' : ''}>Lanjut bagian berikutnya (Default)</option>
+                      <option value="disabled" ${(!optNext || optNext === 'disabled' || optNext === 'inherit' || optNext === 'next') ? 'selected' : ''}>🚫 Nonaktif (Ikuti Alur Bagian)</option>
                       ${this.sections.map((s, sIdx) => `
                         <option value="${s.id}" ${optNext === s.id ? 'selected' : ''}>Buka Bagian ${sIdx + 1}: ${this.escapeHtml(s.title || 'Tanpa Judul')}</option>
                       `).join('')}
                       <option value="submit" ${optNext === 'submit' ? 'selected' : ''}>Kirim formulir (Submit)</option>
-                      <option value="disabled" ${optNext === 'disabled' ? 'selected' : ''}>🚫 Matikan Alur (Nonaktifkan)</option>
                     </select>
                   </div>
                 ` : ''}
@@ -2315,7 +2314,7 @@ class FormBuilder {
           type: 'dropdown',
           title: 'NAMA LENGKAP',
           required: true,
-          options: listJetis1.map(name => ({ text: name, nextSectionId: secKontakId }))
+          options: listJetis1.map(name => ({ text: name, nextSectionId: 'disabled' }))
         },
         // 5. Nama Siswa Jetis 2
         {
@@ -2324,7 +2323,7 @@ class FormBuilder {
           type: 'dropdown',
           title: 'NAMA LENGKAP',
           required: true,
-          options: listJetis2.map(name => ({ text: name, nextSectionId: secKontakId }))
+          options: listJetis2.map(name => ({ text: name, nextSectionId: 'disabled' }))
         },
         // 6. Nama Siswa Mutu 1
         {
@@ -2333,7 +2332,7 @@ class FormBuilder {
           type: 'dropdown',
           title: 'NAMA LENGKAP',
           required: true,
-          options: listMutu1.map(name => ({ text: name, nextSectionId: secKontakId }))
+          options: listMutu1.map(name => ({ text: name, nextSectionId: 'disabled' }))
         },
         // 7. Nama Siswa Mutu 2
         {
@@ -2342,7 +2341,7 @@ class FormBuilder {
           type: 'dropdown',
           title: 'NAMA LENGKAP',
           required: true,
-          options: listMutu2.map(name => ({ text: name, nextSectionId: secKontakId }))
+          options: listMutu2.map(name => ({ text: name, nextSectionId: 'disabled' }))
         },
         // 8. No WhatsApp Utama
         {

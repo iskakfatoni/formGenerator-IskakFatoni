@@ -56,7 +56,7 @@ window.BuilderTemplates = {
             required: true,
             options: Array.from({ length: 20 }, (_, i) => {
               const num = String(i + 1).padStart(2, '0');
-              return `${num}. ${sampleNames[i]} (${classNames[cIdx]})`;
+              return { text: `${num}. ${sampleNames[i]} (${classNames[cIdx]})`, nextSectionId: 'disabled' };
             })
           };
         }),
