@@ -348,11 +348,11 @@ class FormViewer {
     }
 
     // Buttons Visibility
-    const isSectionTerminal = currentSec && (currentSec.nextSectionId === 'submit' || currentSec.nextSectionId === 'disabled');
+    const isExplicitSubmit = currentSec && currentSec.nextSectionId === 'submit';
     if (isMultiStep) {
       if (this.currentStep === 0) {
         this.btnPrevStep.classList.add('hidden');
-        if (isSectionTerminal) {
+        if (isExplicitSubmit) {
           this.btnNextStep.classList.add('hidden');
           this.btnSubmitResponse.classList.remove('hidden');
         } else {
@@ -361,7 +361,7 @@ class FormViewer {
         }
       } else if (this.currentStep < totalSteps - 1) {
         this.btnPrevStep.classList.remove('hidden');
-        if (isSectionTerminal) {
+        if (isExplicitSubmit) {
           this.btnNextStep.classList.add('hidden');
           this.btnSubmitResponse.classList.remove('hidden');
         } else {
@@ -1452,9 +1452,9 @@ class FormViewer {
 
           if (matchedOpt && typeof matchedOpt === 'object' && matchedOpt.nextSectionId) {
             const optTarget = String(matchedOpt.nextSectionId).trim();
-            if (optTarget !== '' && optTarget !== 'next' && optTarget !== 'inherit') {
-              // Verify target exists in form sections or is 'submit' / 'disabled'
-              if (optTarget === 'submit' || optTarget === 'disabled' || this.sections.some(s => s.id === optTarget)) {
+            if (optTarget !== '' && optTarget !== 'next' && optTarget !== 'inherit' && optTarget !== 'disabled') {
+              // Verify target exists in form sections or is 'submit'
+              if (optTarget === 'submit' || this.sections.some(s => s.id === optTarget)) {
                 branchAction = optTarget;
                 break;
               }
@@ -1469,9 +1469,9 @@ class FormViewer {
       for (const q of stepQuestions) {
         if (q.nextSectionId) {
           const qTarget = String(q.nextSectionId).trim();
-          if (qTarget !== '' && qTarget !== 'next' && qTarget !== 'inherit') {
+          if (qTarget !== '' && qTarget !== 'next' && qTarget !== 'inherit' && qTarget !== 'disabled') {
             if (this.answers[q.id] !== undefined && this.answers[q.id] !== null && this.answers[q.id] !== '') {
-              if (qTarget === 'submit' || qTarget === 'disabled' || this.sections.some(s => s.id === qTarget)) {
+              if (qTarget === 'submit' || this.sections.some(s => s.id === qTarget)) {
                 branchAction = qTarget;
                 break;
               }
@@ -1485,14 +1485,14 @@ class FormViewer {
     // (Jika alur global sudah diatur pada bagian ini, otomatis diarahkan ke section target tersebut)
     if (branchAction === 'next' && currentSec && currentSec.nextSectionId) {
       const secTarget = String(currentSec.nextSectionId).trim();
-      if (secTarget !== '' && secTarget !== 'next' && secTarget !== 'inherit') {
-        if (secTarget === 'submit' || secTarget === 'disabled' || this.sections.some(s => s.id === secTarget)) {
+      if (secTarget !== '' && secTarget !== 'next' && secTarget !== 'inherit' && secTarget !== 'disabled') {
+        if (secTarget === 'submit' || this.sections.some(s => s.id === secTarget)) {
           branchAction = secTarget;
         }
       }
     }
 
-    if (branchAction === 'submit' || branchAction === 'disabled') {
+    if (branchAction === 'submit') {
       this.handleSubmit();
       return;
     }
