@@ -109,3 +109,8 @@ formGenerator-IskakFatoni/
    - Semua perubahan dikerjakan, diuji sintaksnya, dan disimpan secara lokal.
    - Cukup ingatkan kepada pengguna bahwa perubahan lokal sudah selesai dan siap di-push.
    - **Hanya jalankan `git push` ketika pengguna memerintahkannya secara eksplisit** (contoh: *"Push ke GitHub"*, *"Deploy"*, dll.).
+
+5. **🔗 TAUTAN AKSES PROYEK PADA LAPORAN**:
+   - **SELALU sertakan tautan akses langsung aplikasi** pada setiap laporan/report setelah melakukan `git push`:
+     - 🌐 **Live Web App**: [https://iskakfatoni.github.io/formGenerator-IskakFatoni/](https://iskakfatoni.github.io/formGenerator-IskakFatoni/)
+     - 📂 **GitHub Repository**: [https://github.com/iskakfatoni/formGenerator-IskakFatoni](https://github.com/iskakfatoni/formGenerator-IskakFatoni)
