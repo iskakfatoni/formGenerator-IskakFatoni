@@ -220,13 +220,11 @@ class ResponsesDashboard {
 
     // 1. Render Table Headers
     const isQuiz = form.isQuizMode === true;
-    let headHtml = '<tr><th style="width: 50px;">#</th><th style="min-width: 140px;">Waktu Kirim</th>' + (isQuiz ? '<th style="min-width: 130px; color: #818cf8;"><i data-lucide="award"></i> Nilai Kuis</th>' : '') + (hasEmail ? '<th style="min-width: 180px;">Email Responden</th>' : '');
+    let headHtml = '<tr><th style="width: 75px; text-align: center;">#</th><th style="min-width: 140px;">Waktu Kirim</th>' + (isQuiz ? '<th style="min-width: 130px; color: #818cf8;"><i data-lucide="award"></i> Nilai Kuis</th>' : '') + (hasEmail ? '<th style="min-width: 180px;">Email Responden</th>' : '');
 
     columns.forEach(col => {
       headHtml += '<th title="' + this.escapeHtml(col.title) + '">' + this.escapeHtml(col.title) + '</th>';
     });
-
-    headHtml += '<th style="min-width: 110px; text-align: center; position: sticky; right: 0; background: var(--bg-secondary); z-index: 2;"><i data-lucide="printer"></i> Aksi</th>';
 
     headHtml += '</tr>';
     if (this.tableHead) {
@@ -282,7 +280,14 @@ class ResponsesDashboard {
         }
       }
 
-      bodyHtml += '<tr><td><strong>' + (index + 1) + '</strong></td><td style="color: var(--text-secondary); font-size: 0.85rem;">' + dateStr + '</td>' + quizScoreBadge + (hasEmail ? '<td style="font-weight: 500; color: #818cf8;">' + this.escapeHtml(emailStr) + '</td>' : '');
+      const numWithPrintBtn = '<div style="display: inline-flex; align-items: center; justify-content: center; gap: 6px;">' +
+        '<span style="font-weight: 700; font-size: 0.9rem; min-width: 16px; text-align: right;">' + (index + 1) + '</span>' +
+        '<button type="button" class="btn btn-secondary btn-icon-xs btn-print-pdf-receipt" data-index="' + index + '" title="Cetak Lembar Bukti PDF Responden #' + (index + 1) + '" style="padding: 3px 6px; border-radius: 6px; border-color: rgba(99, 102, 241, 0.35); color: #818cf8; background: rgba(99, 102, 241, 0.1); cursor: pointer; display: inline-flex; align-items: center; justify-content: center;">' +
+          '<i data-lucide="printer" style="width: 13px; height: 13px;"></i>' +
+        '</button>' +
+      '</div>';
+
+      bodyHtml += '<tr><td style="text-align: center; white-space: nowrap;">' + numWithPrintBtn + '</td><td style="color: var(--text-secondary); font-size: 0.85rem;">' + dateStr + '</td>' + quizScoreBadge + (hasEmail ? '<td style="font-weight: 500; color: #818cf8;">' + this.escapeHtml(emailStr) + '</td>' : '');
 
       columns.forEach(col => {
         let ans = null;
@@ -355,13 +360,6 @@ class ResponsesDashboard {
 
         bodyHtml += '<td title="' + this.escapeHtml(typeof ans === 'object' ? JSON.stringify(ans) : String(ans || '')) + '">' + displayVal + '</td>';
       });
-
-      // Action Cell for Print PDF Receipt
-      bodyHtml += '<td style="text-align: center; position: sticky; right: 0; background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(8px); z-index: 1;">' +
-        '<button type="button" class="btn btn-secondary btn-xs btn-print-pdf-receipt" data-index="' + index + '" title="Cetak PDF Lembar Bukti Pengisian Responden" style="white-space: nowrap; gap: 4px; padding: 4px 8px; font-size: 0.78rem; border-color: rgba(99, 102, 241, 0.4);">' +
-          '<i data-lucide="printer" style="width:13px; height:13px; color: #818cf8;"></i><span>Cetak PDF</span>' +
-        '</button>' +
-      '</td>';
 
       bodyHtml += '</tr>';
     });
