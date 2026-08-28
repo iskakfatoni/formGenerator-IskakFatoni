@@ -147,6 +147,7 @@ window.BuilderFlowchart = {
 
   /**
    * Topological Stage Calculation (Assigns Left-to-Right columns from Start -> Branches -> End)
+   * Ensures sibling/parallel branches (e.g., classes branched from the same parent) stay in the same column/stage.
    */
   calculateStages(sections, questions) {
     const stageMap = {};
@@ -155,54 +156,82 @@ window.BuilderFlowchart = {
     const startSecId = sections[0].id;
     stageMap[startSecId] = 0;
 
-    const queue = [startSecId];
-    const visited = new Set([startSecId]);
+    // 1. Collect all explicit branch targets from questions across all sections
+    const branchTargetSet = new Set();
+    const explicitBranchMap = {}; // fromSectionId -> Set of targetSectionIds
 
-    while (queue.length > 0) {
-      const currentId = queue.shift();
-      const currentStage = stageMap[currentId] || 0;
-      const currentSec = sections.find(s => s.id === currentId);
-      if (!currentSec) continue;
-
-      const outgoing = new Set();
-      // Branches from questions
-      const secQuestions = questions.filter(q => q.sectionId === currentId);
+    sections.forEach(sec => {
+      explicitBranchMap[sec.id] = new Set();
+      const secQuestions = (questions || []).filter(q => q.sectionId === sec.id);
       secQuestions.forEach(q => {
         if (Array.isArray(q.options)) {
           q.options.forEach(opt => {
             const nextId = typeof opt === 'object' ? (opt.nextSectionId || '') : '';
             if (nextId && nextId !== 'inherit' && nextId !== 'next' && nextId !== 'submit' && sections.some(s => s.id === nextId)) {
-              outgoing.add(nextId);
+              explicitBranchMap[sec.id].add(nextId);
+              branchTargetSet.add(nextId);
             }
           });
         }
       });
+    });
 
-      // Section default flow
-      if (currentSec.nextSectionId && currentSec.nextSectionId !== 'inherit' && currentSec.nextSectionId !== 'next' && currentSec.nextSectionId !== 'submit' && sections.some(s => s.id === currentSec.nextSectionId)) {
-        outgoing.add(currentSec.nextSectionId);
-      } else {
-        const curIdx = sections.findIndex(s => s.id === currentId);
-        if (curIdx >= 0 && curIdx < sections.length - 1) {
-          outgoing.add(sections[curIdx + 1].id);
+    // 2. Build graph adjacency list
+    const graph = {};
+    sections.forEach((sec, idx) => {
+      graph[sec.id] = new Set();
+
+      // Add question branches
+      explicitBranchMap[sec.id].forEach(targetId => {
+        graph[sec.id].add(targetId);
+      });
+
+      // Add section-level explicit nextSectionId
+      if (sec.nextSectionId && sec.nextSectionId !== 'inherit' && sec.nextSectionId !== 'next' && sec.nextSectionId !== 'submit' && sections.some(s => s.id === sec.nextSectionId)) {
+        graph[sec.id].add(sec.nextSectionId);
+      } else if (sec.nextSectionId !== 'submit') {
+        // Fallback sequential flow: only add next section in array IF next section is NOT an explicit branch target from elsewhere
+        if (idx < sections.length - 1) {
+          const nextSec = sections[idx + 1];
+          if (!branchTargetSet.has(nextSec.id)) {
+            graph[sec.id].add(nextSec.id);
+          }
         }
       }
+    });
 
-      outgoing.forEach(targetId => {
-        if (stageMap[targetId] === undefined || stageMap[targetId] < currentStage + 1) {
-          stageMap[targetId] = currentStage + 1;
+    // 3. BFS traversal to compute topological stage/depth from startSecId
+    const queue = [startSecId];
+
+    while (queue.length > 0) {
+      const currentId = queue.shift();
+      const currentStage = stageMap[currentId] || 0;
+
+      graph[currentId].forEach(targetId => {
+        const nextStage = currentStage + 1;
+        if (stageMap[targetId] === undefined || nextStage > stageMap[targetId]) {
+          stageMap[targetId] = nextStage;
         }
-        if (!visited.has(targetId)) {
-          visited.add(targetId);
+        if (!queue.includes(targetId)) {
           queue.push(targetId);
         }
       });
     }
 
-    // Assign any unvisited sections sequentially based on index
+    // 4. Handle any unvisited or disconnected sections gracefully
     sections.forEach((sec, idx) => {
       if (stageMap[sec.id] === undefined) {
-        stageMap[sec.id] = Math.min(idx, 2);
+        let assigned = false;
+        for (const parentId of Object.keys(explicitBranchMap)) {
+          if (explicitBranchMap[parentId].has(sec.id) && stageMap[parentId] !== undefined) {
+            stageMap[sec.id] = stageMap[parentId] + 1;
+            assigned = true;
+            break;
+          }
+        }
+        if (!assigned) {
+          stageMap[sec.id] = idx > 0 ? 1 : 0;
+        }
       }
     });
 
