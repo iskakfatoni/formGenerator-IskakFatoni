@@ -17,6 +17,31 @@
   <!-- Lucide Icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
 
+  <!-- Instant Responder Routing Redirect (Auto-forward students directly to form.html) -->
+  <script>
+    (function() {
+      try {
+        var hash = (window.location.hash || '').trim();
+        var search = window.location.search || '';
+        var params = new URLSearchParams(search);
+        var queryFormId = params.get('id') || params.get('form') || params.get('view') || params.get('formId') || params.get('formid');
+        
+        var isResponderHash = /^#\/?(view|form)(\/|$)/i.test(hash);
+        if (isResponderHash) {
+          var cleanHash = hash.replace(/^#\/?(view|form)/i, '#/view');
+          window.location.replace('form.html' + cleanHash);
+          return;
+        }
+        if (queryFormId) {
+          window.location.replace('form.html#/view/' + encodeURIComponent(queryFormId.trim()));
+          return;
+        }
+      } catch (err) {
+        console.warn('Responder route redirection check note:', err);
+      }
+    })();
+  </script>
+
   <!-- Firebase SDK (Modular via CDN Compat) -->
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>

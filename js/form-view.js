@@ -75,7 +75,40 @@ class FormViewer {
   }
 
 
-  renderFormClosed(title, message) {
+  renderFormLoading() {
+    const headerCard = document.getElementById('form-view-header-card');
+    if (headerCard) headerCard.classList.add('hidden');
+    if (this.formElement) this.formElement.classList.add('hidden');
+    if (this.successCard) this.successCard.classList.add('hidden');
+    
+    const closedNotice = document.getElementById('form-closed-notice-wrap');
+    if (closedNotice) closedNotice.classList.add('hidden');
+
+    let loadingWrap = document.getElementById('form-loading-notice-wrap');
+    if (!loadingWrap) {
+      loadingWrap = document.createElement('div');
+      loadingWrap.id = 'form-loading-notice-wrap';
+      const container = document.querySelector('.form-viewer-container') || document.body;
+      container.appendChild(loadingWrap);
+    }
+    
+    loadingWrap.innerHTML = `
+      <div class="form-closed-notice-card glass-card" style="text-align: center; padding: 48px 24px;">
+        <div class="pulse-dot" style="width: 14px; height: 14px; margin: 0 auto 16px; background: var(--primary);"></div>
+        <h3 style="font-size: 1.15rem; font-weight: 600; margin-bottom: 8px;">Memuat Formulir...</h3>
+        <p style="color: var(--text-secondary); font-size: 0.9rem;">Menghubungkan ke Cloud Firestore...</p>
+      </div>
+    `;
+    loadingWrap.classList.remove('hidden');
+  }
+
+  hideFormLoading() {
+    const loadingWrap = document.getElementById('form-loading-notice-wrap');
+    if (loadingWrap) loadingWrap.classList.add('hidden');
+  }
+
+  renderFormNotFound(message = 'Formulir tidak ditemukan atau telah dihapus oleh pembuatnya.') {
+    this.hideFormLoading();
     const headerCard = document.getElementById('form-view-header-card');
     if (headerCard) headerCard.classList.add('hidden');
     if (this.formElement) this.formElement.classList.add('hidden');
@@ -90,13 +123,51 @@ class FormViewer {
     }
     
     closedWrap.innerHTML = `
-      <div class="form-closed-notice-card glass-card">
-        <i data-lucide="lock" class="closed-icon"></i>
-        <h2>${this.escapeHtml(title)}</h2>
-        <p>${this.escapeHtml(message)}</p>
-        <button type="button" class="btn btn-secondary btn-sm" onclick="window.location.hash = '#/dashboard'">
-          <i data-lucide="arrow-left"></i>
-          <span>Kembali ke Beranda</span>
+      <div class="form-closed-notice-card glass-card" style="border-top: 4px solid #f59e0b; text-align: center;">
+        <i data-lucide="help-circle" class="closed-icon" style="color: #f59e0b; width: 44px; height: 44px; margin: 0 auto 14px;"></i>
+        <h2 style="font-size: 1.4rem; font-weight: 700; margin-bottom: 10px;">Formulir Tidak Ditemukan</h2>
+        <p style="color: var(--text-secondary); font-size: 0.95rem; line-height: 1.6; max-width: 500px; margin: 0 auto 20px;">
+          ${this.escapeHtml(message)}
+        </p>
+        <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+          <button type="button" class="btn btn-secondary btn-sm" onclick="window.location.reload()">
+            <i data-lucide="refresh-cw"></i>
+            <span>Muat Ulang Halaman</span>
+          </button>
+          <button type="button" class="btn btn-ghost btn-sm" onclick="window.location.href = 'index.html'">
+            <i data-lucide="home"></i>
+            <span>Buka Halaman Utama</span>
+          </button>
+        </div>
+      </div>
+    `;
+    closedWrap.classList.remove('hidden');
+    if (window.lucide) window.lucide.createIcons();
+  }
+
+  renderFormClosed(title, message) {
+    this.hideFormLoading();
+    const headerCard = document.getElementById('form-view-header-card');
+    if (headerCard) headerCard.classList.add('hidden');
+    if (this.formElement) this.formElement.classList.add('hidden');
+    if (this.successCard) this.successCard.classList.add('hidden');
+    
+    let closedWrap = document.getElementById('form-closed-notice-wrap');
+    if (!closedWrap) {
+      closedWrap = document.createElement('div');
+      closedWrap.id = 'form-closed-notice-wrap';
+      const container = document.querySelector('.form-viewer-container') || document.body;
+      container.appendChild(closedWrap);
+    }
+    
+    closedWrap.innerHTML = `
+      <div class="form-closed-notice-card glass-card" style="border-top: 4px solid #ef4444; text-align: center;">
+        <i data-lucide="lock" class="closed-icon" style="color: #ef4444; width: 44px; height: 44px; margin: 0 auto 14px;"></i>
+        <h2 style="font-size: 1.4rem; font-weight: 700; margin-bottom: 10px;">${this.escapeHtml(title)}</h2>
+        <p style="color: var(--text-secondary); font-size: 0.95rem; line-height: 1.6; max-width: 500px; margin: 0 auto 20px;">${this.escapeHtml(message)}</p>
+        <button type="button" class="btn btn-secondary btn-sm" onclick="window.location.href = 'index.html'">
+          <i data-lucide="home"></i>
+          <span>Buka Halaman Utama</span>
         </button>
       </div>
     `;
@@ -244,22 +315,27 @@ class FormViewer {
     this.currentStep = 0;
     this.historyStack = [0];
     this.successCard.classList.add('hidden');
+
+    const cleanFormId = formId ? String(formId).split('?')[0].split('&')[0].split('#')[0].replace(/\/+$/, '').trim() : '';
+
+    if (!cleanFormId) {
+      this.renderFormNotFound('Tautan formulir tidak lengkap atau ID formulir tidak valid.');
+      return;
+    }
+
+    // Show clean loading state while fetching from Cloud Firestore
+    this.renderFormLoading();
+
+    const form = await window.formStorage.getFormById(cleanFormId);
+    if (!form) {
+      this.renderFormNotFound('Formulir tidak ditemukan atau telah dihapus oleh pembuatnya. Silakan pastikan tautan yang Anda buka sudah benar.');
+      return;
+    }
+
+    this.hideFormLoading();
     this.formElement.classList.remove('hidden');
     const headerCard = document.getElementById('form-view-header-card');
     if (headerCard) headerCard.classList.remove('hidden');
-
-    if (!formId) {
-      window.app.showToast('ID Formulir tidak valid', 'error');
-      window.location.hash = '#/dashboard';
-      return;
-    }
-
-    const form = await window.formStorage.getFormById(formId);
-    if (!form) {
-      window.app.showToast('Formulir tidak ditemukan atau telah dihapus', 'error');
-      window.location.hash = '#/dashboard';
-      return;
-    }
 
     this.currentForm = form;
 

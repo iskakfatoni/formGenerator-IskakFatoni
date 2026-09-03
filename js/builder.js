@@ -620,16 +620,26 @@ class FormBuilder {
       });
     }
 
-    // Preview Button
+    // Builder Toolbar Share Button
+    const btnBuilderShare = document.getElementById('btn-builder-share-form');
+    if (btnBuilderShare) {
+      btnBuilderShare.addEventListener('click', async () => {
+        const saved = await this.saveCurrentForm(true);
+        const formId = (saved && saved.id) || (this.currentForm && this.currentForm.id);
+        if (formId && window.app && typeof window.app.openShareModal === 'function') {
+          window.app.openShareModal(formId);
+        }
+      });
+    }
+
+    // Preview Button (Auto-saves changes first so respondent preview is 100% up to date)
     const btnPreview = document.getElementById('btn-preview-form');
     if (btnPreview) {
-      btnPreview.addEventListener('click', () => {
-        if (this.currentForm && this.currentForm.id) {
-          window.location.hash = `#/view/${this.currentForm.id}`;
-        } else {
-          this.saveCurrentForm().then(saved => {
-            if (saved) window.location.hash = `#/view/${saved.id}`;
-          });
+      btnPreview.addEventListener('click', async () => {
+        const saved = await this.saveCurrentForm(true);
+        const formId = (saved && saved.id) || (this.currentForm && this.currentForm.id);
+        if (formId) {
+          window.location.hash = `#/view/${formId}`;
         }
       });
     }

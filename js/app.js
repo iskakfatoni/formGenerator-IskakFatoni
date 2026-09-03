@@ -80,10 +80,38 @@ class App {
   // --- SPA HASH ROUTING ---
 
   handleRoute() {
-    const hash = window.location.hash || '#/dashboard';
-    const parts = hash.replace(/^#\/?/, '').split('/');
-    const route = parts[0] || 'dashboard';
-    const param = parts[1] || null;
+    // 0. Auto-detect respondent query parameters (e.g. form.html?id=... or ?form=...)
+    try {
+      const urlParams = new URLSearchParams(window.location.search);
+      const queryId = urlParams.get('id') || urlParams.get('form') || urlParams.get('view') || urlParams.get('formId') || urlParams.get('formid');
+      if (queryId && (!window.location.hash || !window.location.hash.toLowerCase().includes('view/'))) {
+        window.location.hash = `#/view/${encodeURIComponent(queryId.trim())}`;
+        return;
+      }
+    } catch (e) {
+      console.warn('URL search params parse notice:', e);
+    }
+
+    const rawHash = (window.location.hash || '').trim();
+    let decodedHash = rawHash;
+    try {
+      decodedHash = decodeURIComponent(rawHash);
+    } catch (e) {
+      decodedHash = rawHash;
+    }
+
+    // Default to dashboard only if hash is completely empty
+    const hashToParse = decodedHash || '#/dashboard';
+    const parts = hashToParse.replace(/^#\/?/, '').split('/');
+    const route = (parts[0] || 'dashboard').toLowerCase();
+    
+    // Clean and sanitize param: remove query strings (?utm=...), fragments (#), and trailing slashes
+    let param = parts.slice(1).join('/');
+    if (param) {
+      param = param.split('?')[0].split('&')[0].split('#')[0].replace(/\/+$/, '').trim();
+    } else {
+      param = null;
+    }
 
     const mainNav = document.getElementById('main-nav');
     const previewAdminBar = document.getElementById('preview-admin-bar');
@@ -167,7 +195,16 @@ class App {
         }
       }
     } else {
-      window.location.hash = '#/dashboard';
+      // For unauthenticated respondents, NEVER bounce to #/dashboard (which forces login redirect)
+      const isAuthUser = window.authManager && window.authManager.isLoggedIn();
+      if (!isAuthUser) {
+        this.showSection('view-form');
+        if (this.viewer) {
+          this.viewer.renderFormNotFound('Halaman atau tautan formulir yang Anda tuju tidak valid.');
+        }
+      } else {
+        window.location.hash = '#/dashboard';
+      }
     }
 
     // Re-initialize Lucide Icons
@@ -410,15 +447,22 @@ class App {
     const btnWhatsApp = document.getElementById('btn-share-whatsapp');
     const qrContainer = document.getElementById('share-qrcode-container');
 
-    // Build URL using full current origin + pathname + hash
-    const baseUrl = window.location.href.split('#')[0];
-    const fullShareUrl = `${baseUrl}#/view/${formId}`;
+    // Clean and validate formId
+    const cleanId = String(formId || '').trim();
+
+    // Build URL ensuring it accurately targets form.html without admin query params or index.html
+    const loc = window.location;
+    let pathname = loc.pathname;
+    if (!pathname.toLowerCase().endsWith('form.html')) {
+      pathname = pathname.replace(/\/index\.html$/i, '').replace(/\/+$/, '') + '/form.html';
+    }
+    const fullShareUrl = `${loc.origin}${pathname}#/view/${encodeURIComponent(cleanId)}`;
 
     if (input) input.value = fullShareUrl;
     if (openLink) openLink.href = fullShareUrl;
 
     // WhatsApp text
-    const formTitle = (this.dashboardForms && this.dashboardForms.find(f => f.id === formId)?.title) || 'Formulir Online';
+    const formTitle = (this.dashboardForms && this.dashboardForms.find(f => f.id === cleanId)?.title) || 'Formulir Online';
     const waText = `Halo! Silakan mengisi *${formTitle}* melalui tautan berikut:\n\n${fullShareUrl}`;
     if (btnWhatsApp) {
       btnWhatsApp.href = `https://api.whatsapp.com/send?text=${encodeURIComponent(waText)}`;

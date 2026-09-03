@@ -79,9 +79,13 @@ class FormStorage {
   }
 
   async getFormById(id) {
+    if (!id || typeof id !== 'string') return null;
+    const cleanId = id.split('?')[0].split('&')[0].split('#')[0].replace(/\/+$/, '').trim();
+    if (!cleanId) return null;
+
     if (this.isCloud) {
       try {
-        const doc = await this.db.collection('forms').doc(id).get();
+        const doc = await this.db.collection('forms').doc(cleanId).get();
         if (doc.exists) {
           return { id: doc.id, ...doc.data() };
         }
@@ -90,7 +94,7 @@ class FormStorage {
       }
     }
     const forms = this.getLocalForms();
-    return forms.find(f => f.id === id) || null;
+    return forms.find(f => f.id === cleanId) || null;
   }
 
   async saveForm(formData) {

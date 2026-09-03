@@ -22,13 +22,39 @@ class AuthManager {
   }
 
   isLandingPage() {
-    const path = window.location.pathname.toLowerCase();
-    return !path.includes('form.html');
+    return !this.isFormPage();
   }
 
   isFormPage() {
     const path = window.location.pathname.toLowerCase();
-    return path.includes('form.html');
+    return path.includes('form.html') || !!document.getElementById('view-form') || !!document.getElementById('app-viewport');
+  }
+
+  /**
+   * Checks if current URL is intended for public respondents/students.
+   * Recognizes hashes: #/view/..., #view/..., #/form/..., #form/...,
+   * as well as query parameter patterns: ?id=..., ?form=..., ?view=...
+   */
+  isPublicResponderView() {
+    const rawHash = (window.location.hash || '').toLowerCase().trim();
+    let decodedHash = '';
+    try {
+      decodedHash = decodeURIComponent(rawHash);
+    } catch (e) {
+      decodedHash = rawHash;
+    }
+
+    const isHashView = /^#\/?(view|form)(\/|$)/i.test(decodedHash) || decodedHash.startsWith('#/view') || decodedHash.startsWith('#view');
+
+    let isQueryView = false;
+    try {
+      const params = new URLSearchParams(window.location.search);
+      isQueryView = params.has('id') || params.has('form') || params.has('view') || params.has('formid');
+    } catch (e) {
+      isQueryView = false;
+    }
+
+    return isHashView || isQueryView;
   }
 
   isAdmin(email) {
@@ -96,16 +122,13 @@ class AuthManager {
 
   /**
    * Protects form.html so only authenticated users can access Dashboard & Builder.
-   * Public responder views (#/view/ or #/form/) remain completely open to respondents.
+   * Public responder views (#/view/, #view/, or query params) remain completely open to respondents.
    */
   checkRouteGuard() {
     if (!this.isFormPage()) return;
 
-    const hash = window.location.hash || '';
-    const isPublicView = hash.startsWith('#/view/') || hash.startsWith('#/form/');
-
-    // Public respondent view is always allowed
-    if (isPublicView) return;
+    // Public respondent view is always 100% allowed without authentication
+    if (this.isPublicResponderView()) return;
 
     // Check if user is logged in
     if (!this.isLoggedIn()) {

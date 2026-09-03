@@ -20,11 +20,20 @@ service cloud.firestore {
                     && request.resource.data.title.size() > 0
                     && request.resource.data.title.size() <= 200;
                     
-      // 3. Update & Delete: Diizinkan jika user adalah pemilik form (ownerUid) atau legacy form
-      allow update, delete: if isAuthenticated() && (
+      // 3. Update & Delete: Diizinkan jika user adalah pemilik form (ownerUid) atau legacy form,
+      //    ATAU jika responden publik hanya memperbarui counter responseCount dan lastResponseAt
+      allow delete: if isAuthenticated() && (
         !('ownerUid' in resource.data) ||
         resource.data.ownerUid == request.auth.uid ||
         request.auth.token.email == 'iskakfatoni@gmail.com'
+      );
+
+      allow update: if (isAuthenticated() && (
+        !('ownerUid' in resource.data) ||
+        resource.data.ownerUid == request.auth.uid ||
+        request.auth.token.email == 'iskakfatoni@gmail.com'
+      )) || (
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['responseCount', 'lastResponseAt'])
       );
     }
     
