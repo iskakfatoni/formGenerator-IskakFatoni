@@ -3,6 +3,8 @@
   "version": "1.0.0",
   "description": "formGenerator-IskakFatoni - Modern Form Builder & Excel Export Desktop App",
   "scripts": {
+    "dev": "vite",
+    "build": "node scripts/build.mjs",
     "build:exe": "C:\\Windows\\Microsoft.NET\\Framework64\\v4.0.30319\\csc.exe /target:winexe /optimize+ /out:formGenerator-IskakFatoni.exe launcher\\Program.cs"
   },
   "repository": {
@@ -16,5 +18,9 @@
   "bugs": {
     "url": "https://github.com/iskakfatoni/formGenerator-IskakFatoni/issues"
   },
-  "homepage": "https://github.com/iskakfatoni/formGenerator-IskakFatoni#readme"
+  "homepage": "https://github.com/iskakfatoni/formGenerator-IskakFatoni#readme",
+  "devDependencies": {
+    "terser": "^5.51.2",
+    "vite": "^8.2.2"
+  }
 }
