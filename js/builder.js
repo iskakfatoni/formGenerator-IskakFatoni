@@ -860,10 +860,34 @@ class FormBuilder {
         }
 
         const firstSecId = this.sections[0].id;
+        let hasMutuUpdates = false;
         this.questions = (form.questions || []).map(q => {
           if (!q.sectionId) q.sectionId = firstSecId;
+          const isMutuQuestion = q.id === 'q_1787793450986_nama_mutu1' ||
+                                 q.id === 'q_1787793450986_nama_mutu2' ||
+                                 (q.sectionId && q.sectionId.includes('mutu') && q.title && q.title.toUpperCase().includes('NAMA'));
+          if (isMutuQuestion && Array.isArray(q.options)) {
+            q.options.forEach(opt => {
+              if (opt && typeof opt === 'object' && typeof opt.text === 'string') {
+                const upper = opt.text.toUpperCase();
+                if (opt.text !== upper) {
+                  opt.text = upper;
+                  hasMutuUpdates = true;
+                }
+              } else if (typeof opt === 'string') {
+                const upper = opt.toUpperCase();
+                if (opt !== upper) {
+                  hasMutuUpdates = true;
+                }
+              }
+            });
+          }
           return q;
         });
+
+        if (hasMutuUpdates) {
+          this.triggerAutoSave(true);
+        }
 
         
         this.restoreFoldingState(formId);
@@ -1378,10 +1402,16 @@ class FormBuilder {
               </div>
             `;
           }).join('')}
-          <button type="button" class="btn-add-option-row">
-            <i data-lucide="plus"></i>
-            <span>Tambah Opsi</span>
-          </button>
+          <div class="q-options-btn-row" style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-top: 6px;">
+            <button type="button" class="btn-add-option-row">
+              <i data-lucide="plus"></i>
+              <span>Tambah Opsi</span>
+            </button>
+            <button type="button" class="btn-uppercase-options btn btn-ghost btn-xs" title="Ubah seluruh teks pilihan menjadi HURUF BESAR / KAPITAL">
+              <i data-lucide="case-upper"></i>
+              <span>Kapitalkan Semua Opsi</span>
+            </button>
+          </div>
           ${isQuiz ? `
             <div class="q-quiz-config-bar">
               <div class="q-quiz-points-wrap">
@@ -1937,6 +1967,26 @@ class FormBuilder {
         if (!q.options) q.options = [];
         q.options.push(`Opsi ${q.options.length + 1}`);
         this.renderQuestions();
+      });
+    }
+
+    const btnUppercase = card.querySelector('.btn-uppercase-options');
+    if (btnUppercase) {
+      btnUppercase.addEventListener('click', () => {
+        if (Array.isArray(q.options) && q.options.length > 0) {
+          q.options.forEach(opt => {
+            if (opt && typeof opt === 'object' && typeof opt.text === 'string') {
+              opt.text = opt.text.toUpperCase();
+            } else if (typeof opt === 'string') {
+              opt = opt.toUpperCase();
+            }
+          });
+          this.renderQuestions();
+          this.triggerAutoSave(true);
+          if (window.app && typeof window.app.showToast === 'function') {
+            window.app.showToast('Semua opsi berhasil diubah menjadi huruf kapital!', 'success');
+          }
+        }
       });
     }
 

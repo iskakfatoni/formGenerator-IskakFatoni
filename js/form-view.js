@@ -339,6 +339,24 @@ class FormViewer {
 
     this.currentForm = form;
 
+    // Ensure student names for SMK Mutu Kemlagi are displayed in UPPERCASE (HURUF KAPITAL)
+    if (form && Array.isArray(form.questions)) {
+      form.questions.forEach(q => {
+        const isMutuQuestion = q.id === 'q_1787793450986_nama_mutu1' ||
+                               q.id === 'q_1787793450986_nama_mutu2' ||
+                               (q.sectionId && q.sectionId.includes('mutu') && q.title && q.title.toUpperCase().includes('NAMA'));
+        if (isMutuQuestion && Array.isArray(q.options)) {
+          q.options.forEach(opt => {
+            if (opt && typeof opt === 'object' && typeof opt.text === 'string') {
+              opt.text = opt.text.toUpperCase();
+            } else if (typeof opt === 'string') {
+              opt = opt.toUpperCase();
+            }
+          });
+        }
+      });
+    }
+
     const closedNotice = document.getElementById('form-closed-notice-wrap');
     if (closedNotice) closedNotice.classList.add('hidden');
 
