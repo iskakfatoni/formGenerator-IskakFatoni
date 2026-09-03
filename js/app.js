@@ -319,6 +319,9 @@ class App {
             </button>
           </div>
           <div class="card-icon-actions">
+            <button class="btn btn-ghost btn-sm btn-action-copy" title="Duplikat / Salin Formulir Ini">
+              <i data-lucide="copy"></i>
+            </button>
             <button class="btn btn-ghost btn-sm btn-action-edit" title="Edit Pertanyaan">
               <i data-lucide="edit-3"></i>
             </button>
@@ -333,6 +336,14 @@ class App {
       `;
 
       // Card event listeners
+      const btnCopy = card.querySelector('.btn-action-copy');
+      if (btnCopy) {
+        btnCopy.addEventListener('click', async (e) => {
+          e.stopPropagation();
+          await this.duplicateForm(form.id);
+        });
+      }
+
       card.querySelector('.btn-action-view').addEventListener('click', (e) => {
         e.stopPropagation();
         window.location.hash = '#/view/' + form.id;
@@ -387,6 +398,69 @@ class App {
       return titleMatch || descMatch;
     });
     this.renderDashboardForms(filtered);
+  }
+
+  async duplicateForm(formId) {
+    try {
+      this.showToast('Sedang menduplikasi formulir...', 'info');
+      const form = await window.formStorage.getFormById(formId);
+      if (!form) {
+        this.showToast('Formulir sumber tidak ditemukan', 'error');
+        return;
+      }
+
+      // Deep clone form structure
+      const newForm = JSON.parse(JSON.stringify(form));
+      delete newForm.id;
+      delete newForm._id;
+      
+      // Clean metadata and counter
+      newForm.title = (newForm.title || 'Formulir') + ' (Salinan)';
+      newForm.responseCount = 0;
+      delete newForm.lastResponseAt;
+      newForm.createdAt = new Date().toISOString();
+      newForm.updatedAt = new Date().toISOString();
+
+      // Ensure fresh unique IDs for sections and questions while strictly preserving branching logic
+      const idMap = {};
+      if (Array.isArray(newForm.sections)) {
+        newForm.sections.forEach((sec, idx) => {
+          const oldId = sec.id;
+          const newId = 'sec_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5) + '_' + (idx + 1);
+          idMap[oldId] = newId;
+          sec.id = newId;
+        });
+
+        newForm.sections.forEach(sec => {
+          if (sec.nextSectionId && idMap[sec.nextSectionId]) {
+            sec.nextSectionId = idMap[sec.nextSectionId];
+          }
+        });
+      }
+
+      if (Array.isArray(newForm.questions)) {
+        newForm.questions.forEach((q, idx) => {
+          q.id = 'q_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5) + '_' + (idx + 1);
+          if (q.sectionId && idMap[q.sectionId]) {
+            q.sectionId = idMap[q.sectionId];
+          }
+          if (Array.isArray(q.options)) {
+            q.options.forEach(opt => {
+              if (opt && opt.nextSectionId && idMap[opt.nextSectionId]) {
+                opt.nextSectionId = idMap[opt.nextSectionId];
+              }
+            });
+          }
+        });
+      }
+
+      const saved = await window.formStorage.saveForm(newForm);
+      this.showToast('Formulir berhasil disalin!', 'success');
+      await this.loadDashboard();
+    } catch (err) {
+      console.error('Gagal menduplikasi form:', err);
+      this.showToast('Gagal menyalin formulir: ' + (err.message || 'Terjadi kesalahan'), 'error');
+    }
   }
 
   // --- MODALS & SHARE ---
