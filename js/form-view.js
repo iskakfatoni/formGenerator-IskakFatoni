@@ -76,6 +76,7 @@ class FormViewer {
 
 
   renderFormLoading() {
+    document.title = 'Memuat Formulir...';
     const headerCard = document.getElementById('form-view-header-card');
     if (headerCard) headerCard.classList.add('hidden');
     if (this.formElement) this.formElement.classList.add('hidden');
@@ -108,6 +109,7 @@ class FormViewer {
   }
 
   renderFormNotFound(message = 'Formulir tidak ditemukan atau telah dihapus oleh pembuatnya.') {
+    document.title = 'Formulir Tidak Ditemukan';
     this.hideFormLoading();
     const headerCard = document.getElementById('form-view-header-card');
     if (headerCard) headerCard.classList.add('hidden');
@@ -146,6 +148,7 @@ class FormViewer {
   }
 
   renderFormClosed(title, message) {
+    document.title = title || 'Formulir Ditutup';
     this.hideFormLoading();
     const headerCard = document.getElementById('form-view-header-card');
     if (headerCard) headerCard.classList.add('hidden');
@@ -252,6 +255,9 @@ class FormViewer {
     if (this.btnSubmitAnother) {
       this.btnSubmitAnother.addEventListener('click', () => {
         this.resetAnswers();
+        if (this.currentForm && this.currentForm.title) {
+          document.title = this.currentForm.title.trim();
+        }
         if (this.successCard) this.successCard.classList.add('hidden');
         if (this.formElement) this.formElement.classList.remove('hidden');
         window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -425,8 +431,10 @@ class FormViewer {
 
   renderForm() {
     const form = this.currentForm;
-    this.titleEl.textContent = form.title || 'Formulir Tanpa Judul';
+    const formTitle = (form && form.title) ? form.title.trim() : 'Formulir Tanpa Judul';
+    this.titleEl.textContent = formTitle;
     this.descEl.textContent = form.description || '';
+    document.title = formTitle;
     
     // Theme color & dynamic CSS variables
     const color = form.themeColor || '#6366f1';
@@ -1899,6 +1907,9 @@ class FormViewer {
       // Show success screen
       this.formElement.classList.add('hidden');
       this.successCard.classList.remove('hidden');
+      if (this.currentForm && this.currentForm.title) {
+        document.title = `${this.currentForm.title.trim()} - Tanggapan Terkirim`;
+      }
       window.scrollTo({ top: 0, behavior: 'smooth' });
       window.app.showToast('Tanggapan berhasil dikirim!', 'success');
     } catch (err) {

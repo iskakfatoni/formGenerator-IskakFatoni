@@ -132,6 +132,7 @@ class App {
     document.body.classList.remove('mode-dashboard', 'mode-builder', 'mode-responses', 'responder-mode');
 
     if (route === 'dashboard' || route === '') {
+      document.title = 'Dashboard - formGenerator-IskakFatoni';
       document.body.classList.add('mode-dashboard');
       // Auto-save form if currently open in builder
       if (this.builder && this.builder.currentForm) {
@@ -144,6 +145,7 @@ class App {
       if (navDashboard) navDashboard.classList.add('active');
       this.loadDashboard();
     } else if (route === 'builder') {
+      document.title = 'Form Builder - formGenerator-IskakFatoni';
       document.body.classList.add('mode-builder');
       if (mainNav) mainNav.style.display = '';
       if (previewAdminBar) previewAdminBar.classList.add('hidden');
@@ -162,6 +164,12 @@ class App {
     } else if (route === 'view' || route === 'form') {
       document.body.classList.add('responder-mode');
       if (mainNav) mainNav.style.display = 'none';
+
+      if (this.viewer && this.viewer.currentForm && this.viewer.currentForm.title) {
+        document.title = this.viewer.currentForm.title.trim();
+      } else {
+        document.title = 'Memuat Formulir...';
+      }
 
       // If viewing user is the logged in admin, show subtle floating preview bar
       const isOwner = window.authManager && window.authManager.isLoggedIn();
@@ -182,6 +190,7 @@ class App {
       this.showSection('view-form');
       if (this.viewer) this.viewer.loadForm(param);
     } else if (route === 'responses') {
+      document.title = 'Data Respon - formGenerator-IskakFatoni';
       document.body.classList.add('mode-responses');
       if (mainNav) mainNav.style.display = '';
       if (previewAdminBar) previewAdminBar.classList.add('hidden');
