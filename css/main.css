@@ -196,12 +196,44 @@ h1, h2, h3, h4, h5, h6 {
   width: 40px;
   height: 40px;
   border-radius: var(--radius-md);
-  background: linear-gradient(135deg, var(--primary) 0%, #a855f7 100%);
   display: flex;
   align-items: center;
   justify-content: center;
   color: white;
-  box-shadow: 0 4px 14px var(--primary-glow);
+  transition: transform 0.2s ease;
+}
+
+.brand:hover .brand-icon {
+  transform: scale(1.05);
+}
+
+.brand-icon img.brand-logo-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 4px 10px rgba(99, 102, 241, 0.45));
+}
+
+.brand-colon {
+  color: #38bdf8;
+  font-weight: 900;
+  margin: 0 1px;
+}
+
+body.theme-light .brand-colon {
+  color: #0284c7;
+}
+
+.brand-highlight {
+  background: linear-gradient(135deg, #38bdf8 0%, #818cf8 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+body.theme-light .brand-highlight {
+  background: linear-gradient(135deg, #4f46e5 0%, #0891b2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
 .brand-name {

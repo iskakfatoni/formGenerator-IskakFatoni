@@ -2234,6 +2234,18 @@ class FormBuilder {
       const saved = await window.formStorage.saveForm(formData);
       this.currentForm = saved;
       
+      // Keep browser URL hash updated with new form ID without triggering route reload
+      if (saved && saved.id) {
+        const targetHash = `#/builder/${saved.id}`;
+        if (window.location.hash !== targetHash) {
+          if (window.history && window.history.replaceState) {
+            window.history.replaceState(null, '', targetHash);
+          } else {
+            window.location.hash = targetHash;
+          }
+        }
+      }
+      
       if (this.responsesTabLink) this.responsesTabLink.style.display = 'inline-flex';
       if (!silent && window.app && typeof window.app.showToast === 'function') {
         window.app.showToast('Formulir berhasil disimpan!', 'success');

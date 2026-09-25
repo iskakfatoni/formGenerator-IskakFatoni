@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%236366f1'><path d='M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z'/></svg>">
-  <title>formGenerator-IskakFatoni - Form Builder & Dashboard</title>
+  <link rel="icon" type="image/svg+xml" href="asset/favicon.svg">
+  <title>Iskak:FormGenerator - Form Builder & Dashboard</title>
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
@@ -19,7 +19,6 @@
   
   <!-- SheetJS (xlsx) for Excel Export -->
   <script src="js/xlsx.full.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
   <!-- QRCode.js for Form Link QR Code Generator -->
   <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
@@ -62,10 +61,10 @@
     <div class="nav-container">
       <div class="brand" onclick="window.location.hash = '#/dashboard'">
         <div class="brand-icon">
-          <i data-lucide="sparkles"></i>
+          <img src="asset/logo-mark.svg" alt="Iskak:FormGenerator Logo" class="brand-logo-img">
         </div>
         <div class="brand-text">
-          <span class="brand-name">formGenerator-IskakFatoni</span>
+          <span class="brand-name">Iskak<span class="brand-colon">:</span><span class="brand-highlight">FormGenerator</span></span>
           <span class="brand-tag">Workspace</span>
         </div>
       </div>
@@ -729,8 +728,9 @@
                 <span>Kirim Tanggapan Lain</span>
               </button>
             </div>
-            <div class="form-branding-badge">
-              <span>Ditenagai oleh <strong>formGenerator-IskakFatoni</strong></span>
+            <div class="form-branding-badge" style="display: inline-flex; align-items: center; gap: 8px;">
+              <img src="asset/logo-mark.svg" alt="Logo" style="width: 20px; height: 20px; border-radius: 4px;">
+              <span>Ditenagai oleh <strong>Iskak<span class="brand-colon">:</span><span class="brand-highlight">FormGenerator</span></strong></span>
             </div>
           </div>
         </div>
@@ -951,7 +951,7 @@
               <li><strong>Execute as:</strong> Pilih <em>"Me" (Akun Google Anda)</em>.</li>
               <li><strong>Who has access:</strong> Wajib pilih <strong><em>"Anyone" (Siapa saja)</em></strong> agar responden bisa upload.</li>
               <li>Klik <strong>Deploy</strong> > Berikan izin (Authorize access).</li>
-              <li><strong>Salin "Web App URL"</strong> yang berakhiran <code>/exec</code> lalu tempelkan di kolom input Google Drive di formGenerator-IskakFatoni.</li>
+              <li><strong>Salin "Web App URL"</strong> yang berakhiran <code>/exec</code> lalu tempelkan di kolom input Google Drive di Iskak:FormGenerator.</li>
             </ul>
           </div>
         </div>

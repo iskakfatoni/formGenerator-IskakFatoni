@@ -7,6 +7,14 @@ service cloud.firestore {
       return request.auth != null;
     }
 
+    // Helper function to check if request is from the owner of the form
+    function isFormOwner(formId) {
+      return isAuthenticated() && (
+        request.auth.uid == get(/databases/$(database)/documents/forms/$(formId)).data.ownerUid ||
+        request.auth.token.email == 'iskakfatoni@gmail.com'
+      );
+    }
+
     // ==========================================
     // KOLEKSI FORMULIR (FORMS)
     // ==========================================
@@ -45,11 +53,19 @@ service cloud.firestore {
       allow create: if request.resource.data.formId is string
                     && request.resource.data.answers is map;
       
-      // 2. Membaca & Menghapus tanggapan: Diizinkan untuk user terautentikasi (pengelola form)
-      allow read, delete: if isAuthenticated();
+      // 2. Membaca & Menghapus tanggapan: Hanya diizinkan untuk pemilik form atau admin
+      allow read, delete: if isAuthenticated() && (
+        ('formOwnerUid' in resource.data && resource.data.formOwnerUid == request.auth.uid) ||
+        isFormOwner(resource.data.formId) ||
+        request.auth.token.email == 'iskakfatoni@gmail.com'
+      );
       
-      // 3. Update respon jika diperlukan
-      allow update: if isAuthenticated();
+      // 3. Update respon jika diperlukan oleh pemilik form atau admin
+      allow update: if isAuthenticated() && (
+        ('formOwnerUid' in resource.data && resource.data.formOwnerUid == request.auth.uid) ||
+        isFormOwner(resource.data.formId) ||
+        request.auth.token.email == 'iskakfatoni@gmail.com'
+      );
     }
   }
 }

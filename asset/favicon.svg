@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+  <defs>
+    <linearGradient id="favBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#4f46e5" />
+      <stop offset="100%" stop-color="#06b6d4" />
+    </linearGradient>
+  </defs>
+  <!-- Background Squircle -->
+  <rect x="1" y="1" width="30" height="30" rx="8" fill="url(#favBg)" />
+  <rect x="1" y="1" width="30" height="30" rx="8" fill="none" stroke="#ffffff" stroke-width="0.8" stroke-opacity="0.3" />
+  
+  <!-- Foreground Form Sheet -->
+  <path d="M 7 7 L 18 7 L 23 12 L 23 24 C 23 25.1 22.1 26 21 26 L 9 26 C 7.9 26 7 25.1 7 24 Z" fill="#ffffff" />
+  <!-- Fold -->
+  <path d="M 18 7 L 18 12 L 23 12 Z" fill="#c7d2fe" />
+  <!-- Header Bar -->
+  <rect x="9" y="9.5" width="6" height="2" rx="1" fill="#4f46e5" />
+  <!-- Field 1 (Radio) -->
+  <circle cx="10" cy="15" r="1.5" fill="#6366f1" />
+  <rect x="13" y="14.2" width="7" height="1.6" rx="0.8" fill="#475569" />
+  <!-- Field 2 (Checkbox) -->
+  <rect x="8.8" y="18" width="2.4" height="2.4" rx="0.6" fill="#06b6d4" />
+  <rect x="13" y="18.4" width="6" height="1.6" rx="0.8" fill="#64748b" />
+  <!-- Checkmark Badge -->
+  <circle cx="23" cy="23" r="5" fill="#10b981" stroke="#ffffff" stroke-width="1" />
+  <path d="M 21.2 23 L 22.5 24.3 L 25 21.8" fill="none" stroke="#ffffff" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" />
+</svg>

@@ -1626,7 +1626,7 @@ class FormViewer {
       if (strict) {
         let isEmpty = false;
         if (q.required) {
-          if (q.type === 'location' && (!val || !val.lat)) {
+          if (q.type === 'location' && (!val || (val.lat === undefined && val.latitude === undefined))) {
             isEmpty = true;
           } else if (q.type === 'checkbox' && (!val || val.length === 0)) {
             isEmpty = true;
@@ -1819,7 +1819,14 @@ class FormViewer {
         const questionResults = [];
 
         (this.currentForm.questions || []).forEach(q => {
-          const points = q.points !== undefined ? q.points : 10;
+          const gradableTypes = ['choice', 'checkbox', 'dropdown', 'text', 'number'];
+          const hasKey = (q.correctAnswer && String(q.correctAnswer).trim() !== '') ||
+                         (Array.isArray(q.correctAnswers) && q.correctAnswers.length > 0);
+          const isGradable = gradableTypes.includes(q.type) && hasKey;
+
+          if (!isGradable) return;
+
+          const points = q.points !== undefined ? Number(q.points) : 10;
           totalPossible += points;
           const userAns = this.answers[q.id];
           let isCorrect = false;
@@ -1971,17 +1978,23 @@ class FormViewer {
             <div style="font-size: 11px; color: #64748b; margin-top: 4px;">( ${this.answers._respondent_email || 'Wali Siswa / Responden'} )</div>
           </div>
         `;
-      } else if (q.type === 'location' && typeof val === 'object' && val.lat) {
-        gpsHtml = `
-          <tr>
-            <td style="padding: 8px 12px; border: 1px solid #e2e8f0; font-weight: 600; width: 35%; background: #f8fafc;">${this.escapeHtml(q.title)}</td>
-            <td style="padding: 8px 12px; border: 1px solid #e2e8f0;">
-              <div><strong>Koordinat GPS:</strong> ${val.lat.toFixed(6)}, ${val.lng.toFixed(6)}</div>
-              <div style="font-size: 12px; color: #10b981;">Akurasi Satelit: ± ${Math.round(val.accuracy || 0)} meter</div>
-              <div style="font-size: 11px; color: #3b82f6; margin-top: 2px;">Tautan Peta: https://www.google.com/maps?q=${val.lat},${val.lng}</div>
-            </td>
-          </tr>
-        `;
+      } else if (q.type === 'location' && typeof val === 'object' && val !== null) {
+        const lat = val.lat !== undefined ? val.lat : val.latitude;
+        const lng = val.lng !== undefined ? val.lng : val.longitude;
+        if (lat !== undefined && lng !== undefined && !isNaN(Number(lat)) && !isNaN(Number(lng))) {
+          const numLat = Number(lat);
+          const numLng = Number(lng);
+          gpsHtml = `
+            <tr>
+              <td style="padding: 8px 12px; border: 1px solid #e2e8f0; font-weight: 600; width: 35%; background: #f8fafc;">${this.escapeHtml(q.title)}</td>
+              <td style="padding: 8px 12px; border: 1px solid #e2e8f0;">
+                <div><strong>Koordinat GPS:</strong> ${numLat.toFixed(6)}, ${numLng.toFixed(6)}</div>
+                <div style="font-size: 12px; color: #10b981;">Akurasi Satelit: ± ${Math.round(val.accuracy || 0)} meter</div>
+                <div style="font-size: 11px; color: #3b82f6; margin-top: 2px;">Tautan Peta: https://www.google.com/maps?q=${numLat},${numLng}</div>
+              </td>
+            </tr>
+          `;
+        }
       } else if (q.type === 'file_gdrive') {
         let fileObj = val;
         if (typeof fileObj === 'string' && fileObj.startsWith('{')) {
@@ -2025,10 +2038,11 @@ class FormViewer {
           @page { size: A4 portrait; margin: 15mm; }
           body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: #0f172a; margin: 0; padding: 10px; font-size: 13px; }
           .receipt-box { border: 2px solid #0f172a; padding: 20px; border-radius: 8px; max-width: 800px; margin: auto; }
-          .header-table { width: 100%; border-bottom: 2px solid #0f172a; padding-bottom: 12px; margin-bottom: 16px; }
-          .title-area { text-align: center; }
-          .title-area h2 { margin: 0 0 4px 0; font-size: 18px; text-transform: uppercase; }
-          .title-area p { margin: 0; font-size: 12px; color: #475569; }
+          .header-table { width: 100%; border-bottom: 2px solid #0f172a; padding-bottom: 12px; margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between; }
+          .brand-badge { display: flex; align-items: center; gap: 10px; }
+          .title-area { text-align: right; }
+          .title-area h2 { margin: 0 0 4px 0; font-size: 16px; text-transform: uppercase; }
+          .title-area p { margin: 0; font-size: 11px; color: #475569; }
           .meta-bar { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 14px; background: #f1f5f9; padding: 8px 12px; border-radius: 4px; }
           table.data-table { width: 100%; border-collapse: collapse; margin-bottom: 16px; font-size: 12.5px; }
           .footer-section { display: flex; justify-content: space-between; align-items: flex-end; margin-top: 24px; padding-top: 12px; }
@@ -2038,9 +2052,27 @@ class FormViewer {
       <body>
         <div class="receipt-box">
           <div class="header-table">
+            <div class="brand-badge">
+              <svg width="40" height="40" viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg" style="flex-shrink: 0;">
+                <rect x="8" y="8" width="112" height="112" rx="28" fill="#4f46e5"/>
+                <rect x="36" y="24" width="58" height="74" rx="8" fill="#ffffff" fill-opacity="0.25" transform="rotate(6 65 61)"/>
+                <rect x="30" y="22" width="60" height="78" rx="8" fill="#ffffff"/>
+                <rect x="42" y="34" width="10" height="18" rx="4" fill="#4f46e5"/>
+                <rect x="42" y="58" width="36" height="5" rx="2.5" fill="#cbd5e1"/>
+                <rect x="42" y="68" width="28" height="5" rx="2.5" fill="#cbd5e1"/>
+                <circle cx="94" cy="94" r="16" fill="#10b981"/>
+                <path d="M88 94 L92 98 L100 90" stroke="#ffffff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              <div>
+                <div style="font-size: 16px; font-weight: 800; color: #0f172a; letter-spacing: -0.01em; font-family: 'Segoe UI', Tahoma, sans-serif;">
+                  Iskak<span style="color: #0284c7;">:</span><span style="color: #4f46e5;">FormGenerator</span>
+                </div>
+                <div style="font-size: 11px; color: #64748b; font-weight: 500;">Sistem Formulir Digital & Perekaman Data Resmi</div>
+              </div>
+            </div>
             <div class="title-area">
-              <h2>${this.escapeHtml(this.currentForm.title || 'LEMBAR BUKTI PENGISIAN BIODATA')}</h2>
-              <p>Sistem Formulir Online & Perekaman Data Resmi • FormCraft</p>
+              <h2>${this.escapeHtml(this.currentForm.title || 'LEMBAR BUKTI PENGISIAN')}</h2>
+              <p>Dokumen Verifikasi Tervalidasi Sistem • Iskak:FormGenerator</p>
             </div>
           </div>
 

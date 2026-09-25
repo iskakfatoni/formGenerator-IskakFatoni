@@ -136,11 +136,9 @@ class FormStorage {
     if (this.isCloud) {
       try {
         await this.db.collection('forms').doc(id).delete();
-        // Also delete associated responses
+        // Also delete associated responses safely in chunks (Firestore limit is 500 ops per batch)
         const respSnap = await this.db.collection('responses').where('formId', '==', id).get();
-        const batch = this.db.batch();
-        respSnap.forEach(doc => batch.delete(doc.ref));
-        await batch.commit();
+        await this.deleteDocsInBatches(respSnap);
       } catch (err) {
         console.error('Gagal menghapus form dari Firestore:', err);
       }
@@ -164,9 +162,16 @@ class FormStorage {
 
     const email = respondentEmail || (answers && answers._respondent_email ? answers._respondent_email : null);
 
+    let formOwnerUid = null;
+    const localForm = this.getLocalForms().find(f => f.id === formId);
+    if (localForm && localForm.ownerUid) {
+      formOwnerUid = localForm.ownerUid;
+    }
+
     const responseRecord = {
       id: responseId,
       formId,
+      formOwnerUid,
       respondentEmail: email,
       answers,
       submittedAt: timestamp
@@ -244,13 +249,23 @@ class FormStorage {
     return true;
   }
 
+  async deleteDocsInBatches(querySnapshot) {
+    if (!querySnapshot || querySnapshot.empty) return;
+    const docs = querySnapshot.docs;
+    const batchSize = 400;
+    for (let i = 0; i < docs.length; i += batchSize) {
+      const batch = this.db.batch();
+      const chunk = docs.slice(i, i + batchSize);
+      chunk.forEach(doc => batch.delete(doc.ref));
+      await batch.commit();
+    }
+  }
+
   async clearResponsesByFormId(formId) {
     if (this.isCloud) {
       try {
         const snapshot = await this.db.collection('responses').where('formId', '==', formId).get();
-        const batch = this.db.batch();
-        snapshot.forEach(doc => batch.delete(doc.ref));
-        await batch.commit();
+        await this.deleteDocsInBatches(snapshot);
 
         await this.db.collection('forms').doc(formId).update({
           responseCount: 0,

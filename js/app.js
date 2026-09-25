@@ -424,6 +424,9 @@ class App {
       delete newForm._id;
       
       // Clean metadata and counter
+      delete newForm.ownerUid;
+      delete newForm.ownerEmail;
+      delete newForm.ownerName;
       newForm.title = (newForm.title || 'Formulir') + ' (Salinan)';
       newForm.responseCount = 0;
       delete newForm.lastResponseAt;
@@ -505,25 +508,40 @@ class App {
         const qrContainer = document.getElementById('share-qrcode-container');
         const img = qrContainer ? qrContainer.querySelector('img, canvas') : null;
         if (img) {
-          let dataUrl = '';
           if (img.tagName.toLowerCase() === 'canvas') {
-            dataUrl = img.toDataURL('image/png');
+            const dataUrl = img.toDataURL('image/png');
+            const a = document.createElement('a');
+            a.href = dataUrl;
+            a.download = `qrcode_form_${Date.now()}.png`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            this.showToast('QR Code berhasil diunduh!', 'success');
           } else {
-            dataUrl = img.src;
+            // Fetch as blob for cross-origin image download fallback
+            fetch(img.src)
+              .then(res => res.blob())
+              .then(blob => {
+                const blobUrl = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = blobUrl;
+                a.download = `qrcode_form_${Date.now()}.png`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(blobUrl);
+                this.showToast('QR Code berhasil diunduh!', 'success');
+              })
+              .catch(() => {
+                window.open(img.src, '_blank');
+              });
           }
-          const a = document.createElement('a');
-          a.href = dataUrl;
-          a.download = `qrcode_form_${Date.now()}.png`;
-          document.body.appendChild(a);
-          a.click();
-          document.body.removeChild(a);
-          this.showToast('QR Code berhasil diunduh!', 'success');
         }
       });
     }
   }
 
-  openShareModal(formId) {
+  openShareModal(formId, customTitle = null) {
     const modal = document.getElementById('modal-share');
     const input = document.getElementById('share-link-input');
     const openLink = document.getElementById('share-open-link');
@@ -544,8 +562,14 @@ class App {
     if (input) input.value = fullShareUrl;
     if (openLink) openLink.href = fullShareUrl;
 
-    // WhatsApp text
-    const formTitle = (this.dashboardForms && this.dashboardForms.find(f => f.id === cleanId)?.title) || 'Formulir Online';
+    // WhatsApp text with accurate form title
+    let formTitle = customTitle;
+    if (!formTitle && this.allDashboardForms) {
+      const found = this.allDashboardForms.find(f => f.id === cleanId);
+      if (found) formTitle = found.title;
+    }
+    if (!formTitle) formTitle = 'Formulir Online';
+
     const waText = `Halo! Silakan mengisi *${formTitle}* melalui tautan berikut:\n\n${fullShareUrl}`;
     if (btnWhatsApp) {
       btnWhatsApp.href = `https://api.whatsapp.com/send?text=${encodeURIComponent(waText)}`;

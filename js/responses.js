@@ -455,17 +455,23 @@ class ResponsesDashboard {
         if (typeof locObj === 'string' && locObj.startsWith('{')) {
           try { locObj = JSON.parse(locObj); } catch(e){}
         }
-        if (locObj && typeof locObj === 'object' && locObj.lat) {
-          gpsHtml = `
-            <tr>
-              <td style="padding: 8px 12px; border: 1px solid #e2e8f0; font-weight: 600; width: 35%; background: #f8fafc;">${this.escapeHtml(col.title)}</td>
-              <td style="padding: 8px 12px; border: 1px solid #e2e8f0;">
-                <div><strong>Koordinat GPS:</strong> ${locObj.lat.toFixed(6)}, ${locObj.lng.toFixed(6)}</div>
-                <div style="font-size: 12px; color: #10b981;">Akurasi Satelit: ± ${Math.round(locObj.accuracy || 0)} meter</div>
-                <div style="font-size: 11px; color: #3b82f6; margin-top: 2px;">Tautan Peta: https://www.google.com/maps?q=${locObj.lat},${locObj.lng}</div>
-              </td>
-            </tr>
-          `;
+        if (locObj && typeof locObj === 'object') {
+          const lat = locObj.lat !== undefined ? locObj.lat : locObj.latitude;
+          const lng = locObj.lng !== undefined ? locObj.lng : locObj.longitude;
+          if (lat !== undefined && lng !== undefined && !isNaN(Number(lat)) && !isNaN(Number(lng))) {
+            const numLat = Number(lat);
+            const numLng = Number(lng);
+            gpsHtml = `
+              <tr>
+                <td style="padding: 8px 12px; border: 1px solid #e2e8f0; font-weight: 600; width: 35%; background: #f8fafc;">${this.escapeHtml(col.title)}</td>
+                <td style="padding: 8px 12px; border: 1px solid #e2e8f0;">
+                  <div><strong>Koordinat GPS:</strong> ${numLat.toFixed(6)}, ${numLng.toFixed(6)}</div>
+                  <div style="font-size: 12px; color: #10b981;">Akurasi Satelit: ± ${Math.round(locObj.accuracy || 0)} meter</div>
+                  <div style="font-size: 11px; color: #3b82f6; margin-top: 2px;">Tautan Peta: https://www.google.com/maps?q=${numLat},${numLng}</div>
+                </td>
+              </tr>
+            `;
+          }
         }
       } else if (activeQ.type === 'file_gdrive') {
         let fileObj = val;
@@ -524,10 +530,11 @@ class ResponsesDashboard {
           @page { size: A4 portrait; margin: 15mm; }
           body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: #0f172a; margin: 0; padding: 10px; font-size: 13px; }
           .receipt-box { border: 2px solid #0f172a; padding: 20px; border-radius: 8px; max-width: 800px; margin: auto; }
-          .header-table { width: 100%; border-bottom: 2px solid #0f172a; padding-bottom: 12px; margin-bottom: 16px; }
-          .title-area { text-align: center; }
-          .title-area h2 { margin: 0 0 4px 0; font-size: 18px; text-transform: uppercase; }
-          .title-area p { margin: 0; font-size: 12px; color: #475569; }
+          .header-table { width: 100%; border-bottom: 2px solid #0f172a; padding-bottom: 12px; margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between; }
+          .brand-badge { display: flex; align-items: center; gap: 10px; }
+          .title-area { text-align: right; }
+          .title-area h2 { margin: 0 0 4px 0; font-size: 16px; text-transform: uppercase; }
+          .title-area p { margin: 0; font-size: 11px; color: #475569; }
           .meta-bar { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 14px; background: #f1f5f9; padding: 8px 12px; border-radius: 4px; }
           table.data-table { width: 100%; border-collapse: collapse; margin-bottom: 16px; font-size: 12.5px; }
           .footer-section { display: flex; justify-content: space-between; align-items: flex-end; margin-top: 24px; padding-top: 12px; }
@@ -537,9 +544,27 @@ class ResponsesDashboard {
       <body>
         <div class="receipt-box">
           <div class="header-table">
+            <div class="brand-badge">
+              <svg width="40" height="40" viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg" style="flex-shrink: 0;">
+                <rect x="8" y="8" width="112" height="112" rx="28" fill="#4f46e5"/>
+                <rect x="36" y="24" width="58" height="74" rx="8" fill="#ffffff" fill-opacity="0.25" transform="rotate(6 65 61)"/>
+                <rect x="30" y="22" width="60" height="78" rx="8" fill="#ffffff"/>
+                <rect x="42" y="34" width="10" height="18" rx="4" fill="#4f46e5"/>
+                <rect x="42" y="58" width="36" height="5" rx="2.5" fill="#cbd5e1"/>
+                <rect x="42" y="68" width="28" height="5" rx="2.5" fill="#cbd5e1"/>
+                <circle cx="94" cy="94" r="16" fill="#10b981"/>
+                <path d="M88 94 L92 98 L100 90" stroke="#ffffff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              <div>
+                <div style="font-size: 16px; font-weight: 800; color: #0f172a; letter-spacing: -0.01em; font-family: 'Segoe UI', Tahoma, sans-serif;">
+                  Iskak<span style="color: #0284c7;">:</span><span style="color: #4f46e5;">FormGenerator</span>
+                </div>
+                <div style="font-size: 11px; color: #64748b; font-weight: 500;">Sistem Formulir Digital & Perekaman Data Resmi</div>
+              </div>
+            </div>
             <div class="title-area">
               <h2>${this.escapeHtml(this.currentForm.title || 'LEMBAR BUKTI PENGISIAN FORMULIR')}</h2>
-              <p>Sistem Formulir Online & Perekaman Data Resmi • FormCraft</p>
+              <p>Dokumen Verifikasi Tervalidasi Sistem • Iskak:FormGenerator</p>
             </div>
           </div>
 
@@ -646,13 +671,34 @@ class ResponsesDashboard {
     const btnDownload = modal.querySelector('.btn-download-img');
     if (btnDownload) {
       btnDownload.addEventListener('click', () => {
-        const link = document.createElement('a');
-        link.href = imgSrc;
         const ext = isDataUrl && imgSrc.includes('webp') ? 'webp' : 'jpg';
-        link.download = `foto_respon_${Date.now()}.${ext}`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+        const filename = `foto_respon_${Date.now()}.${ext}`;
+
+        if (isDataUrl) {
+          const link = document.createElement('a');
+          link.href = imgSrc;
+          link.download = filename;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+        } else {
+          // Fetch as blob for cross-origin image download
+          fetch(imgSrc)
+            .then(res => res.blob())
+            .then(blob => {
+              const blobUrl = URL.createObjectURL(blob);
+              const link = document.createElement('a');
+              link.href = blobUrl;
+              link.download = filename;
+              document.body.appendChild(link);
+              link.click();
+              document.body.removeChild(link);
+              URL.revokeObjectURL(blobUrl);
+            })
+            .catch(() => {
+              window.open(imgSrc, '_blank');
+            });
+        }
       });
     }
   }
@@ -673,7 +719,7 @@ class ResponsesDashboard {
     columns.forEach(col => headers.push(col.title));
 
     const rows = [];
-    rows.push(headers.map(h => '"' + h.replace(/"/g, '""') + '"').join(','));
+    rows.push(headers.map(h => '"' + String(h || '').replace(/"/g, '""') + '"').join(','));
 
     this.responses.forEach((resp, idx) => {
       const row = [];
@@ -702,7 +748,16 @@ class ResponsesDashboard {
         if (Array.isArray(ans)) {
           row.push(ans.join('; '));
         } else if (ans && typeof ans === 'object') {
-          row.push(JSON.stringify(ans));
+          // Format GPS location if applicable
+          if (ans.lat !== undefined || ans.latitude !== undefined) {
+            const lat = ans.lat !== undefined ? ans.lat : ans.latitude;
+            const lng = ans.lng !== undefined ? ans.lng : ans.longitude;
+            row.push(`${lat}, ${lng}`);
+          } else if (ans.url) {
+            row.push(ans.url);
+          } else {
+            row.push(JSON.stringify(ans));
+          }
         } else {
           row.push(ans !== null && ans !== undefined ? String(ans) : '-');
         }
@@ -711,15 +766,19 @@ class ResponsesDashboard {
       rows.push(row.map(v => '"' + String(v).replace(/"/g, '""') + '"').join(','));
     });
 
-    const csvContent = 'data:text/csv;charset=utf-8,﻿' + rows.join(String.fromCharCode(10));
-    const encodedUri = encodeURI(csvContent);
+    const csvContent = '\uFEFF' + rows.join('\r\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const blobUrl = URL.createObjectURL(blob);
     const link = document.createElement('a');
-    link.setAttribute('href', encodedUri);
+    link.href = blobUrl;
     const filename = (this.currentForm.title || 'Respon_Form').toLowerCase().replace(/[^a-z0-9]/g, '_') + '_responses.csv';
     link.setAttribute('download', filename);
     document.body.appendChild(link);
     link.click();
-    document.body.removeChild(link);
+    setTimeout(() => {
+      document.body.removeChild(link);
+      URL.revokeObjectURL(blobUrl);
+    }, 500);
 
     if (window.app) window.app.showToast('Data respon berhasil diexport ke CSV!', 'success');
   }
