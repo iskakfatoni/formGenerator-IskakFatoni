@@ -134,9 +134,16 @@ class App {
     if (route === 'dashboard' || route === '') {
       document.title = 'Dashboard - Iskak:FormGenerator';
       document.body.classList.add('mode-dashboard');
-      // Auto-save form if currently open in builder
-      if (this.builder && this.builder.currentForm) {
-        try { this.builder.saveCurrentForm(true); } catch (e) {}
+      // Auto-save form if currently open in builder and clean up
+      if (this.builder) {
+        if (this.builder._autoSaveTimer) {
+          clearTimeout(this.builder._autoSaveTimer);
+          this.builder._autoSaveTimer = null;
+        }
+        if (this.builder.currentForm) {
+          try { this.builder.saveCurrentForm(true); } catch (e) {}
+          this.builder.currentForm = null;
+        }
       }
       if (mainNav) mainNav.style.display = '';
       if (previewAdminBar) previewAdminBar.classList.add('hidden');

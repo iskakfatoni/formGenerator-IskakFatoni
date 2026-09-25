@@ -2243,8 +2243,10 @@ class FormBuilder {
       const saved = await window.formStorage.saveForm(formData);
       this.currentForm = saved;
       
-      // Keep browser URL hash updated with new form ID without triggering route reload
-      if (saved && saved.id) {
+      // Keep browser URL hash updated with form ID ONLY IF the user is currently in builder mode
+      const currentHash = (window.location.hash || '').trim();
+      const isCurrentlyInBuilder = currentHash.startsWith('#/builder') || currentHash === '#/builder';
+      if (isCurrentlyInBuilder && saved && saved.id) {
         const targetHash = `#/builder/${saved.id}`;
         if (window.location.hash !== targetHash) {
           if (window.history && window.history.replaceState) {
