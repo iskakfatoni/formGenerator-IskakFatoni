@@ -313,6 +313,13 @@ class FormBuilder {
   }
 
   bindEvents() {
+    // Dynamic document.title update when title input changes
+    if (this.titleInput) {
+      this.titleInput.addEventListener('input', () => {
+        const val = this.titleInput.value.trim() || 'Formulir Baru';
+        document.title = `${val} - Editor Form`;
+      });
+    }
 
     // Auto-save on browser tab close / refresh
     window.addEventListener('beforeunload', () => {
@@ -905,6 +912,8 @@ class FormBuilder {
   }
 
   renderForm() {
+    const formTitle = (this.currentForm && this.currentForm.title) ? this.currentForm.title.trim() : 'Formulir Baru';
+    document.title = `${formTitle} - Editor Form`;
     if (this.titleInput) this.titleInput.value = this.currentForm.title || '';
     if (this.descInput) this.descInput.value = this.currentForm.description || '';
     this.setThemeColor(this.currentForm.themeColor || '#6366f1');

@@ -172,7 +172,9 @@ class ResponsesDashboard {
     }
 
     this.currentForm = form;
-    if (this.titleEl) this.titleEl.textContent = form.title || 'Ringkasan Respon';
+    const formTitle = (form && form.title) ? form.title.trim() : 'Formulir';
+    document.title = `Respon: ${formTitle} - Iskak:FormGenerator`;
+    if (this.titleEl) this.titleEl.textContent = formTitle;
 
     // Load responses
     this.responses = await window.formStorage.getResponsesByFormId(formId);

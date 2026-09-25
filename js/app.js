@@ -132,7 +132,7 @@ class App {
     document.body.classList.remove('mode-dashboard', 'mode-builder', 'mode-responses', 'responder-mode');
 
     if (route === 'dashboard' || route === '') {
-      document.title = 'Dashboard - formGenerator-IskakFatoni';
+      document.title = 'Dashboard - Iskak:FormGenerator';
       document.body.classList.add('mode-dashboard');
       // Auto-save form if currently open in builder
       if (this.builder && this.builder.currentForm) {
@@ -145,7 +145,11 @@ class App {
       if (navDashboard) navDashboard.classList.add('active');
       this.loadDashboard();
     } else if (route === 'builder') {
-      document.title = 'Form Builder - formGenerator-IskakFatoni';
+      if (this.builder && this.builder.currentForm && this.builder.currentForm.title) {
+        document.title = `${this.builder.currentForm.title.trim()} - Editor Form`;
+      } else {
+        document.title = 'Form Builder - Iskak:FormGenerator';
+      }
       document.body.classList.add('mode-builder');
       if (mainNav) mainNav.style.display = '';
       if (previewAdminBar) previewAdminBar.classList.add('hidden');
@@ -190,7 +194,11 @@ class App {
       this.showSection('view-form');
       if (this.viewer) this.viewer.loadForm(param);
     } else if (route === 'responses') {
-      document.title = 'Data Respon - formGenerator-IskakFatoni';
+      if (this.responsesDashboard && this.responsesDashboard.currentForm && this.responsesDashboard.currentForm.title) {
+        document.title = `Respon: ${this.responsesDashboard.currentForm.title.trim()} - Iskak:FormGenerator`;
+      } else {
+        document.title = 'Data Respon - Iskak:FormGenerator';
+      }
       document.body.classList.add('mode-responses');
       if (mainNav) mainNav.style.display = '';
       if (previewAdminBar) previewAdminBar.classList.add('hidden');

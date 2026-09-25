@@ -4,10 +4,28 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="icon" type="image/svg+xml" href="asset/favicon.svg">
-  <title>Iskak:FormGenerator - Form Builder & Dashboard</title>
+  <title>Iskak:FormGenerator</title>
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
+  
+  <!-- Instant URL Parameter to Hash Route Converter -->
+  <script>
+    (function() {
+      try {
+        var search = window.location.search || '';
+        var params = new URLSearchParams(search);
+        var queryFormId = params.get('id') || params.get('form') || params.get('view') || params.get('formId') || params.get('formid');
+        var hash = (window.location.hash || '').trim();
+        if (queryFormId && (!hash || hash === '#/dashboard' || hash === '#' || hash === '')) {
+          window.location.hash = '#/view/' + encodeURIComponent(queryFormId.trim());
+          document.title = 'Memuat Formulir...';
+        } else if (/^#\/?(view|form)\//i.test(hash)) {
+          document.title = 'Memuat Formulir...';
+        }
+      } catch (e) {}
+    })();
+  </script>
   
   <!-- Google Fonts: Inter & Outfit -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
